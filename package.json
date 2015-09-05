@@ -1,0 +1,25 @@
+{
+  "name": "ideerepas",
+  "description": "Idée Repas generates menus for everyday meals",
+  "version": "0.1.0",
+  "private": false,
+  "author": "Pascal Le Merrer, Christophe Sauldubois",
+  "repository": {
+    "type": "git",
+    "url": "https://plemerrer@bitbucket.org/plemerrer/ideerepas.git"
+  },
+  "engines": {
+    "node": "0.12.x",
+    "npm": "2.11.x"
+  },
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "cssnext": "latest",
+    "cucumber": "^0.5.2",
+    "gulp": "latest",
+    "gulp-watch": "^4.3.2",
+    "gulp-cucumber": "latest",
+    "apickli": "latest"
+  }
+}
