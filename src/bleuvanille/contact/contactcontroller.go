@@ -1,6 +1,7 @@
 package contact
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -24,16 +25,19 @@ func Create(context *echo.Context) error {
 
 	email := context.Form("email")
 	if email == "" {
+		log.Println("Contact create email is null")
 		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in POST body"})
 	}
 	//TODO check email is valid
 	contact, err := NewContact(email)
 	if err != nil {
+		log.Printf("Contact create error %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
 	}
 
 	_, err = Save(contact)
 	if err != nil {
+		log.Printf("Contact save error %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
 	}
 
