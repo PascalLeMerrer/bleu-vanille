@@ -13,7 +13,7 @@ const testLastname = "Doe"
 const testPassword = "Pa%%W0rD"
 
 func TestUserCreation(t *testing.T) {
-	user, userCreationError := NewUser(testEmail, testFirstname, testLastname, testPassword)
+	user, userCreationError := New(testEmail, testFirstname, testLastname, testPassword)
 
 	assert.NoError(t, userCreationError, "User creation error.")
 	assert.NotNil(t, user, "User creation error.")
