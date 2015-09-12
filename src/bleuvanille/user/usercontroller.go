@@ -89,6 +89,7 @@ func GetAll(context *echo.Context) error {
 func Remove(context *echo.Context) error {
 
 	//TODO many lines to be factorised with login
+	// try to use this pattern: http://talks.golang.org/2013/go4python.slide#37
 	email, password := context.Form("email"), context.Form("password")
 	if email == "" {
 		log.Println("Missing email parameter in DELETE request")

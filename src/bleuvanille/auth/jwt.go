@@ -21,22 +21,22 @@ const (
 
 // JWTAuth is a JSON Web Token middleware
 func JWTAuth() echo.HandlerFunc {
-	return func(c *echo.Context) error {
-
+	return func(context *echo.Context) error {
 		// Skip WebSocket
-		if (c.Request().Header.Get(echo.Upgrade)) == echo.WebSocket {
+		if (context.Request().Header.Get(echo.Upgrade)) == echo.WebSocket {
 			return nil
 		}
 
-		auth := c.Request().Header.Get("Authorization")
-		l := len(Bearer)
+		auth := context.Request().Header.Get("Authorization")
+
+		length := len(Bearer)
 		httpError := echo.NewHTTPError(http.StatusUnauthorized)
 
-		if len(auth) > l+1 && auth[:l] == Bearer {
-			t, err := ExtractToken(auth[l+1:])
-			if err == nil && t.Valid {
+		if len(auth) > length+1 && auth[:length] == Bearer {
+			token, err := ExtractToken(auth[length+1:])
+			if err == nil && token.Valid {
 				// Store token claims in echo.Context
-				c.Set("claims", t.Claims)
+				context.Set("claims", token.Claims)
 				return nil
 			}
 		}

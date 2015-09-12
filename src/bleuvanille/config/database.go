@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	_ "github.com/lib/pq" // Don't know why it's present but unused
+	_ "github.com/lib/pq" // loaded for it's side effects (defines the driver to be used)
 )
 
 var db *sql.DB

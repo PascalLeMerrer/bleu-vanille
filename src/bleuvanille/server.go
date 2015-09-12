@@ -79,6 +79,7 @@ func main() {
 	echoServer.Static("/fonts/", "public/fonts")
 	echoServer.Static("/img/", "public/img")
 
+	// public pages
 	echoServer.Get("/", LandingPage)
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Get("/contacts", contact.Get)
