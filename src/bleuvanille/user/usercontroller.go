@@ -2,6 +2,7 @@ package user
 
 import (
 	"bleuvanille/auth"
+	"bleuvanille/config"
 	"bleuvanille/session"
 	"errors"
 	"log"
@@ -13,6 +14,31 @@ import (
 
 	"github.com/labstack/echo"
 )
+
+// CreateDefault creates a default admin account if it does not exist
+func CreateDefault() {
+	existingAdmin, err := LoadByEmail(config.AdminEmail)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if !existingAdmin.IsAdmin {
+		admin, err := New("admin@bleuvanille.com", "Admin", "Admin", "xeCuf8CHapreNe=")
+		if err != nil {
+			log.Fatal(err)
+		}
+		admin.IsAdmin = true
+		_, err = Save(admin)
+		if err, ok := err.(*pq.Error); ok {
+			if err.Code.Name() == "unique_violation" {
+				log.Fatal("User admin@bleuvanille.com but has no admin rights. WTF?!")
+			}
+		}
+		log.Println("Admin account created with default password. You should change it.")
+		return
+	}
+	log.Println("Admin account found.")
+}
 
 // Create creates a new user
 func Create(context *echo.Context) error {
