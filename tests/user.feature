@@ -24,8 +24,20 @@ Feature:
       When I POST to /users/login
       Then response code should be 200
       And response body should be valid json
-      And response header Set-Cookie should be \w
+      And response header Authorization should exist
       And response body path $.token should be \w
+
+    Scenario: After I signed in, I should be able to get my profile
+      Given I set body to email=user_test1@mail.org;password=mypassword
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I POST to /users/login
+      And I store the value of header Authorization as access token
+      And I set bearer token
+      And I store the value of body path $.id as userId in scenario scope
+      When I GET /users/`userId`/profile
+      Then response code should be 200
+      # A COMPLETER
+
 
     Scenario: Sign in with wrong email should fail
       Given I set body to email=fake@mail.org;password=mypassword
@@ -33,6 +45,7 @@ Feature:
       When I POST to /users/login
       Then response code should be 401
       And response header Set-Cookie should not exist
+      And response header Authorization should not exist
       And response body should not contain token
 
     Scenario: Sign in with wrong password should fail
@@ -41,6 +54,7 @@ Feature:
       When I POST to /users/login
       Then response code should be 401
       And response header Set-Cookie should not exist
+      And response header Authorization should not exist
       And response body should not contain token
 
     Scenario: Delete account with wrong password should fail
@@ -49,14 +63,20 @@ Feature:
       When I POST to /users/delete
       Then response code should be 401
       And response header Set-Cookie should not exist
+      And response header Authorization should not exist
       And response body should not contain token
 
     Scenario: Delete account
       Given I set body to email=user_test1@mail.org;password=mypassword
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I POST to /users/login
+      And I store the value of header Authorization as access token
+      And I set bearer token
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
       When I POST to /users/delete
       Then response code should be 204
       And response header Set-Cookie should not exist
+      And response header Authorization should not exist
       And response body should not contain token
 
     Scenario: Sign in with deleted account credentials should fail
@@ -65,17 +85,19 @@ Feature:
       When I POST to /users/login
       Then response code should be 401
       And response header Set-Cookie should not exist
+      And response header Authorization should not exist
       And response body should not contain token
 
     Scenario: Create an account for password change
-        Given I set body to email=user_test2@mail.org;password=OLDPASSWORD;firstname=John;lastname=Doe
-        And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
-    		And I POST to /users
-    		Then response code should be 201
+      Given I set body to email=user_test2@mail.org;password=OLDPASSWORD;firstname=John;lastname=Doe
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+  		And I POST to /users
+  		Then response code should be 201
 
     Scenario: Change password
       Given I set body to email=user_test2@mail.org;oldPassword=OLDPASSWORD;newPassword=NEWPASSWORD
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set bearer token
   		And I PUT /users/password
       Then response code should be 200
 
@@ -85,12 +107,15 @@ Feature:
       When I POST to /users/login
       Then response code should be 200
       And response body should be valid json
-      And response header Set-Cookie should be \w
+      And response header Set-Cookie should not exist
       And response body path $.token should be \w
+      And response header Authorization should exist
+      And I store the value of header Authorization as access token
 
-    Scenario: Delete the account for password change
+    Scenario: Delete the account used for password change
       Given I set body to email=user_test2@mail.org;password=NEWPASSWORD
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set bearer token
       When I POST to /users/delete
       Then response code should be 204
       And response header Set-Cookie should not exist

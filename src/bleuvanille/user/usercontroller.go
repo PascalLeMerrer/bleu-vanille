@@ -7,7 +7,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -174,9 +173,7 @@ func Login(context *echo.Context) error {
 	}
 	session.Save(userSession)
 
-	cookieExpiration := time.Now().Add(30 * 24 * time.Hour)
-	cookie := http.Cookie{Name: "AuthToken", Value: user.AuthToken, Expires: cookieExpiration}
-	context.Response().Header().Set("Set-Cookie", cookie.String())
+	context.Response().Header().Set(echo.Authorization, user.AuthToken)
 
 	return context.JSON(http.StatusOK, user)
 }
@@ -218,4 +215,11 @@ func ChangePassword(context *echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, nil)
+}
+
+// Profile Returns the profile of a given user
+// If it's the current one, the returned profile is richer
+func Profile(context *echo.Context) error {
+	//TODO implement
+	return context.JSON(http.StatusOK, "user profile")
 }

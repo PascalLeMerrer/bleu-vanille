@@ -83,18 +83,25 @@ func main() {
 	// public pages
 	echoServer.Get("/", LandingPage)
 	echoServer.Post("/contacts", contact.Create)
-	echoServer.Get("/contacts", contact.Get)
-	echoServer.Delete("/contacts", contact.Remove)
 	echoServer.Post("/users", user.Create)
-	// echo does not accept Delete request with body so we use a Post instead
-	echoServer.Post("/users/delete", user.Remove)
 	echoServer.Post("/users/login", user.Login)
-	echoServer.Put("/users/password", user.ChangePassword)
 
-	// Admin routes are protected by JWT
-	restrictedRoutes := echoServer.Group("/admin")
-	restrictedRoutes.Use(auth.JWTAuth())
-	restrictedRoutes.Get("/contacts", contact.GetAll)
+	// user Routes require a valid auth token
+	userRoutes := echoServer.Group("/users")
+	userRoutes.Use(auth.JWTAuth())
+
+	// echo does not accept Delete request with body so we use a Post instead
+	userRoutes.Post("/delete", user.Remove)
+	userRoutes.Put("/password", user.ChangePassword)
+	userRoutes.Get("/:userID/profile", user.Profile)
+
+	// Admin routes require a valid auth token
+	// TODO: check user is Admin!
+	adminRoutes := echoServer.Group("/admin")
+	adminRoutes.Use(auth.JWTAuth())
+	// adminRoutes.Get("/contacts", contact.GetAll)
+	adminRoutes.Get("/contacts", contact.Get)
+	adminRoutes.Delete("/contacts", contact.Remove)
 
 	log.Printf("Server listening to HTTP requests on port %d", Port)
 
