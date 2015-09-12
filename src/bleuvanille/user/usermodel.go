@@ -26,8 +26,8 @@ type User struct {
 // Users is a list of User
 type Users []User
 
-// NewUser creates a User instance
-func NewUser(email string, firstname string, lastname string, password string) (User, error) {
+// New creates a User instance
+func New(email string, firstname string, lastname string, password string) (User, error) {
 	var user User
 	if email == "" {
 		return user, errors.New("Cannot create user, email is missing")

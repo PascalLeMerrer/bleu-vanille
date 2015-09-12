@@ -60,14 +60,14 @@ func Create(context *echo.Context) error {
 		return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in POST body"))
 	}
 
-	user, err := NewUser(email, firstname, lastname, password)
+	user, err := New(email, firstname, lastname, password)
 
 	if err != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("User creation error"))
 	}
 
-	_, err = SaveUser(user)
+	_, err = Save(user)
 	if err != nil {
 		//TODO: see if an error code is available and could be used
 		if err, ok := err.(*pq.Error); ok {

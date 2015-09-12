@@ -8,7 +8,7 @@ import (
 )
 
 // SaveUser inserts a user into the database
-func SaveUser(user User) (User, error) {
+func Save(user User) (User, error) {
 	_, err := config.Db().Query("INSERT INTO users (id, email, firstname, lastname, hash, isadmin, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7);", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.CreatedAt)
 	return user, err
 }
