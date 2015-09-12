@@ -75,18 +75,34 @@ func main() {
 	//
 	// echoServer.SetHTTPErrorHandler(myHTTPErrorHandler)
 
+	declareStaticRoutes(echoServer)
+	declarePublicRoutes(echoServer)
+	declarePrivateRoutes(echoServer)
+	declareAdminRoutes(echoServer)
+
+	log.Printf("Server listening to HTTP requests on port %d", Port)
+
+	echoServer.Run(":" + strconv.Itoa(Port))
+}
+
+// static pages
+func declareStaticRoutes(echoServer *echo.Echo) {
 	echoServer.Static("/js/", "public/js")
 	echoServer.Static("/css/", "public/css")
 	echoServer.Static("/fonts/", "public/fonts")
 	echoServer.Static("/img/", "public/img")
+}
 
-	// public pages
+// public pages
+func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Get("/", LandingPage)
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
+}
 
-	// user Routes require a valid auth token
+// privates Routes require a valid user auth token
+func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes := echoServer.Group("/users")
 	userRoutes.Use(auth.JWTAuth())
 
@@ -94,16 +110,15 @@ func main() {
 	userRoutes.Post("/delete", user.Remove)
 	userRoutes.Put("/password", user.ChangePassword)
 	userRoutes.Get("/:userID/profile", user.Profile)
+}
 
-	// Admin routes require a valid auth token
+// Admin routes require a valid auth token AND the user to have the admin rights
+func declareAdminRoutes(echoServer *echo.Echo) {
+
 	// TODO: check user is Admin!
 	adminRoutes := echoServer.Group("/admin")
 	adminRoutes.Use(auth.JWTAuth())
 	// adminRoutes.Get("/contacts", contact.GetAll)
 	adminRoutes.Get("/contacts", contact.Get)
 	adminRoutes.Delete("/contacts", contact.Remove)
-
-	log.Printf("Server listening to HTTP requests on port %d", Port)
-
-	echoServer.Run(":" + strconv.Itoa(Port))
 }
