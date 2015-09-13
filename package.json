@@ -1,6 +1,6 @@
 {
-  "name": "ideerepas",
-  "description": "Idée Repas generates menus for everyday meals",
+  "name": "BleuVanille",
+  "description": "Bleu Vanille generates menus for everyday meals",
   "version": "0.1.0",
   "private": false,
   "author": "Pascal Le Merrer, Christophe Sauldubois",
@@ -15,11 +15,12 @@
   "scripts": {},
   "dependencies": {},
   "devDependencies": {
+    "apickli": "latest",
     "cssnext": "latest",
     "cucumber": "^0.5.2",
     "gulp": "latest",
-    "gulp-watch": "^4.3.2",
+    "gulp-cssnext": "^1.0.1",
     "gulp-cucumber": "latest",
-    "apickli": "latest"
+    "gulp-watch": "^4.3.2"
   }
 }
