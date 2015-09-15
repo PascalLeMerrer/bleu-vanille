@@ -27,7 +27,7 @@ func CreateDefault() {
 			log.Fatal(err)
 		}
 		admin.IsAdmin = true
-		_, err = Save(admin)
+		err = Save(admin)
 		if err, ok := err.(*pq.Error); ok {
 			if err.Code.Name() == "unique_violation" {
 				log.Fatal("User admin@bleuvanille.com but has no admin rights. WTF?!")
@@ -66,7 +66,7 @@ func Create(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, errors.New("User creation error"))
 	}
 
-	_, err = Save(user)
+	err = Save(user)
 	if err != nil {
 		//TODO: see if an error code is available and could be used
 		if err, ok := err.(*pq.Error); ok {
@@ -135,7 +135,7 @@ func Remove(context *echo.Context) error {
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
 
-	deleteErr := Delete(user)
+	deleteErr := Delete(*user)
 	if deleteErr != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with email: "+email))
@@ -164,10 +164,11 @@ func Login(context *echo.Context) error {
 		log.Println(err)
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
-	user.AuthToken = auth.GetEncodedToken()
+	var sessionID string
+	user.AuthToken, sessionID = auth.GetEncodedToken()
 	user.Hash = "" // dont return the hash, for security concerns
 
-	userSession, err := session.NewSession(user.ID, user.AuthToken, user.IsAdmin)
+	userSession, err := session.New(sessionID, user.ID, user.IsAdmin)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err)
 	}

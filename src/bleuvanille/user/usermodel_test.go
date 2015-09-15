@@ -7,20 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testEmail = "me@mail.org"
-const testFirstname = "John"
-const testLastname = "Doe"
-const testPassword = "Pa%%W0rD"
+const TestEmail = "me@mail.org"
+const TestFirstname = "John"
+const TestLastname = "Doe"
+const TestPassword = "Pa%%W0rD"
 
 func TestUserCreation(t *testing.T) {
-	user, userCreationError := New(testEmail, testFirstname, testLastname, testPassword)
+	user, userCreationError := New(TestEmail, TestFirstname, TestLastname, TestPassword)
 
 	assert.NoError(t, userCreationError, "User creation error.")
 	assert.NotNil(t, user, "User creation error.")
 
-	assert.Equal(t, testEmail, user.Email, "User email not set during user creation")
-	assert.Equal(t, testFirstname, user.Firstname, "User firstname not set during user creation")
-	assert.Equal(t, testLastname, user.Lastname, "User lastname not set during user creation")
+	assert.Equal(t, TestEmail, user.Email, "User email not set during user creation")
+	assert.Equal(t, TestFirstname, user.Firstname, "User firstname not set during user creation")
+	assert.Equal(t, TestLastname, user.Lastname, "User lastname not set during user creation")
 	assert.NotEmpty(t, user.Hash, "User password hash not set during user creation")
 	assert.NotEmpty(t, user.ID, "User ID not set during user creation")
 	assert.True(t, len(user.Hash) >= 8, "User password hash not long enough")

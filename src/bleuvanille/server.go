@@ -4,7 +4,9 @@ import (
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
+	"bleuvanille/session"
 	"bleuvanille/user"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -55,30 +57,11 @@ func main() {
 	}
 	echoServer.SetRenderer(templateRenderer)
 
-	// myHTTPErrorHandler := func(err error, c *echo.Context) {
-	// 	code := http.StatusInternalServerError
-	// 	msg := http.StatusText(code)
-	// 	if he, ok := err.(*echo.HTTPError); ok {
-	// 		code = he.Code()
-	// 		msg = he.Error()
-	// 	}
-	// 	fmt.Println(err)
-	// 	if echoServer.Debug() {
-	// 		msg = err.Error()
-	// 		fmt.Println(msg)
-	// 	}
-	// 	if !c.Response().Commited() {
-	// 		http.Error(c.Response(), msg, code)
-	// 	}
-	// 	log.Println(err)
-	// }
-	//
-	// echoServer.SetHTTPErrorHandler(myHTTPErrorHandler)
-
 	declareStaticRoutes(echoServer)
 	declarePublicRoutes(echoServer)
 	declarePrivateRoutes(echoServer)
 	declareAdminRoutes(echoServer)
+	addErrorHandler(echoServer)
 
 	log.Printf("Server listening to HTTP requests on port %d", Port)
 
@@ -105,6 +88,7 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes := echoServer.Group("/users")
 	userRoutes.Use(auth.JWTAuth())
+	userRoutes.Use(session.Middleware())
 
 	// echo does not accept Delete request with body so we use a Post instead
 	userRoutes.Post("/delete", user.Remove)
@@ -118,7 +102,36 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	// TODO: check user is Admin!
 	adminRoutes := echoServer.Group("/admin")
 	adminRoutes.Use(auth.JWTAuth())
-	// adminRoutes.Get("/contacts", contact.GetAll)
-	adminRoutes.Get("/contacts", contact.Get)
+	adminRoutes.Use(session.Middleware())
+	adminRoutes.Use(session.AdminMiddleware())
+	adminRoutes.Get("/contacts", contact.GetAll)
 	adminRoutes.Delete("/contacts", contact.Remove)
+}
+
+// Defines a custom error handler
+// Is only invoked by echo when the error occurs in the handlerFunction
+// and not when a middleware returns an error :(
+// TODO: see how to improve this
+func addErrorHandler(echoServer *echo.Echo) {
+
+	myHTTPErrorHandler := func(err error, context *echo.Context) {
+		fmt.Println("Custom error handler invoked")
+		code := http.StatusInternalServerError
+		message := http.StatusText(code)
+		if httpError, ok := err.(*echo.HTTPError); ok {
+			code = httpError.Code()
+			message = httpError.Error()
+		}
+		fmt.Println(err)
+		if echoServer.Debug() {
+			message = err.Error()
+			fmt.Println(message)
+		}
+		if !context.Response().Commited() {
+			http.Error(context.Response(), message, code)
+		}
+		log.Println(err)
+	}
+
+	echoServer.SetHTTPErrorHandler(myHTTPErrorHandler)
 }

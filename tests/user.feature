@@ -12,7 +12,7 @@ Feature:
       And response body path $.email should be user_test1@mail.org
       And response body path $.createdAt should be \w
 
-    Scenario: Sign up with existing email (creating an account)
+    Scenario: Sign up with already registered email should result in conflict
       Given I set body to email=user_test1@mail.org;password=PASSWORD;firstname=JOHN;lastname=DOE
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
       When I POST to /users
@@ -36,7 +36,7 @@ Feature:
       And I store the value of body path $.id as userId in scenario scope
       When I GET /users/`userId`/profile
       Then response code should be 200
-      # A COMPLETER
+      # TODO: to complete
 
 
     Scenario: Sign in with wrong email should fail
@@ -94,6 +94,14 @@ Feature:
   		And I POST to /users
   		Then response code should be 201
 
+    Scenario: Sign in with initial password
+      Given I set body to email=user_test2@mail.org;password=OLDPASSWORD
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      When I POST to /users/login
+      Then response code should be 200
+      And response header Authorization should exist
+      And I store the value of header Authorization as access token
+
     Scenario: Change password
       Given I set body to email=user_test2@mail.org;oldPassword=OLDPASSWORD;newPassword=NEWPASSWORD
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
@@ -120,3 +128,5 @@ Feature:
       Then response code should be 204
       And response header Set-Cookie should not exist
       And response body should not contain token
+
+    # TODO I should not be able to delete another account than mine

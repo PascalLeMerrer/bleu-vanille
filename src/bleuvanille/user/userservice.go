@@ -7,10 +7,10 @@ import (
 	"log"
 )
 
-// SaveUser inserts a user into the database
-func Save(user User) (User, error) {
+// Save inserts a user into the database
+func Save(user User) error {
 	_, err := config.Db().Query("INSERT INTO users (id, email, firstname, lastname, hash, isadmin, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7);", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.CreatedAt)
-	return user, err
+	return err
 }
 
 // SavePassword updates the password of a given user into the database
@@ -69,7 +69,7 @@ func LoadAll() (*Users, error) {
 }
 
 // Delete delete the given user from the database
-func Delete(user *User) error {
+func Delete(user User) error {
 	_, err := config.Db().Query("DELETE FROM users WHERE email=$1;", user.Email)
 
 	if err != nil {

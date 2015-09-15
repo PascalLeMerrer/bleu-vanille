@@ -15,8 +15,8 @@ type Contact struct {
 // Contacts is a list of Contact
 type Contacts []Contact
 
-// NewContact creates a Contact instance
-func NewContact(email string) (Contact, error) {
+// New creates a Contact instance
+func New(email string) (Contact, error) {
 	var contact Contact
 	if email == "" {
 		errorMessage := "Cannot create contact, email is missing"

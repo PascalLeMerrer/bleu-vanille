@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/lib/pq"
 )
 
 type errorMessage struct {
@@ -29,34 +30,21 @@ func Create(context *echo.Context) error {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in POST body"})
 	}
 	//TODO check email is valid
-	contact, err := NewContact(email)
+	contact, err := New(email)
 	if err != nil {
 		log.Printf("Contact create error %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
 	}
 
 	_, err = Save(contact)
-	if err != nil {
-		log.Printf("Contact save error %v\n", err)
+	if err, ok := err.(*pq.Error); ok {
+		if err.Code.Name() == "unique_violation" {
+			return context.JSON(http.StatusConflict, errorMessage{"Contact is already registered"})
+		}
+		log.Printf("Error: cannot save contact with email: %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
 	}
-
 	return context.JSON(http.StatusCreated, contact)
-}
-
-// Get returns the entry for a given email if any
-func Get(context *echo.Context) error {
-
-	email := context.Query("email")
-	if email == "" {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in GET request"})
-	}
-
-	var contact, err = LoadByEmail(email)
-	if err != nil {
-		return context.NoContent(http.StatusNotFound)
-	}
-	return context.JSON(http.StatusOK, contact)
 }
 
 // Remove deletes the contact for a given email

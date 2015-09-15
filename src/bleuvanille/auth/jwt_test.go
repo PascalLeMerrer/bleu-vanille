@@ -7,9 +7,12 @@ import (
 )
 
 func TestTokenGenerationAndExtraction(t *testing.T) {
-	encodedToken := GetEncodedToken()
+	encodedToken, sessionID := GetEncodedToken()
 	assert.NotEmpty(t, encodedToken, "No encoded token generated.")
 	assert.True(t, len(encodedToken) >= 16, "invalid ")
+
+	assert.NotEmpty(t, sessionID, "No sessionID generated.")
+	assert.True(t, len(sessionID) >= 16, "invalid ")
 
 	token, err := ExtractToken(encodedToken)
 	assert.NoError(t, err, "Error while generated token.")

@@ -2,11 +2,13 @@ package auth
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	"github.com/twinj/uuid"
 )
 
 const (
@@ -27,19 +29,20 @@ func JWTAuth() echo.HandlerFunc {
 			return nil
 		}
 
-		auth := context.Request().Header.Get("Authorization")
+		header := context.Request().Header.Get("Authorization")
 
-		length := len(Bearer)
+		prefixLength := len(Bearer)
 		httpError := echo.NewHTTPError(http.StatusUnauthorized)
-
-		if len(auth) > length+1 && auth[:length] == Bearer {
-			token, err := ExtractToken(auth[length+1:])
+		if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
+			encodedToken := header[prefixLength+1:]
+			token, err := ExtractToken(encodedToken)
 			if err == nil && token.Valid {
-				// Store token claims in echo.Context
-				context.Set("claims", token.Claims)
+				// Store token data (=claims) in echo.Context
+				context.Set("sessionId", token.Claims["id"])
 				return nil
 			}
 		}
+		log.Printf("DEBUG: Invalid token. Header is %v\n", header)
 		return httpError
 	}
 }
@@ -48,7 +51,7 @@ func JWTAuth() echo.HandlerFunc {
 func ExtractToken(signedString string) (*jwt.Token, error) {
 	return jwt.Parse(signedString, func(token *jwt.Token) (interface{}, error) {
 
-		// Always check the signing method
+		// Always check the signing method, otherwise there is a possible exploit
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
@@ -58,11 +61,13 @@ func ExtractToken(signedString string) (*jwt.Token, error) {
 	})
 }
 
-//GetEncodedToken create a valid JWT token
-func GetEncodedToken() string {
+//GetEncodedToken generates a valid JWT token, and a unique session Id
+func GetEncodedToken() (string, string) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Header["typ"] = "JWT"
 	token.Claims["exp"] = time.Now().Add(time.Hour * TokenDuration).Unix()
+	sessionID := uuid.NewV4().String()
+	token.Claims["id"] = sessionID
 	encodedToken, _ := token.SignedString([]byte(SigningKey))
-	return encodedToken
+	return encodedToken, sessionID
 }

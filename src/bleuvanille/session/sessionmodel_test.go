@@ -14,20 +14,22 @@ const value1 = "a string"
 const value2 = true
 const value3 = 123
 const testUserID = "ABCD123"
-const testAuthToken = "dlùaskda¨$ùùllk1"
+const testSessionID = "dlùaskda¨$ùùllk1"
 const testIsAdmin = false
 
 func TestSessionCreation(t *testing.T) {
 
-	session, sessionCreationError := NewSession(testUserID, testAuthToken, testIsAdmin)
+	session, sessionCreationError := New(testSessionID, testUserID, testIsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
+	assert.Equal(t, testSessionID, session.SessionID, "SessionID not set in session.")
 	assert.Equal(t, testUserID, session.UserID, "User not set in session.")
-	assert.True(t, session.ID.Size() >= 16, "Session UUID is not long enough.")
+	assert.Equal(t, testUserID, session.UserID, "User not set in session.")
+	assert.False(t, session.IsAdmin, "User should not declared as admin in session.")
 	assert.WithinDuration(t, time.Now().Add(time.Hour), session.ExpiresAt, time.Minute, "Invalid session duration.")
 }
 
 func TestSessionValueStore(t *testing.T) {
-	session, sessionCreationError := NewSession(testUserID, testAuthToken, testIsAdmin)
+	session, sessionCreationError := New(testSessionID, testUserID, testIsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
 	assert.NotNil(t, session, "Session creation error.")
 
