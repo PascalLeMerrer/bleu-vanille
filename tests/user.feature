@@ -73,6 +73,7 @@ Feature:
       And I store the value of header Authorization as access token
       And I set bearer token
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set body to password=mypassword
       When I POST to /users/delete
       Then response code should be 204
       And response header Set-Cookie should not exist
@@ -120,13 +121,18 @@ Feature:
       And response header Authorization should exist
       And I store the value of header Authorization as access token
 
+    Scenario: I should not be allowed to delete my account with a wrong password
+      Given I set body to password=BADPASSWORD
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set bearer token
+      When I POST to /users/delete
+      Then response code should be 401
+
     Scenario: Delete the account used for password change
-      Given I set body to email=user_test2@mail.org;password=NEWPASSWORD
+      Given I set body to password=NEWPASSWORD
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
       And I set bearer token
       When I POST to /users/delete
       Then response code should be 204
       And response header Set-Cookie should not exist
       And response body should not contain token
-
-    # TODO I should not be able to delete another account than mine

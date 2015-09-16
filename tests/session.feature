@@ -28,14 +28,15 @@ Feature:
     And response header Authorization should exist
     And I store the value of header Authorization as access token
 
-    Scenario: Cleanup test data - Reconnect then delete account used for session test
-      Given I set body to email=session_test1@mail.org;password=PASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
-      And I POST to /users/login
-      Then response code should be 200
-      And I store the value of header Authorization as access token
-      And I set bearer token
-      When I POST to /users/delete
-      Then response code should be 204
+  Scenario: Cleanup test data - Reconnect then delete account used for session test
+    Given I set body to email=session_test1@mail.org;password=PASSWORD
+    And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+    And I POST to /users/login
+    Then response code should be 200
+    And I store the value of header Authorization as access token
+    And I set bearer token
+    And I set body to password=PASSWORD
+    When I POST to /users/delete
+    Then response code should be 204
 
   # TODO Test logout then delete test account

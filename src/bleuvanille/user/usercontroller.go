@@ -115,16 +115,17 @@ func Remove(context *echo.Context) error {
 
 	//TODO many lines to be factorised with login
 	// try to use this pattern: http://talks.golang.org/2013/go4python.slide#37
-	email, password := context.Form("email"), context.Form("password")
-	if email == "" {
-		log.Println("Missing email parameter in DELETE request")
-		return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in DELETE request"))
+	userID := context.Get("session").(*session.Session).UserID
+	if userID == "" {
+		log.Println("Missing userID in session")
+		return context.JSON(http.StatusUnauthorized, errors.New("Maybe your session expired. Try to disconnect then reconnect."))
 	}
+	password := context.Form("password")
 	if password == "" {
 		log.Println("Missing password parameter in DELETE request")
 		return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in DELETE request"))
 	}
-	user, err := LoadByEmail(email)
+	user, err := LoadByID(userID)
 
 	if err != nil {
 		log.Println(err)
@@ -138,7 +139,7 @@ func Remove(context *echo.Context) error {
 	deleteErr := Delete(*user)
 	if deleteErr != nil {
 		log.Println(err)
-		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with email: "+email))
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+userID))
 	}
 	return context.NoContent(http.StatusNoContent)
 }
