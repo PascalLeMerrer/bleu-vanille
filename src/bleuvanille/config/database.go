@@ -13,7 +13,6 @@ var db *sql.DB
 // DatabaseInit opens a connection to postgres
 func DatabaseInit() {
 	var err error
-	//TODO extract password and database name in global config file
 	connexionString := fmt.Sprintf("port=%d user=%s password=%s dbname=%s sslmode=disable", DatabasePort, DatabaseUser, DatabasePassword, DatabaseName)
 	db, err = sql.Open("postgres", connexionString)
 	if err != nil {

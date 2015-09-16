@@ -99,7 +99,6 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 // Admin routes require a valid auth token AND the user to have the admin rights
 func declareAdminRoutes(echoServer *echo.Echo) {
 
-	// TODO: check user is Admin!
 	adminRoutes := echoServer.Group("/admin")
 	adminRoutes.Use(auth.JWTAuth())
 	adminRoutes.Use(session.Middleware())
