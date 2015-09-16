@@ -2,6 +2,7 @@ package config
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/lib/pq" // loaded for it's side effects (defines the driver to be used)
@@ -13,7 +14,8 @@ var db *sql.DB
 func DatabaseInit() {
 	var err error
 	//TODO extract password and database name in global config file
-	db, err = sql.Open("postgres", "port=5431 user=devidrepas dbname=ideerepas sslmode=disable password=dm34zq7JHz21")
+	connexionString := fmt.Sprintf("port=%d user=%s password=%s dbname=%s sslmode=disable", DatabasePort, DatabaseUser, DatabasePassword, DatabaseName)
+	db, err = sql.Open("postgres", connexionString)
 	if err != nil {
 		log.Fatal(err)
 	}
