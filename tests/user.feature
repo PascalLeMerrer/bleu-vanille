@@ -38,6 +38,11 @@ Feature:
       Then response code should be 200
       # TODO: to complete
 
+    Scenario: Sign in with without email should fail
+      Given I set body to password=mypassword
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      When I POST to /users/login
+      Then response code should be 400
 
     Scenario: Sign in with wrong email should fail
       Given I set body to email=fake@mail.org;password=mypassword
@@ -104,7 +109,7 @@ Feature:
       And I store the value of header Authorization as access token
 
     Scenario: Change password
-      Given I set body to email=user_test2@mail.org;oldPassword=OLDPASSWORD;newPassword=NEWPASSWORD
+      Given I set body to email=user_test2@mail.org;password=OLDPASSWORD;newPassword=NEWPASSWORD
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
       And I set bearer token
   		And I PUT /users/password
