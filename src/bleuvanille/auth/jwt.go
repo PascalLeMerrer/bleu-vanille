@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bleuvanille/session"
 	"fmt"
 	"log"
 	"net/http"
@@ -36,10 +37,13 @@ func JWTAuth() echo.HandlerFunc {
 		if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
 			encodedToken := header[prefixLength+1:]
 			token, err := ExtractToken(encodedToken)
-			if err == nil && token.Valid {
-				// Store token data (=claims) in echo.Context
-				context.Set("sessionId", token.Claims["id"])
-				return nil
+			if err == nil {
+				if token.Valid {
+					// Store token data (=claims) in echo.Context
+					context.Set("sessionId", token.Claims["id"])
+					return nil
+				}
+				deleteExpiredSession(token)
 			}
 		}
 		log.Printf("DEBUG: Invalid token. Header is %v\n", header)
@@ -47,7 +51,13 @@ func JWTAuth() echo.HandlerFunc {
 	}
 }
 
-//ExtractToken decodes the token from a signed string representing the encoded token
+func deleteExpiredSession(token *jwt.Token) {
+	if sessionID, ok := token.Claims["id"].(string); ok {
+		session.Delete(sessionID)
+	}
+}
+
+// ExtractToken decodes the token from a signed string representing the encoded token
 func ExtractToken(signedString string) (*jwt.Token, error) {
 	return jwt.Parse(signedString, func(token *jwt.Token) (interface{}, error) {
 

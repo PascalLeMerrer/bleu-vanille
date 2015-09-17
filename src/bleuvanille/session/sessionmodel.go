@@ -1,7 +1,6 @@
 package session
 
 import (
-	"bleuvanille/auth"
 	"bleuvanille/config"
 	"errors"
 	"log"
@@ -34,19 +33,6 @@ func New(sessionID string, userID string, isAdmin bool) (Session, error) {
 	session = Session{sessionID, userID, isAdmin, stringValueStore, expirationDate}
 
 	return session, nil
-}
-
-//IsAuthenticated returns true if the user is connected
-func (session *Session) IsAuthenticated() bool {
-	if session.SessionID == "" {
-		return false
-	}
-	token, err := auth.ExtractToken(session.SessionID)
-	if err != nil || token == nil {
-		return false
-	}
-
-	return token.Valid
 }
 
 // Set stores a value in the session
