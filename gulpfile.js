@@ -4,8 +4,8 @@ var watch   = require('gulp-watch');
 var cucumber = require('gulp-cucumber');
 
 gulp.task('styles', function() {
-  gulp.src("./src/server/public/css/marketing.css")
-  .pipe(watch("./src/server/public/css/marketing.css"))
+  gulp.src("./src/bleuvanille/public/css/marketing.css")
+  .pipe(watch("./src/bleuvanille/public/css/marketing.css"))
   .pipe(cssnext({
     compress: false,  // default is false
   }))
@@ -13,14 +13,14 @@ gulp.task('styles', function() {
 });
 
 gulp.task('images', function() {
-  gulp.src('./src/server/public/img/**/*.*', {overwrite: false})
-  .pipe(watch('./src/server/public/img/**/*.*'))
+  gulp.src('./src/bleuvanille/public/img/**/*.*', {overwrite: false})
+  .pipe(watch('./src/bleuvanille/public/img/**/*.*'))
     .pipe(gulp.dest('./public/img'));
 });
 
 gulp.task('js', function() {
-  gulp.src('./src/server/public/js/**/*.js', {overwrite: true})
-    .pipe(watch('./src/server/public/js/**/*.js'))
+  gulp.src('./src/bleuvanille/public/js/**/*.js', {overwrite: true})
+    .pipe(watch('./src/bleuvanille/public/js/**/*.js'))
     .pipe(gulp.dest('./public/js'));
 });
 
