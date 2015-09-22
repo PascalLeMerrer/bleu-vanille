@@ -25,7 +25,6 @@ Feature:
       Then response code should be 200
       And response body should be valid json
       And response header Authorization should exist
-      And response body path $.token should be \w
 
     Scenario: After I signed in, I should be able to get my profile
       Given I set body to email=user_test1@mail.org;password=mypassword
@@ -122,7 +121,6 @@ Feature:
       Then response code should be 200
       And response body should be valid json
       And response header Set-Cookie should not exist
-      And response body path $.token should be \w
       And response header Authorization should exist
       And I store the value of header Authorization as access token
 
