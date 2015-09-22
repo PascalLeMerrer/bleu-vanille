@@ -15,7 +15,7 @@
   "scripts": {},
   "dependencies": {},
   "devDependencies": {
-    "apickli": "latest",
+    "apickli": "https://github.com/PascalLeMerrer/apickli/master",
     "cssnext": "latest",
     "cucumber": "^0.5.2",
     "gulp": "latest",
