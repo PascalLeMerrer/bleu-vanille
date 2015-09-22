@@ -13,14 +13,14 @@ import (
 
 // User is any type of registered user
 type User struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Hash      string
-	AuthToken string `json:"token"`
-	IsAdmin   bool
-	CreatedAt time.Time `json:"createdAt"`
+	ID         string `json:"id"`
+	Email      string `json:"email"`
+	Firstname  string `json:"firstname"`
+	Lastname   string `json:"lastname"`
+	Hash       string
+	IsAdmin    bool
+	CreatedAt  time.Time `json:"createdAt"`
+	ResetToken string
 }
 
 // Users is a list of User
@@ -39,7 +39,6 @@ func New(email string, firstname string, lastname string, password string) (User
 	user.Email = email
 	user.Firstname = firstname
 	user.Lastname = lastname
-	user.IsAdmin = false
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err)

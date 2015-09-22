@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bleuvanille/config"
 	"bleuvanille/session"
 	"fmt"
 	"log"
@@ -17,9 +18,6 @@ const (
 	Bearer = "Bearer"
 	// SigningKey is a secret
 	SigningKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-
-	// TokenDuration defines the time to live of the token, in hours
-	TokenDuration = 96
 )
 
 // JWTAuth is a JSON Web Token middleware
@@ -31,7 +29,7 @@ func JWTAuth() echo.HandlerFunc {
 		}
 
 		header := context.Request().Header.Get("Authorization")
-
+		log.Printf("header: %v\n", header)
 		prefixLength := len(Bearer)
 		httpError := echo.NewHTTPError(http.StatusUnauthorized)
 		if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
@@ -40,7 +38,11 @@ func JWTAuth() echo.HandlerFunc {
 			if err == nil {
 				if token.Valid {
 					// Store token data (=claims) in echo.Context
+					// an aotuehticated user token contains a session Id
 					context.Set("sessionId", token.Claims["id"])
+					// a password reset token will contain an email
+					context.Set("email", token.Claims["email"])
+					log.Printf("email: %v\n", token.Claims["email"])
 					return nil
 				}
 				deleteExpiredSession(token)
@@ -71,13 +73,23 @@ func ExtractToken(signedString string) (*jwt.Token, error) {
 	})
 }
 
-//GetEncodedToken generates a valid JWT token, and a unique session Id
-func GetEncodedToken() (string, string) {
+// GetSessionToken generates a valid JWT token, and a unique session Id
+func GetSessionToken() (string, string) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Header["typ"] = "JWT"
-	token.Claims["exp"] = time.Now().Add(time.Hour * TokenDuration).Unix()
+	token.Claims["exp"] = time.Now().Add(time.Hour * config.SessionTokenDuration).Unix()
 	sessionID := uuid.NewV4().String()
 	token.Claims["id"] = sessionID
 	encodedToken, _ := token.SignedString([]byte(SigningKey))
 	return encodedToken, sessionID
+}
+
+// GetResetToken generates a short lived JWT token, including the given email address
+func GetResetToken(email string) string {
+	token := jwt.New(jwt.SigningMethodHS256)
+	token.Header["typ"] = "JWT"
+	token.Claims["exp"] = time.Now().Add(time.Minute * config.ResetTokenDuration).Unix()
+	token.Claims["email"] = email
+	encodedToken, _ := token.SignedString([]byte(SigningKey))
+	return encodedToken
 }

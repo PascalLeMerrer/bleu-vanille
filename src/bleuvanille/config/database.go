@@ -35,7 +35,7 @@ func createContactsTable() {
 
 // Create Table users if not exists
 func createUsersTable() {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS users(id varchar(50), email varchar(50) NOT NULL UNIQUE, firstname varchar(50), lastname varchar(50), hash varchar(100) NOT NULL, isadmin boolean, created_at timestamp default NULL, constraint pk_users primary key(id))")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS users(id varchar(50), email varchar(50) NOT NULL UNIQUE, firstname varchar(50), lastname varchar(50), hash varchar(100) NOT NULL, isadmin boolean, resettoken varchar(255), created_at timestamp default NULL, constraint pk_users primary key(id))")
 
 	if err != nil {
 		log.Fatal(err)

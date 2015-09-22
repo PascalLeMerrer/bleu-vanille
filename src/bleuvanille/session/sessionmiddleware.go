@@ -12,7 +12,11 @@ import (
 // It also deletes session for expired token
 func Middleware() echo.HandlerFunc {
 	return func(context *echo.Context) error {
-		sessionID := context.Get("sessionId").(string)
+		rawSessionID := context.Get("sessionId")
+		if rawSessionID == nil {
+			return echo.NewHTTPError(http.StatusUnauthorized)
+		}
+		sessionID := rawSessionID.(string)
 		session, error := GetByID(sessionID)
 		if error != nil {
 			fmt.Printf("DEBUG: Session %v not found", sessionID)

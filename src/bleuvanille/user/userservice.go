@@ -9,13 +9,19 @@ import (
 
 // Save inserts a user into the database
 func Save(user User) error {
-	_, err := config.Db().Query("INSERT INTO users (id, email, firstname, lastname, hash, isadmin, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7);", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.CreatedAt)
+	_, err := config.Db().Query("INSERT INTO users (id, email, firstname, lastname, hash, isadmin, resettoken, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.ResetToken, user.CreatedAt)
+	return err
+}
+
+// Update update a user profile into the database
+func Update(user User) error {
+	_, err := config.Db().Query("UPDATE users SET email = $2, firstname = $3, lastname = $4, hash = $5, isadmin = $6, resettoken = $7 WHERE id=$1;", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.ResetToken)
 	return err
 }
 
 // SavePassword updates the password of a given user into the database
 func SavePassword(user *User, newPassword string) error {
-	_, err := config.Db().Query("UPDATE users SET hash = $1 WHERE email = $2;", newPassword, user.Email)
+	_, err := config.Db().Query("UPDATE users SET hash = $1 WHERE id = $2;", newPassword, user.ID)
 	return err
 }
 
@@ -23,7 +29,7 @@ func SavePassword(user *User, newPassword string) error {
 func LoadByEmail(email string) (*User, error) {
 	var user User
 	row := config.Db().QueryRow("SELECT * FROM users WHERE email = $1;", email)
-	err := row.Scan(&user.ID, &user.Email, &user.Firstname, &user.Lastname, &user.Hash, &user.IsAdmin, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.Firstname, &user.Lastname, &user.Hash, &user.IsAdmin, &user.ResetToken, &user.CreatedAt)
 
 	return &user, err
 }
@@ -32,7 +38,7 @@ func LoadByEmail(email string) (*User, error) {
 func LoadByID(ID string) (*User, error) {
 	var user User
 	row := config.Db().QueryRow("SELECT * FROM users WHERE id = $1;", ID)
-	err := row.Scan(&user.ID, &user.Email, &user.Firstname, &user.Lastname, &user.Hash, &user.IsAdmin, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.Firstname, &user.Lastname, &user.Hash, &user.IsAdmin, &user.ResetToken, &user.CreatedAt)
 
 	return &user, err
 }

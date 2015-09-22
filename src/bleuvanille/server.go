@@ -19,11 +19,6 @@ import (
 	//"github.com/lib/pq"
 )
 
-//Port on which the server is listening to
-const (
-	Port = 4000
-)
-
 // LandingPage displays the landing page
 func LandingPage(context *echo.Context) error {
 	return context.Render(http.StatusOK, "index", nil)
@@ -61,11 +56,12 @@ func main() {
 	declarePublicRoutes(echoServer)
 	declarePrivateRoutes(echoServer)
 	declareAdminRoutes(echoServer)
+	declareSpecialRoutes(echoServer)
 	addErrorHandler(echoServer)
 
-	log.Printf("Server listening to HTTP requests on port %d", Port)
+	log.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
-	echoServer.Run(":" + strconv.Itoa(Port))
+	echoServer.Run(":" + strconv.Itoa(config.HostPort))
 }
 
 // static pages
@@ -82,9 +78,11 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
+	echoServer.Post("/users/sendresetlink", user.SendResetLink)
+	echoServer.Get("/users/resetform", user.DisplayResetForm)
 }
 
-// privates Routes require a valid user auth token
+// privates Routes require a valid user auth token and a sessionID
 func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes := echoServer.Group("/users")
 	userRoutes.Use(auth.JWTAuth())
@@ -94,6 +92,13 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes.Post("/delete", user.Remove)
 	userRoutes.Put("/password", user.ChangePassword)
 	userRoutes.Get("/:userID/profile", user.Profile)
+}
+
+// special Routes require a valid user auth token but no sessionID
+func declareSpecialRoutes(echoServer *echo.Echo) {
+	specialRoutes := echoServer.Group("/special")
+	specialRoutes.Use(auth.JWTAuth())
+	specialRoutes.Post("/resetpassword", user.ResetPassword)
 }
 
 // Admin routes require a valid auth token AND the user to have the admin rights
