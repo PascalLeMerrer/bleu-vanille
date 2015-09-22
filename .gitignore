@@ -5,5 +5,7 @@ gulpfile.old.js
 httbin.feature
 node_modules
 pkg
-public
+/public/
+!src/public/
+
 src/bleuvanille/bleuvanille
