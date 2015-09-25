@@ -6,17 +6,15 @@ import (
 	"bleuvanille/contact"
 	"bleuvanille/session"
 	"bleuvanille/user"
+	"bleuvanille/log"
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-
-	//"github.com/lib/pq"
 )
 
 // LandingPage displays the landing page
@@ -39,13 +37,15 @@ func main() {
 
 	config.DatabaseInit()
 	user.CreateDefault()
-
+	
 	echoServer := echo.New()
 	echoServer.SetDebug(true)
 	echoServer.ColoredLog(true)
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())
+	echoServer.Use(log.Middleware());
+
 	// precompile templates
 	templateRenderer := &Template{
 		templates: template.Must(template.ParseGlob("src/bleuvanille/templates/*.html")),
@@ -59,7 +59,8 @@ func main() {
 	declareSpecialRoutes(echoServer)
 	addErrorHandler(echoServer)
 
-	log.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
+
+	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
 	echoServer.Run(":" + strconv.Itoa(config.HostPort))
 }
@@ -126,15 +127,12 @@ func addErrorHandler(echoServer *echo.Echo) {
 			code = httpError.Code()
 			message = httpError.Error()
 		}
-		fmt.Println(err)
-		if echoServer.Debug() {
-			message = err.Error()
-			fmt.Println(message)
-		}
+
+		log.Error(context, err.Error())
+	
 		if !context.Response().Commited() {
 			http.Error(context.Response(), message, code)
 		}
-		log.Println(err)
 	}
 
 	echoServer.SetHTTPErrorHandler(myHTTPErrorHandler)
