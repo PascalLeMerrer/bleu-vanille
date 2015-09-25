@@ -9,3 +9,7 @@ pkg
 !src/public/
 
 src/bleuvanille/bleuvanille
+.profile_local
+.project
+nohup.out
+
