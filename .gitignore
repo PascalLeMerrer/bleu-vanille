@@ -9,3 +9,5 @@ pkg
 !src/public/
 
 src/bleuvanille/bleuvanille
+
+npm-debug.log
