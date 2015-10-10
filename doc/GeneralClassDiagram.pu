@@ -1,0 +1,30 @@
+@startuml
+Catégorie "1" o-- "0..*" Catégorie : "Parent de"
+Ingrédient "0..*" o-- "0..*" Catégorie
+Recette "0..*" o-- "0..*" Catégorie
+Ingrédient "0..*" *-- "0..*" Tag
+Ingrédient "1" *-- "0..*" Conditionnement
+Ingrédient *-- Nutriment
+Recette o-- "1..*" Ingrédient
+Recette "0..*" o-- "0..*" Recette : Accompagne, Variante, Proximite
+Recette *-- Nutriment
+Repas *-- Nutriment
+Réalisation o-- "0..*" Recette
+Repas  o-- "0..*" Réalisation
+Repas  o-- Menu : Possède
+Utilisateur o-- "0..x" Recette : Favorites, Notées, Créés, Réalisées
+Pro --|> Utilisateur
+Admin --|> Utilisateur
+Cuisinier --|> Utilisateur
+Utilisateur --|> Convive
+Convive o-- "0..*" Ingrédient : "N'aime pas, Aime, Allergique"
+Cuisinier "0..*" o-- "0..*" Groupe : "Est cuisinier du "
+Convive "0..*" o-- "0..*" Groupe : "Appartient"
+Groupe o-- "0..*" Repas
+Groupe o-- "0..*" Ingrédient : "Achète, Trouve difficilement, Possède habituellement"
+"Liste de courses" "0..*" o-- "0..*" Ingrédient : "Contient"
+"Liste de courses" "0..*" o-- "0..*" "Achat non alimentaire" : "Contient"
+"Liste de courses" "0..*" o-- "0..*" "Pro" : "Est livrée par"
+"Liste de courses" "0..*" o-- "0..*" Repas : "Contient"
+"Liste de courses" o-- "0..*" Utilisateur : "Appartient"
+@enduml
