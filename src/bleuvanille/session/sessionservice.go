@@ -15,7 +15,6 @@ func Save(sess Session) error {
 	if err != nil {
 		log.Printf("Error: cannot save session with ID %v, userID %v, isAdmin %v, ExpiresAt %v\n", sess.SessionID, sess.UserID, sess.IsAdmin, sess.ExpiresAt)
 	}
-
 	return err
 }
 
@@ -25,7 +24,6 @@ func GetByID(ID string) (*Session, error) {
 	var sess Session
 	row := config.Db().QueryRow("SELECT * FROM sessions WHERE id = $1;", ID)
 	err := row.Scan(&sess.SessionID, &sess.UserID, &sess.IsAdmin, &sess.ExpiresAt)
-
 	return &sess, err
 }
 

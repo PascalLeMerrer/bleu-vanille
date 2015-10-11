@@ -5,16 +5,25 @@ import (
 	"bleuvanille/config"
 	"bleuvanille/mail"
 	"bleuvanille/session"
+	"bytes"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
+	"text/template"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo"
 )
+
+type passwordResetData struct {
+	From  string
+	To    string
+	Host  string
+	Port  int
+	Token string
+}
 
 // CreateDefault creates a default admin account if it does not exist
 func CreateDefault() {
@@ -103,7 +112,6 @@ func GetAll(context *echo.Context) error {
 
 // Remove removes the user account for a given email
 func Remove(context *echo.Context) error {
-
 	userID := context.Get("session").(*session.Session).UserID
 	if userID == "" {
 		log.Println("Missing userID in session")
@@ -197,7 +205,6 @@ var ChangePassword = emailAndPasswordRequired(
 
 // ResetPassword updates the password of the authenticated user without proving the old one
 func ResetPassword(context *echo.Context) error {
-	log.Println("ResetPassword")
 	newPassword := context.Form("password")
 	var email string
 	var ok bool
@@ -237,21 +244,23 @@ var SendResetLink = emailRequired(
 			return context.JSON(http.StatusNotFound, errors.New("Cannot find user for email "+email))
 		}
 		user.ResetToken = auth.GetResetToken(email)
+		log.Printf("reset token: %v\n", user.ResetToken)
 		err = Update(*user)
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot save password reset token for user "+email))
 		}
-		// TODO Use a template
-		resetLink := fmt.Sprintf("To: %v\r\n"+
-			"Subject: Password reset\r\n"+
-			"\r\n<!DOCTYPE html><html><body><a href=\"http://%v:%v/users/resetform?token=%v\">Reset Password</a></body></html>",
-			email,
-			config.HostName,
-			config.HostPort,
-			user.ResetToken)
-		log.Println(resetLink)
-		err = mail.Send(email, []byte(resetLink))
+		data := passwordResetData{config.NoReplyAddress, email, config.HostName, config.HostPort, user.ResetToken}
+		emailTemplateTree := template.New("resetEmailTemplate")
+		emailTemplateCollection := template.Must(emailTemplateTree.ParseFiles("src/bleuvanille/templates/PasswordReset.email"))
+
+		var emailBody = new(bytes.Buffer)
+
+		t := emailTemplateCollection.Templates()[0]
+
+		err = t.Execute(emailBody, data)
+
+		err = mail.Send(email, emailBody.Bytes())
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot send password reset email to user "+email))

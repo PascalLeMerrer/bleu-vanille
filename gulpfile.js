@@ -24,6 +24,12 @@ gulp.task('js', function() {
     .pipe(gulp.dest('./public/js'));
 });
 
+gulp.task('html', function() {
+  gulp.src('./src/bleuvanille/public/html/**/*.html', {overwrite: true})
+    .pipe(watch('./src/bleuvanille/public/html/**/*.html'))
+    .pipe(gulp.dest('./public/html'));
+});
+
 
 gulp.task('test', function() {
     return gulp.src('tests/*')
