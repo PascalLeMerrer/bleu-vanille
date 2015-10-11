@@ -4,9 +4,14 @@ $(document).ready(function() {
   $('#error-alert').hide();
   initScrollspy();
 
-  $('#menuButton').click(function(e) {
+  addScroll('#menuButton')
+  addScroll('#arrowToMenu')
+});
+
+function addScroll(id) {
+  $(id).click(function(e) {
     topMenu = $("#top-menu"),
-    topMenuHeight = topMenu.outerHeight() + 15;
+      topMenuHeight = topMenu.outerHeight() + 15;
 
     var offsetTop = $('#menu').offset().top - topMenuHeight + 1;
     $('html, body').stop().animate({
@@ -14,8 +19,7 @@ $(document).ready(function() {
     }, 600);
     e.preventDefault();
   });
-});
-
+}
 
 /* -------------------------------------------------------------------------------------------*/
 /* Highlights the current menu item                                                           */
