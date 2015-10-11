@@ -88,7 +88,11 @@ $("#emailRegistrationForm").submit(function(event) {
       $('#success-alert').show().delay(2000).fadeOut(1000);
     });
     posting.fail(function(response) {
-      $('#error-alert').text("Une erreur s'est produite. Veuillez réessayer dans quelques minutes.")
+      if (response.status == 409) {
+        $('#error-alert').text("Vous êtes déjà inscrit.")
+      } else {
+        $('#error-alert').text("Une erreur s'est produite. Veuillez réessayer dans quelques minutes. Si l'erreur persiste, prévenez-nous à " + contactEmail)
+      }
       $('#error-alert').show().delay(2000).fadeOut(1000);
     });
   } else {
