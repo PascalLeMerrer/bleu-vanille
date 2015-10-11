@@ -8,8 +8,10 @@ import (
 	"bytes"
 	"errors"
 	"log"
+	"math/rand"
 	"net/http"
 	"text/template"
+	"time"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -17,13 +19,23 @@ import (
 	"github.com/labstack/echo"
 )
 
+// data used to fill the password reset email template
 type passwordResetData struct {
-	From  string
-	To    string
-	Host  string
-	Port  int
-	Token string
+	From     string
+	To       string
+	Host     string
+	Port     int
+	Token    string
+	Now      string
+	Boundary string
 }
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
 
 // CreateDefault creates a default admin account if it does not exist
 func CreateDefault() {
@@ -244,13 +256,13 @@ var SendResetLink = emailRequired(
 			return context.JSON(http.StatusNotFound, errors.New("Cannot find user for email "+email))
 		}
 		user.ResetToken = auth.GetResetToken(email)
-		log.Printf("reset token: %v\n", user.ResetToken)
 		err = Update(*user)
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot save password reset token for user "+email))
 		}
-		data := passwordResetData{config.NoReplyAddress, email, config.HostName, config.HostPort, user.ResetToken}
+
+		data := passwordResetData{config.NoReplyAddress, email, config.HostName, config.HostPort, user.ResetToken, time.Now().String(), randomString(16)}
 		emailTemplateTree := template.New("resetEmailTemplate")
 		emailTemplateCollection := template.Must(emailTemplateTree.ParseFiles("src/bleuvanille/templates/PasswordReset.email"))
 
@@ -320,4 +332,25 @@ func emailAndPasswordRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return handler(context)
 	}
+}
+
+//TODO extract in a util package
+// source: http://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-golang
+func randomString(n int) string {
+	var src = rand.NewSource(time.Now().UnixNano())
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }
