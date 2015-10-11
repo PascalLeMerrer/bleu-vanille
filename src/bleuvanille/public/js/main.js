@@ -1,3 +1,5 @@
+var contactEmail = "info" + "@" + "bleuvanille.com"
+
 /* Hide alerts on page loading */
 $(document).ready(function() {
   $('#success-alert').hide();
@@ -6,6 +8,7 @@ $(document).ready(function() {
 
   addScroll('#menuButton')
   addScroll('#arrowToMenu')
+  $('#contact').text(contactEmail);
 });
 
 function addScroll(id) {
