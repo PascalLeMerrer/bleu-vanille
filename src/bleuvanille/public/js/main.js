@@ -1,11 +1,12 @@
 var contactEmail = "info" + "@" + "bleuvanille.com"
+var startTime;
 
 /* Hide alerts on page loading */
 $(document).ready(function() {
   $('#success-alert').hide();
   $('#error-alert').hide();
   initScrollspy();
-
+  startTime = new Date();
   addScroll('#menuButton')
   addScroll('#arrowToMenu')
   $('#contact').text(contactEmail);
@@ -78,9 +79,11 @@ function initScrollspy() {
 $("#emailRegistrationForm").submit(function(event) {
   var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
   var email = $('#emailInput').val();
+  var timeSpentSeconds = Math.round((new Date() - startTime)/1000); // time spent on the page
   if (regex.test(email)) {
     var body = {
-      email: email
+      email: email,
+      timeSpent: timeSpentSeconds
     }
     var posting = $.post('/contacts', body);
     posting.done(function(response) {

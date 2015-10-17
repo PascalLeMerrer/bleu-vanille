@@ -21,11 +21,6 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-// LandingPage displays the landing page
-func LandingPage(context *echo.Context) error {
-	return context.Render(http.StatusOK, "index", nil)
-}
-
 // Render processes a template
 // name is the file name, without its HTML extension
 func (t *Template) Render(w io.Writer, name string, data interface{}) error {
@@ -92,7 +87,7 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 
 // public pages
 func declarePublicRoutes(echoServer *echo.Echo) {
-	echoServer.Get("/", LandingPage)
+	echoServer.Get("/", contact.LandingPage)
 	echoServer.Get("/admin", admin.LoginPage)
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)

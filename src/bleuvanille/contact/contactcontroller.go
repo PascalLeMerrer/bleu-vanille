@@ -1,13 +1,17 @@
 package contact
 
 import (
+	"bleuvanille/config"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/goodsign/monday"
 
 	"github.com/labstack/echo"
+	"github.com/twinj/uuid"
 )
 
 type errorMessage struct {
@@ -17,6 +21,27 @@ type errorMessage struct {
 type formattedContact struct {
 	Email     string `json:"email"`
 	CreatedAt string `json:"created_at"`
+}
+
+// LandingPage displays the landing page for getting new contacts
+func LandingPage(context *echo.Context) error {
+
+	_, err := context.Request().Cookie("visitorId")
+	if err != nil {
+		// first visit, we add a cookie
+		fmt.Println("first visit")
+		expire := time.Now().AddDate(0, 0, 7) //7 days from now
+		cookie := http.Cookie{
+			Name:    "visitorId",
+			Value:   uuid.NewV4().String(),
+			Path:    "/",
+			Domain:  config.HostName,
+			Expires: expire,
+		}
+		http.SetCookie(context.Response().Writer(), &cookie)
+		// TODO: increment unique visitor counter in database
+	}
+	return context.Render(http.StatusOK, "index", nil)
 }
 
 // GetAll writes the list of all contacts
@@ -55,8 +80,24 @@ func Create(context *echo.Context) error {
 		log.Println("Contact create email is null")
 		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in POST body"})
 	}
-	//TODO check email is valid
+	timeSpent := context.Request().PostFormValue("timeSpent")
+	// timeSpent := context.Form("timeSpent")
+	if timeSpent != "" {
+		timeSpentInt, err := strconv.Atoi(timeSpent)
+		if err == nil {
+			fmt.Printf("\ntimeSpent %v\n", timeSpentInt)
+		} else {
+			fmt.Println(err.Error())
+		}
+	}
+	// TODO get time spent on the page
+	// TODO check email is valid
+	// TODO save these values
+	// userAgent := context.Request().Header.Get("User-Agent")
+	// referer := context.Request().Header.Get("Referer")
+
 	contact, err := New(email)
+	// contact, err := New(email, userAgent, referer)
 	if err != nil {
 		log.Printf("Contact create error %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
@@ -70,6 +111,7 @@ func Create(context *echo.Context) error {
 		log.Printf("Error: cannot save contact with email: %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
 	}
+
 	return context.JSON(http.StatusCreated, contact)
 }
 
