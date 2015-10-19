@@ -1,60 +1,98 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
-	_ "github.com/lib/pq" // loaded for it's side effects (defines the driver to be used)
+	ara "github.com/diegogub/aranGO"
 )
 
-var db *sql.DB
+var db *ara.Database
+
+const COLNAME_SESSIONS string = "sessions"
+const COLNAME_USERS string = "users"
+const COLNAME_CONTACTS string = "contacts"
 
 // DatabaseInit opens a connection to postgres
 func DatabaseInit() {
-	var err error
-	connexionString := fmt.Sprintf("port=%d user=%s password=%s dbname=%s sslmode=disable", DatabasePort, DatabaseUser, DatabasePassword, DatabaseName)
-	db, err = sql.Open("postgres", connexionString)
+
+	connexionString := fmt.Sprintf("http://localhost:%d", DatabasePort)
+
+	s, err := ara.Connect(connexionString, DatabaseUser, DatabasePassword, false)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	createContactsTable()
-	createUsersTable()
-	createSessionsTable()
+	db = s.DB(DatabaseName)
+
+	//Create the database if necessary
+	if db == nil {
+		user := ara.User{Username: DatabaseUser, Password: DatabasePassword}
+		users := []ara.User{user}
+		err = s.CreateDB(DatabaseName, users)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		db = s.DB(DatabaseName)
+	}
+
+	//Create the tables if necessary
+	createTables()
 }
 
 // Create Table contacts if not exists
-func createContactsTable() {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS contacts(email varchar(50) NOT NULL, created_at timestamp default NULL, constraint pk_contacts primary key(email))")
+func createTables() {
+	if !db.ColExist(COLNAME_CONTACTS) {
+		// CollectionOptions has much more options, here we just define name , sync
+		contacts := ara.NewCollectionOptions(COLNAME_CONTACTS, true)
+		err := db.CreateCollection(contacts)
 
-	if err != nil {
-		log.Fatal(err)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if !db.ColExist(COLNAME_USERS) {
+		// CollectionOptions has much more options, here we just define name , sync
+		contacts := ara.NewCollectionOptions(COLNAME_USERS, true)
+		err := db.CreateCollection(contacts)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if !db.ColExist(COLNAME_SESSIONS) {
+		// CollectionOptions has much more options, here we just define name , sync
+		contacts := ara.NewCollectionOptions(COLNAME_SESSIONS, true)
+		err := db.CreateCollection(contacts)
+
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
-// Create Table users if not exists
-func createUsersTable() {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS users(id varchar(50), email varchar(50) NOT NULL UNIQUE, firstname varchar(50), lastname varchar(50), hash varchar(100) NOT NULL, isadmin boolean, resettoken varchar(255), created_at timestamp default NULL, constraint pk_users primary key(id))")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Create sessions table if not exists
-func createSessionsTable() {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS sessions(id varchar(50), user_id varchar(50) references users(id) ON DELETE CASCADE, is_admin boolean, expires_at timestamp default NULL, constraint pk_sessions primary key(id))")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+func GetCollection(m ara.Modeler) *ara.Collection {
+	return Db().Col(m.GetCollection())
 }
 
 // Db returns the database object
-func Db() *sql.DB {
+func Db() *ara.Database {
 	if db == nil {
 		DatabaseInit()
 	}
 	return db
+}
+
+func Context() *ara.Context {
+	ctx, err := ara.NewContext(Db())
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	return ctx
 }

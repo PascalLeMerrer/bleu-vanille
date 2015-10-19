@@ -36,7 +36,7 @@ func Create(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
 	}
 
-	_, err = Save(contact)
+	err = Save(&contact)
 	if err, ok := err.(*pq.Error); ok {
 		if err.Code.Name() == "unique_violation" {
 			return context.JSON(http.StatusConflict, errorMessage{"Contact is already registered"})

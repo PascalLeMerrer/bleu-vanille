@@ -4,83 +4,115 @@ package user
 
 import (
 	"bleuvanille/config"
-	"log"
+	"errors"
+	"fmt"
+	ara "github.com/diegogub/aranGO"
 )
 
 // Save inserts a user into the database
-func Save(user User) error {
-	_, err := config.Db().Query("INSERT INTO users (id, email, firstname, lastname, hash, isadmin, resettoken, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.ResetToken, user.CreatedAt)
-	return err
+func Save(user *User) error {
+	err := config.Context().Save(user)
+
+	if err != nil && len(err) >0 {
+		strerr := fmt.Sprintf("%q", err)
+		return errors.New(strerr)
+	}
+
+	return nil
 }
 
 // Update update a user profile into the database
-func Update(user User) error {
-	_, err := config.Db().Query("UPDATE users SET email = $2, firstname = $3, lastname = $4, hash = $5, isadmin = $6, resettoken = $7 WHERE id=$1;", user.ID, user.Email, user.Firstname, user.Lastname, user.Hash, user.IsAdmin, user.ResetToken)
-	return err
+func Update(user *User) error {
+	return Save(user)
 }
 
 // SavePassword updates the password of a given user into the database
 func SavePassword(user *User, newPassword string) error {
-	_, err := config.Db().Query("UPDATE users SET hash = $1 WHERE id = $2;", newPassword, user.ID)
-	return err
+	user.Hash = newPassword
+	return Update(user)
 }
 
 // LoadByEmail returns the user object for a given email, if any
 func LoadByEmail(email string) (*User, error) {
-	var user User
-	row := config.Db().QueryRow("SELECT * FROM users WHERE email = $1;", email)
-	err := row.Scan(&user.ID, &user.Email, &user.Firstname, &user.Lastname, &user.Hash, &user.IsAdmin, &user.ResetToken, &user.CreatedAt)
+	var result User
 
-	return &user, err
+	col := config.GetCollection(&result)
+	result.Email = email
+	cursor, err := col.Example(result, 0, 1)
+
+	//return an error
+	if err != nil {
+		return nil, err
+	}
+
+	if cursor.Result != nil && len(cursor.Result) > 0 {
+		cursor.FetchOne(&result)
+		return &result, nil
+	}
+
+	return nil, nil
 }
 
 // LoadByID returns the user object for a given user ID, if any
 func LoadByID(ID string) (*User, error) {
-	var user User
-	row := config.Db().QueryRow("SELECT * FROM users WHERE id = $1;", ID)
-	err := row.Scan(&user.ID, &user.Email, &user.Firstname, &user.Lastname, &user.Hash, &user.IsAdmin, &user.ResetToken, &user.CreatedAt)
+	querystr := fmt.Sprintf("FOR u in users filter u.id == %q RETURN u", ID)
 
-	return &user, err
-}
+	arangoquery := ara.NewQuery(querystr)
+	cursor, err := config.Db().Execute(arangoquery)
 
-// LoadAll returns the list of all users in the database
-// for security concerns, the password hashes are not returned
-// I don't think there is any case in which they are required
-func LoadAll() (*Users, error) {
-	var users Users
-
-	rows, err := config.Db().Query("SELECT * FROM users")
-
+	//return an error
 	if err != nil {
-		log.Printf("Cannot query user list: %s", err)
 		return nil, err
 	}
 
-	// Close rows after all readed
-	defer rows.Close()
+	var result User
 
-	for rows.Next() {
-		var user User
+	if cursor.Result != nil && len(cursor.Result) > 0 {
+		cursor.FetchOne(&result)
+		return &result, nil
+	}
+	return nil, nil
+}
 
-		err := rows.Scan(&user.Email, &user.Firstname, &user.Lastname, &user.CreatedAt)
+// LoadAll returns the list of all Users in the database
+func LoadAll() (*[]User, error) {
+	var user User
+	querystr := fmt.Sprintf("FOR u in users RETURN u")
 
-		if err != nil {
-			log.Println(err)
-		}
+	arangoquery := ara.NewQuery(querystr)
+	cursor, err := config.Db().Execute(arangoquery)
 
-		users = append(users, user)
+	//return an error
+	if err != nil {
+		return nil, err
 	}
 
-	return &users, err
+	if cursor.Result != nil && len(cursor.Result) > 0 {
+		result := make([]User, len(cursor.Result))
+
+		for cursor.FetchOne(&user) {
+			result = append(result, user)
+		}
+
+		return &result, nil
+	}
+
+	return nil, nil
 }
 
 // Delete delete the given user from the database
-func Delete(user User) error {
-	_, err := config.Db().Query("DELETE FROM users WHERE email=$1;", user.Email)
+func Delete(user *User) error {
 
-	if err != nil {
-		log.Printf("Cannot delete user: %s", err)
-		return err
+	if user == nil {
+		return errors.New("Impossible to delete nil user")
 	}
+
+	err := config.Context().Delete(user)
+
+	if err != nil && len(err) > 0 {
+		errorstring := fmt.Sprintf("Impossible to delete User %s : %s", user.Key, err)
+		return errors.New(errorstring)
+	}
+
 	return nil
 }
