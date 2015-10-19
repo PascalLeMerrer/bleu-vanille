@@ -23,7 +23,7 @@ func CreateDefault() {
 		log.Println(err)
 	}
 
-	if !existingAdmin.IsAdmin {
+	if existingAdmin == nil || !existingAdmin.IsAdmin {
 		admin, err := New("admin@bleuvanille.com", "Admin", "Admin", "xeCuf8CHapreNe=")
 		if err != nil {
 			log.Fatal(err)
