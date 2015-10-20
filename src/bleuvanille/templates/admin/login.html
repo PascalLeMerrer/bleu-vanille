@@ -21,7 +21,15 @@
     <script type="text/javascript" src="/js/superagent.js"></script>
     <script type="text/javascript" src="/js/riot.min.js"></script>
     <script type="text/javascript" src="/tags/login-form.js"></script>
-    <script>riot.mount('login-form')</script>
+    <script type="text/javascript">
+      var bus = {};
+      riot.observable(bus);
+      console.log(bus)
+      bus.on('logged', function(token) {
+        console.log('logged with token ' + token)
+      })
+      riot.mount('login-form', {bus: bus})
+    </script>
   </body>
 </html>
 {{end}}
