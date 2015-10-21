@@ -5,8 +5,8 @@ var riot     = require('gulp-riot');
 var cucumber = require('gulp-cucumber');
 
 gulp.task('styles', function() {
-  gulp.src("./src/bleuvanille/public/css/marketing.css")
-  .pipe(watch("./src/bleuvanille/public/css/marketing.css"))
+  gulp.src("./src/bleuvanille/public/css/*.css")
+  .pipe(watch("./src/bleuvanille/public/css/*.css"))
   .pipe(cssnext({
     compress: false,  // default is false
   }))
