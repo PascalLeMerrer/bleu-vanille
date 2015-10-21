@@ -1,12 +1,12 @@
 /* jslint node: true */
 'use strict';
 
-var apickli = require('apickli');
+var bitterapple = require('bitter-apple');
 
 module.exports = function() {
     // cleanup before every scenario
     this.Before(function(callback) {
-        this.apickli = new apickli.Apickli('http', 'localhost:4000');
+        this.bitterapple = new bitterapple.BitterApple('http', 'localhost:4000');
         callback();
     });
 };

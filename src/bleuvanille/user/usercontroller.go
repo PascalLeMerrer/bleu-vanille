@@ -5,15 +5,36 @@ import (
 	"bleuvanille/config"
 	"bleuvanille/mail"
 	"bleuvanille/session"
+	"bytes"
 	"errors"
-	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"text/template"
+	"time"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo"
+)
+
+// data used to fill the password reset email template
+type passwordResetData struct {
+	From     string
+	To       string
+	Host     string
+	Port     int
+	Token    string
+	Now      string
+	Boundary string
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
 // CreateDefault creates a default admin account if it does not exist
@@ -103,7 +124,6 @@ func GetAll(context *echo.Context) error {
 
 // Remove removes the user account for a given email
 func Remove(context *echo.Context) error {
-
 	userID := context.Get("session").(*session.Session).UserID
 	if userID == "" {
 		log.Println("Missing userID in session")
@@ -197,7 +217,6 @@ var ChangePassword = emailAndPasswordRequired(
 
 // ResetPassword updates the password of the authenticated user without proving the old one
 func ResetPassword(context *echo.Context) error {
-	log.Println("ResetPassword")
 	newPassword := context.Form("password")
 	var email string
 	var ok bool
@@ -242,16 +261,18 @@ var SendResetLink = emailRequired(
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot save password reset token for user "+email))
 		}
-		// TODO Use a template
-		resetLink := fmt.Sprintf("To: %v\r\n"+
-			"Subject: Password reset\r\n"+
-			"\r\n<!DOCTYPE html><html><body><a href=\"http://%v:%v/users/resetform?token=%v\">Reset Password</a></body></html>",
-			email,
-			config.HostName,
-			config.HostPort,
-			user.ResetToken)
-		log.Println(resetLink)
-		err = mail.Send(email, []byte(resetLink))
+
+		data := passwordResetData{config.NoReplyAddress, email, config.HostName, config.HostPort, user.ResetToken, time.Now().String(), randomString(16)}
+		emailTemplateTree := template.New("resetEmailTemplate")
+		emailTemplateCollection := template.Must(emailTemplateTree.ParseFiles("src/bleuvanille/templates/PasswordReset.email"))
+
+		var emailBody = new(bytes.Buffer)
+
+		t := emailTemplateCollection.Templates()[0]
+
+		err = t.Execute(emailBody, data)
+
+		err = mail.Send(email, emailBody.Bytes())
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot send password reset email to user "+email))
@@ -311,4 +332,25 @@ func emailAndPasswordRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return handler(context)
 	}
+}
+
+//TODO extract in a util package
+// source: http://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-golang
+func randomString(n int) string {
+	var src = rand.NewSource(time.Now().UnixNano())
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }

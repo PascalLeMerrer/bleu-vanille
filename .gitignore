@@ -9,3 +9,9 @@ pkg
 !src/public/
 
 src/bleuvanille/bleuvanille
+
+npm-debug.log
+
+.profile_local
+.project
+nohup.out

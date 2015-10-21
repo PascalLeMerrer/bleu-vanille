@@ -18,10 +18,22 @@ gulp.task('images', function() {
     .pipe(gulp.dest('./public/img'));
 });
 
+gulp.task('fonts', function() {
+  gulp.src('./src/bleuvanille/public/fonts/**/*.*', {overwrite: false})
+  .pipe(watch('./src/bleuvanille/public/fonts/**/*.*'))
+    .pipe(gulp.dest('./public/fonts'));
+});
+
 gulp.task('js', function() {
   gulp.src('./src/bleuvanille/public/js/**/*.js', {overwrite: true})
     .pipe(watch('./src/bleuvanille/public/js/**/*.js'))
     .pipe(gulp.dest('./public/js'));
+});
+
+gulp.task('html', function() {
+  gulp.src('./src/bleuvanille/public/html/**/*.html', {overwrite: true})
+    .pipe(watch('./src/bleuvanille/public/html/**/*.html'))
+    .pipe(gulp.dest('./public/html'));
 });
 
 
@@ -36,4 +48,4 @@ gulp.task('test', function() {
 /*
  * Build assets by default.
  */
-gulp.task('default', ['styles', 'images', 'js']);
+gulp.task('default', ['styles', 'images', 'js', 'fonts']);
