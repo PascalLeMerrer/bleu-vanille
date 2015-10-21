@@ -12,14 +12,14 @@ import (
 // Save inserts a contact into the database
 func Save(contact *Contact) error {
 	//Verify if the email already exists
-	existingcontact, err := LoadByEmail(contact.Email)
+	existingContact, err := LoadByEmail(contact.Email)
 
 	if err != nil {
 		strerr := fmt.Sprintf("%q", err)
 		return errors.New(strerr)
 	}
 
-	if existingcontact == nil || len(existingcontact.Key) == 0 {
+	if existingContact == nil || len(existingContact.Key) == 0 {
 		err := config.Context().Save(contact)
 
 		if err != nil {
@@ -57,8 +57,8 @@ func LoadAll() (*[]Contact, error) {
 	var contact Contact
 	querystr := fmt.Sprintf("FOR c in contacts RETURN c")
 
-	arangoquery := ara.NewQuery(querystr)
-	cursor, err := config.Db().Execute(arangoquery)
+	arangoQuery := ara.NewQuery(querystr)
+	cursor, err := config.Db().Execute(arangoQuery)
 
 	//return an error
 	if err != nil {

@@ -30,10 +30,21 @@ func TestSearchEmail(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
+	var email1 = "test1@testdecreation.com"
+	var email2 = "test2@testdecreation.com"
+	contactCreated1  := Contact{ Email : email1}
+	contactCreated2  := Contact{ Email : email2}
+	//Save the new contact
+	Save(&contactCreated1)
+	Save(&contactCreated2)
+	
 	//Search it afterwards
 	contacts, _ := LoadAll()
 	
 	if len(*contacts) < 1 {
-		t.Errorf("Found only one contact", contacts)
+		t.Errorf("Found no contact", contacts)
 	}
+	
+	Delete(email1)
+	Delete(email2)
 }

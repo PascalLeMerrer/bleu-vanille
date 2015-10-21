@@ -46,27 +46,31 @@ func DatabaseInit() {
 func createTables() {
 	if !db.ColExist(COLNAME_CONTACTS) {
 		// CollectionOptions has much more options, here we just define name , sync
-		contacts := ara.NewCollectionOptions(COLNAME_CONTACTS, true)
+		contacts := ara.NewCollectionOptions(COLNAME_CONTACTS, false)
 		err := db.CreateCollection(contacts)
 
 		if err != nil {
 			log.Fatal(err)
 		}
+		
+		Db().Col(COLNAME_CONTACTS).CreateHash(true, "email")
 	}
 
 	if !db.ColExist(COLNAME_USERS) {
 		// CollectionOptions has much more options, here we just define name , sync
-		contacts := ara.NewCollectionOptions(COLNAME_USERS, true)
+		contacts := ara.NewCollectionOptions(COLNAME_USERS, false)
 		err := db.CreateCollection(contacts)
 
 		if err != nil {
 			log.Fatal(err)
 		}
+		
+		Db().Col(COLNAME_USERS).CreateHash(true, "email")
 	}
 
 	if !db.ColExist(COLNAME_SESSIONS) {
 		// CollectionOptions has much more options, here we just define name , sync
-		contacts := ara.NewCollectionOptions(COLNAME_SESSIONS, true)
+		contacts := ara.NewCollectionOptions(COLNAME_SESSIONS, false)
 		err := db.CreateCollection(contacts)
 
 		if err != nil {
@@ -75,6 +79,7 @@ func createTables() {
 	}
 }
 
+//GetCollection returns the collection object related to the given object modeler 
 func GetCollection(m ara.Modeler) *ara.Collection {
 	return Db().Col(m.GetCollection())
 }
@@ -87,6 +92,7 @@ func Db() *ara.Database {
 	return db
 }
 
+//Context returns the context related to the DB
 func Context() *ara.Context {
 	ctx, err := ara.NewContext(Db())
 
