@@ -1,0 +1,73 @@
+<login-form>
+  <div show="{ failed }" class="alert" id="error-alert">{ errorMessage }</div>
+  <form if="{ !logged }" class="pure-form pure-form-stacked" onsubmit="{ login }">
+    <label for="username">Adresse email</label>
+    <input name="username" type="email" class="login">
+    <label for="password">Mot de passe</label>
+    <input name="password" type="password" class="login" value="xeCuf8CHapreNe=">
+    <input id="connect" type="submit" value="Me connecter" class="login pure-button-primary pure-button"/>
+  </form>
+  <div if="{ logged }">
+    <span class="login">{ firstname } { lastname }</span>
+    <span class="login"><a href="" onclick="{ logout }">Se déconnecter</a></span>
+  </div>
+
+  <script>
+  this.logged = false
+  this.failed = false
+  var token = null
+  // Sends an authentication request to the server
+  login() {
+    var payload = 'email=' + this.username.value + ';password=' + this.password.value
+    superagent.post('/users/login')
+      .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+      .send(payload)
+      .end(this.loginCallback)
+  }
+
+  // process connection request response
+  loginCallback(err, response) {
+    if(response.ok) {
+      this.firstname = response.body.firstname
+      this.lastname = response.body.lastname
+      token = response.header['authorization']
+      this.logged = true
+      this.failed = false
+    } else {
+      this.errorMessage = "Cette combinaison email / mot de passe est erronée."
+      this.failed = true
+    }
+    riot.update()
+  }
+
+  // Sends a disconnection request to the server
+  logout() {
+    superagent.post('/users/logout')
+      .set('Content-Type', 'application/json; charset=UTF-8')
+      .set('Authorization', 'Bearer ' + token)
+      .send('')
+      .end(this.logoutCallback)
+  }
+
+  // process disconnection request response
+  logoutCallback(err, response) {
+    if(response.ok) {
+      this.logged = false
+    } else {
+      this.errorMessage = "La déconnexion a échoué."
+      this.failed = true
+    }
+    riot.update()
+  }
+  </script>
+
+  <style>
+    #connect {
+      margin-top: 1em;
+      width: 50%
+    }
+    .pure-form input.login {
+      font-size: 100%
+    }
+  </style>
+</login-form>

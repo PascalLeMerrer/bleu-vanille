@@ -1,17 +1,21 @@
 package main
 
 import (
+	"bleuvanille/admin"
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
+	"bleuvanille/log"
 	"bleuvanille/session"
 	"bleuvanille/user"
-	"bleuvanille/log"
 	"fmt"
 	"html/template"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -37,18 +41,31 @@ func main() {
 
 	config.DatabaseInit()
 	user.CreateDefault()
-	
+
 	echoServer := echo.New()
 	echoServer.SetDebug(true)
 	echoServer.ColoredLog(true)
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())
-	echoServer.Use(log.Middleware());
+	echoServer.Use(log.Middleware())
 
 	// precompile templates
+
+	templates := template.New("template")
+
+	filepath.Walk("src/bleuvanille/templates/", func(path string, info os.FileInfo, err error) error {
+		if strings.HasSuffix(path, ".html") {
+			_, err := templates.ParseFiles(path)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
 	templateRenderer := &Template{
-		templates: template.Must(template.ParseGlob("src/bleuvanille/templates/*.html")),
+		templates: templates,
 	}
 	echoServer.SetRenderer(templateRenderer)
 
@@ -58,7 +75,6 @@ func main() {
 	declareAdminRoutes(echoServer)
 	declareSpecialRoutes(echoServer)
 	addErrorHandler(echoServer)
-
 
 	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
@@ -71,11 +87,13 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 	echoServer.Static("/css/", "public/css")
 	echoServer.Static("/fonts/", "public/fonts")
 	echoServer.Static("/img/", "public/img")
+	echoServer.Static("/tags/", "public/tags")
 }
 
 // public pages
 func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Get("/", LandingPage)
+	echoServer.Get("/admin", admin.LoginPage)
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
@@ -89,6 +107,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes.Use(auth.JWTAuth())
 	userRoutes.Use(session.Middleware())
 
+	userRoutes.Post("/logout", session.Logout)
 	// echo does not accept Delete request with body so we use a Post instead
 	userRoutes.Post("/delete", user.Remove)
 	userRoutes.Put("/password", user.ChangePassword)
@@ -129,7 +148,7 @@ func addErrorHandler(echoServer *echo.Echo) {
 		}
 
 		log.Error(context, err.Error())
-	
+
 		if !context.Response().Commited() {
 			http.Error(context.Response(), message, code)
 		}
