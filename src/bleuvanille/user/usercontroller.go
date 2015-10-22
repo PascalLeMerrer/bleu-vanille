@@ -45,7 +45,7 @@ func CreateDefault() {
 	}
 
 	if existingAdmin == nil || !existingAdmin.IsAdmin {
-		admin, err := New("admin@bleuvanille.com", "Admin", "Admin", "xeCuf8CHapreNe=")
+		admin, err := New(config.AdminEmail, "Admin", "Admin", "xeCuf8CHapreNe=")
 		if err != nil {
 			log.Fatal(err)
 		}
