@@ -16,29 +16,30 @@ func TestSessionSave(t *testing.T) {
 	assert.NoError(t, userCreationError, "User creation error.")
 
 	// Cleanup before testing
-	_ = Delete(testUser)
+	_ = Delete(&testUser)
 
-	userSaveError := Save(testUser)
+	userSaveError := Save(&testUser)
 	assert.NoError(t, userSaveError, "User save error.")
 
 	testSession, sessionCreationError := session.New(testSessionID, testUser.ID, testUser.IsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
-	err := session.Save(testSession)
+	err := session.Save(&testSession)
 	assert.NoError(t, err, "Session save error.")
 
-	userDeletionError := Delete(testUser)
+	userDeletionError := Delete(&testUser)
 	assert.NoError(t, userDeletionError, "User Deletion error.")
 
 }
+
 
 func TestUserUpdate(t *testing.T) {
 	testUser, userCreationError := New(TestEmail, TestFirstname, TestLastname, TestPassword)
 	assert.NoError(t, userCreationError, "User creation error.")
 
 	// Cleanup before testing
-	_ = Delete(testUser)
+	_ = Delete(&testUser)
 
-	userSaveError := Save(testUser)
+	userSaveError := Save(&testUser)
 	assert.NoError(t, userSaveError, "User save error.")
 
 	testUser.Email = "newemail@bleuvanille.com"
@@ -48,7 +49,7 @@ func TestUserUpdate(t *testing.T) {
 	testUser.Hash = "NewHash"
 	testUser.ResetToken = "a new token"
 
-	userUpdateError := Update(testUser)
+	userUpdateError := Update(&testUser)
 	assert.NoError(t, userUpdateError, "User update error.")
 
 	updatedUser, loadUserError := LoadByID(testUser.ID)
@@ -62,7 +63,6 @@ func TestUserUpdate(t *testing.T) {
 	assert.Equal(t, testUser.ResetToken, updatedUser.ResetToken, "Updated user does not contain the expected ResetToken.")
 
 	// Cleanup after testing
-	userDeletionError := Delete(testUser)
+	userDeletionError := Delete(&testUser)
 	assert.NoError(t, userDeletionError, "User Deletion error.")
-
 }

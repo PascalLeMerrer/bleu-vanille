@@ -1,6 +1,7 @@
 package user
 
 import (
+	"bleuvanille/config"
 	"errors"
 	"log"
 	"math/rand"
@@ -9,10 +10,12 @@ import (
 
 	"github.com/speps/go-hashids"
 	"golang.org/x/crypto/bcrypt"
+	ara "github.com/diegogub/aranGO"
 )
 
 // User is any type of registered user
 type User struct {
+	ara.Document
 	ID         string `json:"id"`
 	Email      string `json:"email"`
 	Firstname  string `json:"firstname"`
@@ -94,4 +97,17 @@ func intToIntArray(value int64, length int) []int {
 		result[index] = int(intValue)
 	}
 	return result
+}
+
+func (e *User) GetKey() string{
+  return e.Key
+}
+
+func (e *User) GetCollection() string {
+  return config.COLNAME_USERS
+}
+
+func (e *User) GetError()(string,bool){
+    // default error bool and messages. Could be any kind of error
+    return e.Message,e.Error
 }

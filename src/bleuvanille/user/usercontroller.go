@@ -44,13 +44,13 @@ func CreateDefault() {
 		log.Println(err)
 	}
 
-	if !existingAdmin.IsAdmin {
+	if existingAdmin == nil || !existingAdmin.IsAdmin {
 		admin, err := New("admin@bleuvanille.com", "Admin", "Admin", "xeCuf8CHapreNe=")
 		if err != nil {
 			log.Fatal(err)
 		}
 		admin.IsAdmin = true
-		err = Save(admin)
+		err = Save(&admin)
 		if err, ok := err.(*pq.Error); ok {
 			if err.Code.Name() == "unique_violation" {
 				log.Fatal("User admin@bleuvanille.com but has no admin rights. WTF?!")
@@ -84,7 +84,7 @@ var Create = emailAndPasswordRequired(
 			return context.JSON(http.StatusInternalServerError, errors.New("User creation error"))
 		}
 
-		err = Save(user)
+		err = Save(&user)
 		if err != nil {
 			if err, ok := err.(*pq.Error); ok {
 				// see http://www.postgresql.org/docs/9.3/static/errcodes-appendix.html
@@ -145,7 +145,7 @@ func Remove(context *echo.Context) error {
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
 
-	deleteErr := Delete(*user)
+	deleteErr := Delete(user)
 	if deleteErr != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+userID))
@@ -176,7 +176,7 @@ var Login = emailAndPasswordRequired(
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, err)
 		}
-		session.Save(userSession)
+		session.Save(&userSession)
 
 		context.Response().Header().Set(echo.Authorization, authToken)
 
@@ -237,7 +237,7 @@ func ResetPassword(context *echo.Context) error {
 	}
 
 	user.Hash = string(hash)
-	err = Update(*user)
+	err = Update(user)
 	if err != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("Server error. The password was not changed."))
@@ -256,7 +256,7 @@ var SendResetLink = emailRequired(
 			return context.JSON(http.StatusNotFound, errors.New("Cannot find user for email "+email))
 		}
 		user.ResetToken = auth.GetResetToken(email)
-		err = Update(*user)
+		err = Update(user)
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot save password reset token for user "+email))

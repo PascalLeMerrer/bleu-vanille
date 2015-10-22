@@ -5,11 +5,13 @@ import (
 	"errors"
 	"log"
 	"time"
+	ara "github.com/diegogub/aranGO"
 )
 
 // Session stores values for an active user. The user maybe authenticated or not
 // How to handle secure sessions: https://www.owasp.org/index.php/Session_Management_Cheat_Sheet
 type Session struct {
+	ara.Document
 	SessionID string
 	UserID    string
 	IsAdmin   bool
@@ -30,7 +32,7 @@ func New(sessionID string, userID string, isAdmin bool) (Session, error) {
 	stringValueStore := make(map[string]interface{})
 
 	expirationDate := time.Now().Add(time.Hour * config.SessionDuration)
-	session = Session{sessionID, userID, isAdmin, stringValueStore, expirationDate}
+	session = Session{SessionID : sessionID, UserID : userID, IsAdmin : isAdmin, values:stringValueStore, ExpiresAt : expirationDate}
 
 	return session, nil
 }
@@ -44,4 +46,17 @@ func (session *Session) Set(key string, value interface{}) {
 // Get returns a value stored in the session or nil if this value does not exist
 func (session *Session) Get(key string) interface{} {
 	return session.values[key]
+}
+
+func (e *Session) GetKey() string{
+  return e.Key
+}
+
+func (e *Session) GetCollection() string {
+  return config.COLNAME_SESSIONS
+}
+
+func (e *Session) GetError()(string,bool){
+    // default error bool and messages. Could be any kind of error
+    return e.Message,e.Error
 }
