@@ -7,13 +7,13 @@ import (
 	"bleuvanille/session"
 	"bytes"
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"text/template"
 	"time"
 
-	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo"
@@ -43,18 +43,19 @@ func CreateDefault() {
 	if err != nil {
 		log.Println(err)
 	}
+	if existingAdmin != nil && !existingAdmin.IsAdmin {
+		log.Fatalf("FATAL: User with email %v exists but has admin right.", config.AdminEmail)
+	}
 
-	if existingAdmin == nil || !existingAdmin.IsAdmin {
+	if existingAdmin == nil {
 		admin, err := New(config.AdminEmail, "Admin", "Admin", "xeCuf8CHapreNe=")
 		if err != nil {
 			log.Fatal(err)
 		}
 		admin.IsAdmin = true
 		err = Save(&admin)
-		if err, ok := err.(*pq.Error); ok {
-			if err.Code.Name() == "unique_violation" {
-				log.Fatal("User admin@bleuvanille.com but has no admin rights. WTF?!")
-			}
+		if err != nil {
+			log.Fatalf("Cannot create user with email %v. Error: %v", config.AdminEmail, err.Error())
 		}
 		log.Println("Admin account created with default password. You should change it.")
 		return
@@ -86,11 +87,8 @@ var Create = emailAndPasswordRequired(
 
 		err = Save(&user)
 		if err != nil {
-			if err, ok := err.(*pq.Error); ok {
-				// see http://www.postgresql.org/docs/9.3/static/errcodes-appendix.html
-				if err.Code.Name() == "unique_violation" {
-					return context.JSON(http.StatusConflict, errors.New("User already exists"))
-				}
+			if err.Error() == "cannot create document, unique constraint violated" {
+				return context.JSON(http.StatusConflict, errors.New("User already exists"))
 			}
 			return context.JSON(http.StatusInternalServerError, errors.New("User account creation failed - cannot be saved"))
 		}
@@ -157,10 +155,10 @@ func Remove(context *echo.Context) error {
 var Login = emailAndPasswordRequired(
 	func(context *echo.Context) error {
 		password := context.Form("password")
+		fmt.Printf("Password %v", password)
 		email := context.Form("email")
 		user, err := LoadByEmail(email)
-
-		if err != nil {
+		if err != nil || user == nil {
 			log.Println(err)
 			return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 		}
@@ -179,9 +177,22 @@ var Login = emailAndPasswordRequired(
 		session.Save(&userSession)
 
 		context.Response().Header().Set(echo.Authorization, authToken)
-
+		addCookie(context, authToken)
 		return context.JSON(http.StatusOK, user)
 	})
+
+// adds a session cookie
+func addCookie(context *echo.Context, authToken string) {
+	expire := time.Now().AddDate(0, 1, 0) // 1 month
+	cookie := &http.Cookie{
+		Name:    "token",
+		Expires: expire,
+		Value:   authToken,
+		Path:    "/",
+		Domain:  config.HostName,
+	}
+	http.SetCookie(context.Response().Writer(), cookie)
+}
 
 // ChangePassword updates the password of the authenticated user
 var ChangePassword = emailAndPasswordRequired(
@@ -237,7 +248,7 @@ func ResetPassword(context *echo.Context) error {
 	}
 
 	user.Hash = string(hash)
-	err = Update(user)
+	err = Save(user)
 	if err != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("Server error. The password was not changed."))
@@ -256,7 +267,7 @@ var SendResetLink = emailRequired(
 			return context.JSON(http.StatusNotFound, errors.New("Cannot find user for email "+email))
 		}
 		user.ResetToken = auth.GetResetToken(email)
-		err = Update(user)
+		err = Save(user)
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot save password reset token for user "+email))

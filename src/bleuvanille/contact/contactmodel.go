@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"time"
+
 	ara "github.com/diegogub/aranGO"
 )
 
@@ -32,15 +33,17 @@ func New(email string) (Contact, error) {
 	return contact, nil
 }
 
-func (e *Contact) GetKey() string{
-  return e.Key
+// GetKey returns the key in ArangoDB for the contact
+func (contact *Contact) GetKey() string {
+	return contact.Key
 }
 
-func (e *Contact) GetCollection() string {
-  return config.COLNAME_CONTACTS
+// GetCollection returns the collection name in ArangoDB for contacts
+func (contact *Contact) GetCollection() string {
+	return config.COLNAME_CONTACTS
 }
 
-func (e *Contact) GetError()(string,bool){
-    // default error bool and messages. Could be any kind of error
-    return e.Message,e.Error
+// GetError returns true if there is an error and gives the last error message
+func (contact *Contact) GetError() (string, bool) {
+	return contact.Message, contact.Error
 }

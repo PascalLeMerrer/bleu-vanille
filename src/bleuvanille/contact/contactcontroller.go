@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/lib/pq"
 )
 
 type errorMessage struct {
@@ -37,8 +36,8 @@ func Create(context *echo.Context) error {
 	}
 
 	err = Save(&contact)
-	if err, ok := err.(*pq.Error); ok {
-		if err.Code.Name() == "unique_violation" {
+	if err != nil {
+		if err.Error() == "cannot create document, unique constraint violated" {
 			return context.JSON(http.StatusConflict, errorMessage{"Contact is already registered"})
 		}
 		log.Printf("Error: cannot save contact with email: %v\n", err)
