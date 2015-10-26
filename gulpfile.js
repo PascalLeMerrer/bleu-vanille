@@ -35,6 +35,7 @@ gulp.task('html', function() {
   gulp.src('./src/bleuvanille/public/html/**/*.html', {overwrite: true})
     .pipe(watch('./src/bleuvanille/public/html/**/*.html'))
     .pipe(gulp.dest('./public/html'));
+});
 
 gulp.task('riot', function() {
   gulp.src('./src/bleuvanille/public/tags/**/*.html', {overwrite: true})
@@ -55,4 +56,4 @@ gulp.task('test', function() {
 /*
  * Build assets by default.
  */
-gulp.task('default', ['riot', 'styles', 'images', 'js', 'fonts']);
+gulp.task('default', ['riot', 'html', 'styles', 'images', 'js', 'fonts']);
