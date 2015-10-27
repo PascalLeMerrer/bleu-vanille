@@ -29,9 +29,13 @@ func JWTAuth() echo.HandlerFunc {
 		}
 
 		header := context.Request().Header.Get("Authorization")
-		log.Printf("header: %v\n", header)
+		if header == "" {
+			cookie, err := context.Request().Cookie("token")
+			if err == nil {
+				header = cookie.Value
+			}
+		}
 		prefixLength := len(Bearer)
-		httpError := echo.NewHTTPError(http.StatusUnauthorized)
 		if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
 			encodedToken := header[prefixLength+1:]
 			token, err := ExtractToken(encodedToken)
@@ -42,14 +46,14 @@ func JWTAuth() echo.HandlerFunc {
 					context.Set("sessionId", token.Claims["id"])
 					// a password reset token will contain an email
 					context.Set("email", token.Claims["email"])
-					log.Printf("email: %v\n", token.Claims["email"])
 					return nil
 				}
 				deleteExpiredSession(token)
+				return echo.NewHTTPError(http.StatusUnauthorized)
 			}
 		}
 		log.Printf("DEBUG: Invalid token. Header is %v\n", header)
-		return httpError
+		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
 }
 

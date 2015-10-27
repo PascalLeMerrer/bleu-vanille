@@ -187,7 +187,7 @@ func addCookie(context *echo.Context, authToken string) {
 	cookie := &http.Cookie{
 		Name:    "token",
 		Expires: expire,
-		Value:   authToken,
+		Value:   auth.Bearer + " " + authToken,
 		Path:    "/",
 		Domain:  config.HostName,
 	}

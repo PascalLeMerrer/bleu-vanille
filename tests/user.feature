@@ -37,6 +37,16 @@ Feature:
       Then response code should be 200
       # TODO: to complete
 
+    Scenario: After I signed in, the cookie should maintain my authentication
+      Given I set body to email=user_test1@mail.org;password=mypassword
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I POST to /users/login
+      And I store the value of response header Set-Cookie as authToken in scenario scope
+      And I set Cookie header to scenario variable authToken
+      And I store the value of body path $.id as userId in scenario scope
+      When I GET /users/`userId`/profile
+      Then response code should be 200
+
     Scenario: Sign in with without email should fail
       Given I set body to password=mypassword
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
@@ -104,6 +114,7 @@ Feature:
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
       When I POST to /users/login
       Then response code should be 200
+      And response header Set-Cookie should exist
       And response header Authorization should exist
       And I store the value of header Authorization as access token
 
@@ -120,7 +131,7 @@ Feature:
       When I POST to /users/login
       Then response code should be 200
       And response body should be valid json
-      And response header Set-Cookie should not exist
+      And response header Set-Cookie should exist
       And response header Authorization should exist
       And I store the value of header Authorization as access token
 
