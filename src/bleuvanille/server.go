@@ -52,7 +52,7 @@ func main() {
 
 	// precompile templates
 
-	templates := template.New("template")
+	templates := template.New("templates")
 
 	filepath.Walk("src/bleuvanille/templates/", func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, ".html") {
