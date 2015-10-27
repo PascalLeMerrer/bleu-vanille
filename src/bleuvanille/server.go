@@ -52,10 +52,12 @@ func main() {
 
 	// precompile templates
 
-	templates := template.New("templates")
-
-	filepath.Walk("src/bleuvanille/templates/", func(path string, info os.FileInfo, err error) error {
+	templates := template.New("template")
+	templates = template.Must(template.ParseGlob("src/bleuvanille/templates/*.html")) // parse templates in root dir
+	// Parse templates in subdir
+	filepath.Walk("src/bleuvanille/templates", func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, ".html") {
+			fmt.Printf("Parsing file %v. Info %v\n", path, info)
 			_, err := templates.ParseFiles(path)
 			if err != nil {
 				return err
@@ -128,6 +130,8 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Use(auth.JWTAuth())
 	adminRoutes.Use(session.Middleware())
 	adminRoutes.Use(session.AdminMiddleware())
+
+	adminRoutes.Get("/dashboard", admin.Dashboard)
 	adminRoutes.Get("/contacts", contact.GetAll)
 	adminRoutes.Delete("/contacts", contact.Remove)
 }

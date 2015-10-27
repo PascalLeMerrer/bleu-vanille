@@ -8,6 +8,10 @@ import (
 
 // LoginPage returns the admin login page
 func LoginPage(context *echo.Context) error {
-	// TODO: redirect to dashboard when the user is logged with admin account
 	return context.Render(http.StatusOK, "admin/login", nil)
+}
+
+// Dashboard displays the main administration page
+func Dashboard(context *echo.Context) error {
+	return context.Render(http.StatusOK, "admin/dashboard", nil)
 }

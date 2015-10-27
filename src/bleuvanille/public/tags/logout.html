@@ -1,17 +1,14 @@
-<logout-form>
+<logout>
   <div show="{ failed }" class="alert">{ errorMessage }</div>
     <span class="login">{ firstname } { lastname }</span>
     <span class="login"><a href="" onclick="{ logout }">Se déconnecter</a></span>
-
   <script>
   this.failed = false
-  var token = null
 
   // Sends a disconnection request to the server
   logout() {
     superagent.post('/users/logout')
       .set('Content-Type', 'application/json; charset=UTF-8')
-      .set('Authorization', 'Bearer ' + token)
       .send('')
       .end(this.logoutCallback)
   }
@@ -20,6 +17,7 @@
   logoutCallback(err, response) {
     if(response.ok) {
       this.logged = false
+      this.opts.bus.trigger('disconnected')
     } else {
       this.errorMessage = "La déconnexion a échoué."
       this.failed = true
@@ -28,4 +26,4 @@
   }
   </script>
 
-</logout-form>
+</logout>

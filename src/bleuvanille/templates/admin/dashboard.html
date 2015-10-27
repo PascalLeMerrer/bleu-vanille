@@ -1,22 +1,22 @@
-{{define "admin/login"}}
+{{define "admin/dashboard"}}
 {{template "header"}}
     <div class="pure-g">
+      <div class="pure-u-md-1-3">Admin Dashboard</div>
       <div class="pure-u-md-1-3">&nbsp;</div>
       <div class="pure-u-md-1-3">
-        <login-form></login-form>
+        <logout></logout>
       </div>
     </div>
-    <div class="pure-u-md-1-3">&nbsp;</div>
     <script type="text/javascript" src="/js/superagent.js"></script>
     <script type="text/javascript" src="/js/riot.min.js"></script>
-    <script type="text/javascript" src="/tags/login-form.js"></script>
+    <script type="text/javascript" src="/tags/logout.js"></script>
     <script type="text/javascript">
       var bus = {};
       riot.observable(bus);
-      bus.on('logged', function() {
-        window.location = 'admin/dashboard'
+      bus.on('disconnected', function() {
+        window.location = '/admin'
       })
-      riot.mount('login-form', {bus: bus})
+      riot.mount('logout', {bus: bus})
     </script>
 {{template "footer"}}
 {{end}}
