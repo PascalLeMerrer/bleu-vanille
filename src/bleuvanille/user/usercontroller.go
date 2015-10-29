@@ -170,7 +170,7 @@ var Login = emailAndPasswordRequired(
 		authToken, sessionID := auth.GetSessionToken()
 		user.Hash = "" // dont return the hash, for security concerns
 
-		userSession, err := session.New(sessionID, user.ID, user.IsAdmin)
+		userSession, err := session.New(sessionID, user.ID, user.Firstname, user.Lastname, user.Email, user.IsAdmin)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, err)
 		}

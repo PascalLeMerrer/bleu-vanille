@@ -16,20 +16,25 @@ const value3 = 123
 const testUserID = "ABCD123"
 const testSessionID = "dlùaskda¨$ùùllk1"
 const testIsAdmin = false
+const testFirstname = "John"
+const testLastname = "Doe"
+const testEmail = "johndoe@gmail.com"
 
 func TestSessionCreation(t *testing.T) {
 
-	session, sessionCreationError := New(testSessionID, testUserID, testIsAdmin)
+	session, sessionCreationError := New(testSessionID, testUserID, testFirstname, testLastname, testEmail, testIsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
 	assert.Equal(t, testSessionID, session.SessionID, "SessionID not set in session.")
 	assert.Equal(t, testUserID, session.UserID, "User not set in session.")
-	assert.Equal(t, testUserID, session.UserID, "User not set in session.")
+	assert.Equal(t, testFirstname, session.Firstname, "User Firstname not set in session.")
+	assert.Equal(t, testLastname, session.Lastname, "User Lastname not set in session.")
+	assert.Equal(t, testEmail, session.Email, "User Email not set in session.")
 	assert.False(t, session.IsAdmin, "User should not declared as admin in session.")
 	assert.WithinDuration(t, time.Now().Add(time.Hour), session.ExpiresAt, time.Minute, "Invalid session duration.")
 }
 
 func TestSessionValueStore(t *testing.T) {
-	session, sessionCreationError := New(testSessionID, testUserID, testIsAdmin)
+	session, sessionCreationError := New(testSessionID, testUserID, testFirstname, testLastname, testEmail, testIsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
 	assert.NotNil(t, session, "Session creation error.")
 

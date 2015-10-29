@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	ara "github.com/diegogub/aranGO"
 	"github.com/speps/go-hashids"
 	"golang.org/x/crypto/bcrypt"
-	ara "github.com/diegogub/aranGO"
 )
 
 // User is any type of registered user
@@ -99,15 +99,17 @@ func intToIntArray(value int64, length int) []int {
 	return result
 }
 
-func (e *User) GetKey() string{
-  return e.Key
+// GetKey returns the primary key
+func (e *User) GetKey() string {
+	return e.Key
 }
 
+// GetCollection returns the name of collection in the database
 func (e *User) GetCollection() string {
-  return config.COLNAME_USERS
+	return config.COLNAME_USERS
 }
 
-func (e *User) GetError()(string,bool){
-    // default error bool and messages. Could be any kind of error
-    return e.Message,e.Error
+// GetError returns the error status and message
+func (e *User) GetError() (string, bool) {
+	return e.Message, e.Error
 }

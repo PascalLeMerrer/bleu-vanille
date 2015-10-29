@@ -21,7 +21,7 @@ func TestSessionSave(t *testing.T) {
 	userSaveError := Save(&testUser)
 	assert.NoError(t, userSaveError, "User save error.")
 
-	testSession, sessionCreationError := session.New(testSessionID, testUser.ID, testUser.IsAdmin)
+	testSession, sessionCreationError := session.New(testSessionID, testUser.ID, testUser.Firstname, testUser.Lastname, testUser.Email, testUser.IsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
 	err := session.Save(&testSession)
 	assert.NoError(t, err, "Session save error.")
