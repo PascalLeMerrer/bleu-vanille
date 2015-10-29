@@ -16,7 +16,7 @@
       bus.on('disconnected', function() {
         window.location = '/admin'
       })
-      riot.mount('logout', {bus: bus})
+      riot.mount('logout', {bus: bus, firstname: {{ .Firstname }}, lastname: {{ .Lastname }} })
     </script>
 {{template "footer"}}
 {{end}}

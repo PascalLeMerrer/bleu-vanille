@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"bleuvanille/session"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -13,5 +14,6 @@ func LoginPage(context *echo.Context) error {
 
 // Dashboard displays the main administration page
 func Dashboard(context *echo.Context) error {
-	return context.Render(http.StatusOK, "admin/dashboard", nil)
+	session := context.Get("session").(*session.Session)
+	return context.Render(http.StatusOK, "admin/dashboard", session)
 }
