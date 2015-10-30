@@ -1,15 +1,12 @@
 <logout>
-  <div show="{ failed }" class="alert">{ errorMessage }</div>
-    <span class="login">{ opts.firstname } { opts.lastname }</span>
-    <span class="login"><a href="" onclick="{ logout }">Se déconnecter</a></span>
+  <span class="login">{ opts.firstname } { opts.lastname }</span>
+  <span class="login"><a href="" onclick="{ logout }">Se déconnecter</a></span>
   <script>
-  this.failed = false
 
   // Sends a disconnection request to the server
   logout() {
     superagent.post('/users/logout')
       .set('Content-Type', 'application/json; charset=UTF-8')
-      .send('')
       .end(this.logoutCallback)
   }
 
@@ -19,8 +16,7 @@
       this.logged = false
       this.opts.bus.trigger('disconnected')
     } else {
-      this.errorMessage = "La déconnexion a échoué."
-      this.failed = true
+      this.opts.bus.trigger('displayError', "La déconnexion a échoué.")
     }
     riot.update()
   }

@@ -1,6 +1,4 @@
 <contact-list>
-  <div id="error-alert" show="{ failed }" class="alert">{ errorMessage }</div>
-
   <table class="pure-table pure-table-horizontal pure-table-striped contact-table">
     <h2>Contacts</h2>
     <thead>
@@ -8,7 +6,7 @@
         <th class="id-column">#</th>
         <th class="email-column">Email</th>
         <th class="date-column">Date d'inscription</th>
-        <th class="action-column"></th>
+        <th class="action-column">Suppression</th>
       </tr>
     </thead>
     <tbody>
@@ -16,13 +14,12 @@
         <td>{ index + 1 }</td>
         <td>{ contact.email }</td>
         <td>{ contact.created_at }</td>
-        <td><a href="" onclick="{ parent.delete }">Supprimer</a></td>
+        <td class="action-column"><a href="" onclick="{ parent.delete }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
       </tr>
     </tbody>
   </table>
 
   <script>
-    this.failed = false
     this.selectedContact = null
 
     this.on('mount', function() {
@@ -35,11 +32,10 @@
     loadCallback(err, response) {
       if (response.ok) {
         this.contacts = response.body
+        riot.update()
       } else {
-        this.errorMessage = "Le chargement de la liste des contacts a échoué."
-        this.failed = true
+        this.opts.bus.trigger('displayError', "Le chargement de la liste des contacts a échoué.")
       }
-      riot.update()
     }
 
     delete(event) {
@@ -52,11 +48,11 @@
     deleteCallback(err, response) {
       if (response.ok) {
         this.contacts.splice(this.contacts.indexOf(this.selectedContact), 1)
+        riot.update()
       } else {
-        this.errorMessage = "La suppression du contact " + this.selectedContact.email + " a échoué."
-        this.failed = true
+        this.opts.bus.trigger('displayError',
+            "La suppression du contact " + this.selectedContact.email + " a échoué.")
       }
-      riot.update()
     }
   </script>
 
@@ -84,6 +80,7 @@
 
    .action-column {
      width: 4em;
+     text-align: center;
    }
 
   </style>

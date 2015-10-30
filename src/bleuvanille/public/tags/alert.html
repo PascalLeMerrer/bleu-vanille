@@ -1,0 +1,62 @@
+<alert>
+  <div id="error-alert" show="{ failed }" class={error-alert: true, animated: true, fadeOut:out} animationend={ end }>
+    { errorMessage }
+  </div>
+  <div id="success-alert" show="{ success }" class={success-alert: true, animated: true, fadeOut:out} animationend={ end }>
+    { successMessage }
+  </div>
+  <script>
+    this.failed = false
+    this.success = false
+    this.errorMessage = ""
+    this.successMessage = ""
+    this.out = false
+
+    self = this
+    this.opts.bus.on('displayError', function(message) {
+      self.errorMessage = message
+      self.failed = true
+      self.success = false
+      self.out = false
+      self.update()
+      setTimeout(self.hide, 3000)
+    })
+
+    this.opts.bus.on('displaySuccess', function(message) {
+      self.successMessage = message
+      self.failed = false
+      self.success = true
+      self.out = false
+      self.update()
+      setTimeout(self.hide, 3000)
+    })
+
+    /* Starts the animation for hiding the current message */
+    hide() {
+      self.out = true
+      self.update()
+    }
+
+    /* Cleanup after the animation end */
+    end() {
+      self.failed = false
+      self.success = false
+      self.out = false
+      self.update()
+    }
+  </script>
+  <style>
+
+    div#success-alert {
+      text-align: center;
+      color: black;
+      background-color: #ACCD69;
+    }
+
+    div#error-alert {
+      text-align: center;
+      color: black;
+      background-color: #F5A3AD;
+    }
+  </style>
+</alert>

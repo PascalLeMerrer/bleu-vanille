@@ -1,5 +1,4 @@
 <login-form>
-  <div show="{ failed }" class="alert">{ errorMessage }</div>
   <form class="pure-form pure-form-stacked" onsubmit="{ login }">
     <label for="username">Adresse email</label>
     <input name="username" type="email" class="login">
@@ -9,8 +8,6 @@
   </form>
 
   <script>
-  this.failed = false
-  var token = null
   // Sends an authentication request to the server
   login() {
     var payload = 'email=' + this.username.value + ';password=' + this.password.value
@@ -25,12 +22,9 @@
     if(response.ok) {
       this.firstname = response.body.firstname
       this.lastname = response.body.lastname
-      token = response.header['authorization']
-      this.failed = false
-      this.opts.bus.trigger('logged', token)
+      this.opts.bus.trigger('logged')
     } else {
-      this.errorMessage = "Cette combinaison email / mot de passe est erronée."
-      this.failed = true
+      this.opts.bus.trigger('displayError', "Cette combinaison email / mot de passe est erronée.")
     }
     riot.update()
   }
