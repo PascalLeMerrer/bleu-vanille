@@ -1,8 +1,11 @@
 package contact
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/goodsign/monday"
 
 	"github.com/labstack/echo"
 )
@@ -11,13 +14,24 @@ type errorMessage struct {
 	Message string `json:"error"`
 }
 
+type formattedContact struct {
+	Email     string `json:"email"`
+	CreatedAt string `json:"created_at"`
+}
+
 // GetAll writes the list of all contacts
 func GetAll(context *echo.Context) error {
 	contacts, err := LoadAll()
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact list retrieval error"})
 	}
-	return context.JSON(http.StatusOK, contacts)
+	results := make([]formattedContact, len(contacts))
+	for i := range contacts {
+		formattedDate := monday.Format(contacts[i].CreatedAt, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
+		results[i] = formattedContact{contacts[i].Email, formattedDate}
+		i++
+	}
+	return context.JSON(http.StatusOK, results)
 }
 
 // Create creates a new contact
@@ -54,7 +68,8 @@ func Remove(context *echo.Context) error {
 	}
 	err := Delete(email)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, errorMessage{"Cannot delete contact with email: " + email})
+		log.Printf("Cannot delete contact with email %s, error: %s", email, err)
+		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot delete contact with email %s", email))
 	}
 	return context.NoContent(http.StatusNoContent)
 }

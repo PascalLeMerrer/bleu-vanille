@@ -56,13 +56,15 @@ func LoadAll() ([]Contact, error) {
 // Delete removes the entry for a given email
 func Delete(email string) error {
 	contact, err := LoadByEmail(email)
-	if contact == nil || err != nil {
-		return nil
+	if contact == nil {
+		return fmt.Errorf("No contact found for email %v", email)
+	}
+	if err != nil {
+		return fmt.Errorf("Error while looking for contact %v: %v", email, err.Error())
 	}
 	errorMap := config.Context().Delete(contact)
 	if value, ok := errorMap["error"]; ok {
-		errorString := fmt.Sprintf("Impossible to delete contact by email %q because %s", email, value)
-		return errors.New(errorString)
+		return fmt.Errorf("Impossible to delete contact by email %q because %v", email, value)
 	}
 	return nil
 }
