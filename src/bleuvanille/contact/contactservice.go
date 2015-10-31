@@ -36,18 +36,22 @@ func LoadByEmail(email string) (*Contact, error) {
 }
 
 // LoadAll returns the list of all contacts in the database
-func LoadAll() ([]Contact, error) {
-	queryString := "FOR c in contacts RETURN c"
+// sort defines the sorting property name
+// order must be either ASC or DESC
+func LoadAll(sort string, order string) ([]Contact, error) {
+	queryString := "FOR c in contacts SORT c." + sort + " " + order + " RETURN c"
 
 	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	result := make([]Contact, len(cursor.Result))
 	err = cursor.FetchBatch(&result)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	return result, nil

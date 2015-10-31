@@ -21,7 +21,20 @@ type formattedContact struct {
 
 // GetAll writes the list of all contacts
 func GetAll(context *echo.Context) error {
-	contacts, err := LoadAll()
+	sortParam := context.Query("sort")
+	var contacts Contacts
+	var err error
+	switch sortParam {
+	case "newer":
+		contacts, err = LoadAll("created_at", "DESC")
+	case "older":
+		contacts, err = LoadAll("created_at", "ASC")
+	case "email":
+		contacts, err = LoadAll("email", "ASC")
+	default:
+		contacts, err = LoadAll("created_at", "DESC")
+	}
+
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact list retrieval error"})
 	}
