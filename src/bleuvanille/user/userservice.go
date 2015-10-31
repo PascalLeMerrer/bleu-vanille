@@ -6,30 +6,23 @@ import (
 	"bleuvanille/config"
 	"errors"
 	"fmt"
+
 	ara "github.com/diegogub/aranGO"
 )
 
 // Save inserts a user into the database
 func Save(user *User) error {
-	err := config.Context().Save(user)
-
-	if err != nil && len(err) >0 {
-		strerr := fmt.Sprintf("%q", err)
-		return errors.New(strerr)
+	errorMap := config.Context().Save(user)
+	if value, ok := errorMap["error"]; ok {
+		return errors.New(value)
 	}
-
 	return nil
-}
-
-// Update update a user profile into the database
-func Update(user *User) error {
-	return Save(user)
 }
 
 // SavePassword updates the password of a given user into the database
 func SavePassword(user *User, newPassword string) error {
 	user.Hash = newPassword
-	return Update(user)
+	return Save(user)
 }
 
 // LoadByEmail returns the user object for a given email, if any
@@ -37,8 +30,7 @@ func LoadByEmail(email string) (*User, error) {
 	var result User
 
 	col := config.GetCollection(&result)
-	result.Email = email
-	cursor, err := col.Example(result, 0, 1)
+	cursor, err := col.Example(map[string]interface{}{"email": email}, 0, 1)
 
 	//return an error
 	if err != nil {
@@ -77,10 +69,10 @@ func LoadByID(ID string) (*User, error) {
 // LoadAll returns the list of all Users in the database
 func LoadAll() (*[]User, error) {
 	var user User
-	querystr := fmt.Sprintf("FOR u in users RETURN u")
+	queryStr := fmt.Sprintf("FOR u in users RETURN u")
 
-	arangoquery := ara.NewQuery(querystr)
-	cursor, err := config.Db().Execute(arangoquery)
+	arangoQuery := ara.NewQuery(queryStr)
+	cursor, err := config.Db().Execute(arangoQuery)
 
 	//return an error
 	if err != nil {

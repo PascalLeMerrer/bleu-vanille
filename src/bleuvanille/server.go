@@ -4,9 +4,9 @@ import (
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
+	"bleuvanille/log"
 	"bleuvanille/session"
 	"bleuvanille/user"
-	"bleuvanille/log"
 	"fmt"
 	"html/template"
 	"io"
@@ -37,14 +37,13 @@ func main() {
 
 	config.DatabaseInit()
 	user.CreateDefault()
-	
+
 	echoServer := echo.New()
 	echoServer.SetDebug(true)
-	echoServer.ColoredLog(true)
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())
-	echoServer.Use(log.Middleware());
+	echoServer.Use(log.Middleware())
 
 	// precompile templates
 	templateRenderer := &Template{
@@ -58,7 +57,6 @@ func main() {
 	declareAdminRoutes(echoServer)
 	declareSpecialRoutes(echoServer)
 	addErrorHandler(echoServer)
-
 
 	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
@@ -129,8 +127,8 @@ func addErrorHandler(echoServer *echo.Echo) {
 		}
 
 		log.Error(context, err.Error())
-	
-		if !context.Response().Commited() {
+
+		if !context.Response().Committed() {
 			http.Error(context.Response(), message, code)
 		}
 	}

@@ -31,7 +31,6 @@ func TestSessionSave(t *testing.T) {
 
 }
 
-
 func TestUserUpdate(t *testing.T) {
 	testUser, userCreationError := New(TestEmail, TestFirstname, TestLastname, TestPassword)
 	assert.NoError(t, userCreationError, "User creation error.")
@@ -49,7 +48,7 @@ func TestUserUpdate(t *testing.T) {
 	testUser.Hash = "NewHash"
 	testUser.ResetToken = "a new token"
 
-	userUpdateError := Update(&testUser)
+	userUpdateError := Save(&testUser)
 	assert.NoError(t, userUpdateError, "User update error.")
 
 	updatedUser, loadUserError := LoadByID(testUser.ID)
