@@ -1,1 +1,1 @@
-./daemon -directory=src/bleuvanille -command="./src/bleuvanille/bleuvanille" -pattern="(.+\.go|.+\.c|.+\.html)$"
+./daemon -directory=src/bleuvanille -exclude-dir=vendor -exclude-dir=.git -command="./src/bleuvanille/bleuvanille" -pattern="(.+\.go|.+\.c|.+\.html)$"
