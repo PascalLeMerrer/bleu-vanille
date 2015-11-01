@@ -44,7 +44,7 @@ func CreateDefault() {
 		log.Println(err)
 	}
 	if existingAdmin != nil && !existingAdmin.IsAdmin {
-		log.Fatalf("FATAL: User with email %v exists but has admin right.", config.AdminEmail)
+		log.Fatalf("FATAL: User with email %v exists but has no admin rights.", config.AdminEmail)
 	}
 
 	if existingAdmin == nil {
