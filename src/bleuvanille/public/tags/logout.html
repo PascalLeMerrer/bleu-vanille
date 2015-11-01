@@ -1,0 +1,25 @@
+<logout>
+  <span class="login">{ opts.firstname } { opts.lastname }</span>
+  <span class="login"><a href="" onclick="{ logout }">Se déconnecter</a></span>
+  <script>
+
+  // Sends a disconnection request to the server
+  logout() {
+    superagent.post('/users/logout')
+      .set('Content-Type', 'application/json; charset=UTF-8')
+      .end(this.logoutCallback)
+  }
+
+  // process disconnection request response
+  logoutCallback(err, response) {
+    if(response.ok) {
+      this.logged = false
+      this.opts.bus.trigger('disconnected')
+    } else {
+      this.opts.bus.trigger('displayError', "La déconnexion a échoué.")
+    }
+    riot.update()
+  }
+  </script>
+
+</logout>

@@ -21,7 +21,7 @@ func TestSessionSave(t *testing.T) {
 	userSaveError := Save(&testUser)
 	assert.NoError(t, userSaveError, "User save error.")
 
-	testSession, sessionCreationError := session.New(testSessionID, testUser.ID, testUser.IsAdmin)
+	testSession, sessionCreationError := session.New(testSessionID, testUser.ID, testUser.Firstname, testUser.Lastname, testUser.Email, testUser.IsAdmin)
 	assert.NoError(t, sessionCreationError, "Session creation error.")
 	err := session.Save(&testSession)
 	assert.NoError(t, err, "Session save error.")
@@ -30,7 +30,6 @@ func TestSessionSave(t *testing.T) {
 	assert.NoError(t, userDeletionError, "User Deletion error.")
 
 }
-
 
 func TestUserUpdate(t *testing.T) {
 	testUser, userCreationError := New(TestEmail, TestFirstname, TestLastname, TestPassword)
@@ -49,7 +48,7 @@ func TestUserUpdate(t *testing.T) {
 	testUser.Hash = "NewHash"
 	testUser.ResetToken = "a new token"
 
-	userUpdateError := Update(&testUser)
+	userUpdateError := Save(&testUser)
 	assert.NoError(t, userUpdateError, "User update error.")
 
 	updatedUser, loadUserError := LoadByID(testUser.ID)

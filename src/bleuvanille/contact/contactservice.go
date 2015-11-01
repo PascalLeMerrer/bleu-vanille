@@ -6,28 +6,16 @@ import (
 	"bleuvanille/config"
 	"errors"
 	"fmt"
+
 	ara "github.com/diegogub/aranGO"
 )
 
 // Save inserts a contact into the database
 func Save(contact *Contact) error {
-	//Verify if the email already exists
-	existingContact, err := LoadByEmail(contact.Email)
-
-	if err != nil {
-		strerr := fmt.Sprintf("%q", err)
-		return errors.New(strerr)
+	errorMap := config.Context().Save(contact)
+	if value, ok := errorMap["error"]; ok {
+		return errors.New(value)
 	}
-
-	if existingContact == nil || len(existingContact.Key) == 0 {
-		err := config.Context().Save(contact)
-
-		if err != nil {
-			strerr := fmt.Sprintf("%q", err)
-			return errors.New(strerr)
-		}
-	}
-
 	return nil
 }
 
@@ -36,62 +24,51 @@ func LoadByEmail(email string) (*Contact, error) {
 	var result Contact
 
 	col := config.GetCollection(&result)
-	result.Email = email
-	cursor, err := col.Example(result, 0, 1)
-
-	//return an error
+	cursor, err := col.Example(map[string]interface{}{"email": email}, 0, 1)
 	if err != nil {
 		return nil, err
 	}
-
 	if cursor.Result != nil && len(cursor.Result) > 0 {
 		cursor.FetchOne(&result)
 		return &result, nil
 	}
-
 	return nil, nil
 }
 
 // LoadAll returns the list of all contacts in the database
-func LoadAll() (*[]Contact, error) {
-	var contact Contact
-	querystr := fmt.Sprintf("FOR c in contacts RETURN c")
+// sort defines the sorting property name
+// order must be either ASC or DESC
+func LoadAll(sort string, order string) ([]Contact, error) {
+	queryString := "FOR c in contacts SORT c." + sort + " " + order + " RETURN c"
 
-	arangoQuery := ara.NewQuery(querystr)
+	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
 
-	//return an error
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
-
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		result := make([]Contact, len(cursor.Result))
-
-		for cursor.FetchOne(&contact) {
-			result = append(result, contact)
-		}
-
-		return &result, nil
+	result := make([]Contact, len(cursor.Result))
+	err = cursor.FetchBatch(&result)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
-
-	return nil, nil
+	return result, nil
 }
 
-// Delete deletes the entry for a given email
+// Delete removes the entry for a given email
 func Delete(email string) error {
-	contact, _ := LoadByEmail(email)
-
+	contact, err := LoadByEmail(email)
 	if contact == nil {
-		return nil
+		return fmt.Errorf("No contact found for email %v", email)
 	}
-
-	err := config.Context().Delete(contact)
-
-	if err != nil  && len(err) > 0 {
-		errorstring := fmt.Sprintf("Impossible to delete contact by email %q because %s", email, err)
-		return errors.New(errorstring)
+	if err != nil {
+		return fmt.Errorf("Error while looking for contact %v: %v", email, err.Error())
 	}
-
+	errorMap := config.Context().Delete(contact)
+	if value, ok := errorMap["error"]; ok {
+		return fmt.Errorf("Impossible to delete contact by email %q because %v", email, value)
+	}
 	return nil
 }

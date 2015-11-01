@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"time"
+
 	ara "github.com/diegogub/aranGO"
 )
 
@@ -14,13 +15,16 @@ type Session struct {
 	ara.Document
 	SessionID string
 	UserID    string
+	Email     string
+	Firstname string
+	Lastname  string
 	IsAdmin   bool
 	values    map[string]interface{}
 	ExpiresAt time.Time
 }
 
 // New creates a Session instance
-func New(sessionID string, userID string, isAdmin bool) (Session, error) {
+func New(sessionID string, userID string, firstname string, lastname string, email string, isAdmin bool) (Session, error) {
 	var session Session
 
 	if userID == "" {
@@ -32,8 +36,7 @@ func New(sessionID string, userID string, isAdmin bool) (Session, error) {
 	stringValueStore := make(map[string]interface{})
 
 	expirationDate := time.Now().Add(time.Hour * config.SessionDuration)
-	session = Session{SessionID : sessionID, UserID : userID, IsAdmin : isAdmin, values:stringValueStore, ExpiresAt : expirationDate}
-
+	session = Session{SessionID: sessionID, UserID: userID, Email: email, Firstname: firstname, Lastname: lastname, IsAdmin: isAdmin, values: stringValueStore, ExpiresAt: expirationDate}
 	return session, nil
 }
 
@@ -48,15 +51,17 @@ func (session *Session) Get(key string) interface{} {
 	return session.values[key]
 }
 
-func (e *Session) GetKey() string{
-  return e.Key
+// GetKey returns the primary key
+func (session *Session) GetKey() string {
+	return session.Key
 }
 
-func (e *Session) GetCollection() string {
-  return config.COLNAME_SESSIONS
+// GetCollection returns the name of collection in the database
+func (session *Session) GetCollection() string {
+	return config.COLNAME_SESSIONS
 }
 
-func (e *Session) GetError()(string,bool){
-    // default error bool and messages. Could be any kind of error
-    return e.Message,e.Error
+// GetError returns the error status and message
+func (session *Session) GetError() (string, bool) {
+	return session.Message, session.Error
 }

@@ -4,6 +4,7 @@ import (
 	"bleuvanille/log"
 	"fmt"
 	"net/http"
+
 	"github.com/labstack/echo"
 )
 
@@ -17,11 +18,8 @@ func Middleware() echo.HandlerFunc {
 		}
 		sessionID := rawSessionID.(string)
 		session, error := GetByID(sessionID)
-		
-		log.Debug(context, "SessionId generated : " + sessionID)
-		
+
 		if error != nil {
-			fmt.Printf("DEBUG: Session %v not found", sessionID)
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 		context.Set("session", session)
@@ -33,7 +31,7 @@ func Middleware() echo.HandlerFunc {
 func AdminMiddleware() echo.HandlerFunc {
 	return func(context *echo.Context) error {
 		session := context.Get("session").(*Session)
-		
+
 		log.Debug(context, fmt.Sprintf("Session %v \n", session))
 		if session.IsAdmin {
 			return nil
