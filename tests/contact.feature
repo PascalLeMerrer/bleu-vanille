@@ -41,7 +41,7 @@ Feature:
     Scenario: As an admin, Deleting a non existing contact should return an HTTP error 500
       Given I set bearer token
   		And I DELETE /admin/contacts?email=unknown@mail.org
-  		Then response code should be 500
+  		Then response code should be 404
 
     Scenario: As an admin, Deleting a contact
       Given I set bearer token
