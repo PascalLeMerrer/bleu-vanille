@@ -79,8 +79,12 @@ func Remove(context *echo.Context) error {
 	if email == "" {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in GET request"})
 	}
-	err := Delete(email)
+	notFound, err := Delete(email)
+
 	if err != nil {
+		if notFound {
+			return context.JSON(http.StatusNotFound, err)
+		}
 		log.Printf("Cannot delete contact with email %s, error: %s", email, err)
 		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot delete contact with email %s", email))
 	}

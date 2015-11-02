@@ -58,17 +58,19 @@ func LoadAll(sort string, order string) ([]Contact, error) {
 }
 
 // Delete removes the entry for a given email
-func Delete(email string) error {
+// Returns true if the contact does not exist int he database
+// and an error if the contact could not be deleted
+func Delete(email string) (bool, error) {
 	contact, err := LoadByEmail(email)
 	if contact == nil {
-		return fmt.Errorf("No contact found for email %v", email)
+		return true, fmt.Errorf("No contact found for email %v", email)
 	}
 	if err != nil {
-		return fmt.Errorf("Error while looking for contact %v: %v", email, err.Error())
+		return false, fmt.Errorf("Error while looking for contact %v: %v", email, err.Error())
 	}
 	errorMap := config.Context().Delete(contact)
 	if value, ok := errorMap["error"]; ok {
-		return fmt.Errorf("Impossible to delete contact by email %q because %v", email, value)
+		return false, fmt.Errorf("Impossible to delete contact with email %q. %v", email, value)
 	}
-	return nil
+	return false, nil
 }
