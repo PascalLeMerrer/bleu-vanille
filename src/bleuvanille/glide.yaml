@@ -4,6 +4,7 @@ import:
   - package: github.com/dgrijalva/jwt-go
   - package: github.com/diegogub/aranGO
   - package: github.com/diegogub/napping
+  - package: github.com/goodsign/monday
   - package: github.com/labstack/echo
   - package: github.com/labstack/gommon
     subpackages:
@@ -16,4 +17,3 @@ import:
   - package: golang.org/x/net
     subpackages:
       - /websocket
-  - package: github.com/lib/pq

@@ -1,0 +1,42 @@
+<login-form>
+  <form class="pure-form pure-form-stacked" onsubmit="{ login }">
+    <label for="username">Adresse email</label>
+    <input name="username" type="email" class="login">
+    <label for="password">Mot de passe</label>
+    <input name="password" type="password" class="login" value="xeCuf8CHapreNe=">
+    <input id="connect" type="submit" value="Me connecter" class="login pure-button-primary pure-button"/>
+  </form>
+
+  <script>
+  // Sends an authentication request to the server
+  login() {
+    var payload = 'email=' + this.username.value + ';password=' + this.password.value
+    superagent.post('/users/login')
+      .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+      .send(payload)
+      .end(this.loginCallback)
+  }
+
+  // process connection request response
+  loginCallback(err, response) {
+    if(response.ok) {
+      this.firstname = response.body.firstname
+      this.lastname = response.body.lastname
+      this.opts.bus.trigger('logged')
+    } else {
+      this.opts.bus.trigger('displayError', "Cette combinaison email / mot de passe est erronée.")
+    }
+    riot.update()
+  }
+  </script>
+
+  <style>
+    #connect {
+      margin-top: 1em;
+      width: 50%
+    }
+    .pure-form input.login {
+      font-size: 100%
+    }
+  </style>
+</login-form>

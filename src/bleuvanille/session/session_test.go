@@ -2,11 +2,12 @@ package session
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSearchByID(t *testing.T) {
-	session, _ := GetByID("IDQUINEXISTEPAS")
+	session, _ := GetByID("UNKNOWNID")
 
 	if session != nil {
 		t.Errorf("Found a session that does not exist : %s", session)

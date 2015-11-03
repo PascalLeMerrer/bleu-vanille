@@ -36,33 +36,40 @@ func LoadByEmail(email string) (*Contact, error) {
 }
 
 // LoadAll returns the list of all contacts in the database
-func LoadAll() ([]Contact, error) {
-	queryString := "FOR c in contacts RETURN c"
-
+// sort defines the sorting property name
+// order must be either ASC or DESC
+func LoadAll(sort string, order string) ([]Contact, error) {
+	queryString := "FOR c in contacts SORT c." + sort + " " + order + " RETURN c"
 	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	result := make([]Contact, len(cursor.Result))
 	err = cursor.FetchBatch(&result)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	return result, nil
 }
 
 // Delete removes the entry for a given email
-func Delete(email string) error {
+// Returns true if the contact does not exist int he database
+// and an error if the contact could not be deleted
+func Delete(email string) (bool, error) {
 	contact, err := LoadByEmail(email)
-	if contact == nil || err != nil {
-		return nil
+	if contact == nil {
+		return true, fmt.Errorf("No contact found for email %v", email)
+	}
+	if err != nil {
+		return false, fmt.Errorf("Error while looking for contact %v: %v", email, err.Error())
 	}
 	errorMap := config.Context().Delete(contact)
 	if value, ok := errorMap["error"]; ok {
-		errorString := fmt.Sprintf("Impossible to delete contact by email %q because %s", email, value)
-		return errors.New(errorString)
+		return false, fmt.Errorf("Impossible to delete contact with email %q. %v", email, value)
 	}
-	return nil
+	return false, nil
 }

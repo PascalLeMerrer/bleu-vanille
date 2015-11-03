@@ -44,7 +44,7 @@ func CreateDefault() {
 		log.Println(err)
 	}
 	if existingAdmin != nil && !existingAdmin.IsAdmin {
-		log.Fatalf("FATAL: User with email %v exists but has admin right.", config.AdminEmail)
+		log.Fatalf("FATAL: User with email %v exists but has no admin rights.", config.AdminEmail)
 	}
 
 	if existingAdmin == nil {
@@ -170,7 +170,7 @@ var Login = emailAndPasswordRequired(
 		authToken, sessionID := auth.GetSessionToken()
 		user.Hash = "" // dont return the hash, for security concerns
 
-		userSession, err := session.New(sessionID, user.ID, user.IsAdmin)
+		userSession, err := session.New(sessionID, user.ID, user.Firstname, user.Lastname, user.Email, user.IsAdmin)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, err)
 		}
@@ -187,7 +187,7 @@ func addCookie(context *echo.Context, authToken string) {
 	cookie := &http.Cookie{
 		Name:    "token",
 		Expires: expire,
-		Value:   authToken,
+		Value:   auth.Bearer + " " + authToken,
 		Path:    "/",
 		Domain:  config.HostName,
 	}

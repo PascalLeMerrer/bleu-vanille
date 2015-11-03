@@ -38,6 +38,11 @@ Feature:
     	Then response code should be 200
       And response body should contain testemail@mail.org
 
+    Scenario: As an admin, Deleting a non existing contact should return an HTTP error 500
+      Given I set bearer token
+  		And I DELETE /admin/contacts?email=unknown@mail.org
+  		Then response code should be 404
+
     Scenario: As an admin, Deleting a contact
       Given I set bearer token
   		And I DELETE /admin/contacts?email=testemail@mail.org
