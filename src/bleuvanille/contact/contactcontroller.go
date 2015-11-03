@@ -21,6 +21,9 @@ type errorMessage struct {
 type formattedContact struct {
 	Email     string `json:"email"`
 	CreatedAt string `json:"created_at"`
+	UserAgent string `json:"userAgent"`
+	Referer   string `json:"referer"`
+	TimeSpent int    `json:"timeSpent"`
 }
 
 // LandingPage displays the landing page for getting new contacts
@@ -29,7 +32,6 @@ func LandingPage(context *echo.Context) error {
 	_, err := context.Request().Cookie("visitorId")
 	if err != nil {
 		// first visit, we add a cookie
-		fmt.Println("first visit")
 		expire := time.Now().AddDate(0, 0, 7) //7 days from now
 		cookie := http.Cookie{
 			Name:    "visitorId",
@@ -66,7 +68,7 @@ func GetAll(context *echo.Context) error {
 	results := make([]formattedContact, len(contacts))
 	for i := range contacts {
 		formattedDate := monday.Format(contacts[i].CreatedAt, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
-		results[i] = formattedContact{contacts[i].Email, formattedDate}
+		results[i] = formattedContact{contacts[i].Email, formattedDate, contacts[i].UserAgent, contacts[i].Referer, contacts[i].TimeSpent}
 		i++
 	}
 	return context.JSON(http.StatusOK, results)
@@ -81,23 +83,20 @@ func Create(context *echo.Context) error {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in POST body"})
 	}
 	timeSpent := context.Request().PostFormValue("timeSpent")
+	var timeSpentInt int
 	// timeSpent := context.Form("timeSpent")
 	if timeSpent != "" {
-		timeSpentInt, err := strconv.Atoi(timeSpent)
-		if err == nil {
-			fmt.Printf("\ntimeSpent %v\n", timeSpentInt)
-		} else {
-			fmt.Println(err.Error())
+		var err error
+		timeSpentInt, err = strconv.Atoi(timeSpent)
+		if err != nil {
+			log.Println(err.Error())
+			timeSpentInt = -1
 		}
 	}
-	// TODO get time spent on the page
 	// TODO check email is valid
-	// TODO save these values
-	// userAgent := context.Request().Header.Get("User-Agent")
-	// referer := context.Request().Header.Get("Referer")
-
-	contact, err := New(email)
-	// contact, err := New(email, userAgent, referer)
+	userAgent := context.Request().Header.Get("User-Agent")
+	referer := context.Request().Header.Get("Referer")
+	contact, err := New(email, userAgent, referer, timeSpentInt)
 	if err != nil {
 		log.Printf("Contact create error %v\n", err)
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})

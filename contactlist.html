@@ -7,6 +7,9 @@
         <th class="id-column">#</th>
         <th class="email-column">Email<a href="" onclick={ sortByEmail } alt="Trier par email"> <i class="fa fa-sort"></i></a></th>
         <th class="date-column">Date d'inscription<a href="" onclick={ sortByDate } alt="Trier par date"> <i class="fa fa-sort"></i></a></th>
+        <th class="useragent-column">UserAgent</th>
+        <th class="referer-column">Referer</th>
+        <th class="timespent-column">Temps passé (sec)</th>
         <th class="action-column">Suppression</th>
       </tr>
     </thead>
@@ -15,6 +18,9 @@
         <td>{ index + 1 }</td>
         <td>{ contact.email }</td>
         <td>{ contact.created_at }</td>
+        <td>{ contact.userAgent }</td>
+        <td>{ contact.referer }</td>
+        <td>{ contact.timeSpent }</td>
         <td class="action-column"><a href="" onclick={ parent.delete } alt="Supprimer"><i class="fa fa-times"></i></a></td>
       </tr>
     </tbody>
@@ -110,6 +116,16 @@
    .action-column {
      width: 4em;
      text-align: center;
+   }
+
+   .useragent-column {
+     width: 3em;
+   }
+   .referer-column {
+     width: 3em;
+   }
+   .timespent-column {
+     width: 3em;
    }
 
   </style>
