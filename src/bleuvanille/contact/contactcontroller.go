@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -65,13 +67,49 @@ func GetAll(context *echo.Context) error {
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Contact list retrieval error"})
 	}
-	results := make([]formattedContact, len(contacts))
+	formattedContacts := make([]formattedContact, len(contacts))
 	for i := range contacts {
 		formattedDate := monday.Format(contacts[i].CreatedAt, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
-		results[i] = formattedContact{contacts[i].Email, formattedDate, contacts[i].UserAgent, contacts[i].Referer, contacts[i].TimeSpent}
+		formattedContacts[i] = formattedContact{contacts[i].Email, formattedDate, contacts[i].UserAgent, contacts[i].Referer, contacts[i].TimeSpent}
 		i++
 	}
-	return context.JSON(http.StatusOK, results)
+	contentType := context.Request().Header.Get(echo.ContentType)
+	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		return context.JSON(http.StatusOK, formattedContacts)
+	}
+	filepath, filename, err := createCsvFile(formattedContacts)
+	if err != nil {
+		fmt.Printf("Cannot create contact list file: %v", err)
+		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot open file: %v", err))
+	}
+	// TODO: How to cleanup the temp dir?
+	return context.File(filepath, filename, true)
+}
+
+// Create a CSV file containing the list of contactlist
+// returns the absolute file name (including the path) and the filename
+func createCsvFile(formattedContacts []formattedContact) (string, string, error) {
+	csvString := ""
+	for j := range formattedContacts {
+		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%d\"\n", formattedContacts[j].Email, formattedContacts[j].CreatedAt, formattedContacts[j].UserAgent, formattedContacts[j].Referer, formattedContacts[j].TimeSpent)
+	}
+	now := monday.Format(time.Now(), "2006-01-02-15h04", monday.LocaleFrFR)
+	filename := "contactlist-" + now + ".csv"
+	filepath := path.Join(os.TempDir(), filename)
+
+	fileHandler, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0666)
+
+	if err != nil {
+		return "", "", fmt.Errorf("Cannot open file: %v", err)
+	}
+
+	defer fileHandler.Close()
+
+	_, err = fileHandler.Write([]byte(csvString))
+	if err != nil {
+		return "", "", fmt.Errorf("Cannot write file: %v", err)
+	}
+	return filepath, filename, nil
 }
 
 // Create creates a new contact
