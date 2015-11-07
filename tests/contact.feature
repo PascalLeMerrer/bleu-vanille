@@ -38,6 +38,20 @@ Feature:
     	Then response code should be 200
       And response body should contain testemail@mail.org
 
+    Scenario: As an admin, Get all contacts
+      When I set bearer token
+      And I set Content-Type header to application/json; charset=UTF-8
+    	And I GET /admin/contacts
+    	Then response code should be 200
+      And response body should contain testemail@mail.org
+      And response header Content-Type should be application/json
+
+    Scenario: As an admin, Download contacts
+      When I set bearer token
+      And I set Content-Type header to text/csv
+    	And I GET /admin/contacts
+    	Then response code should be 200
+
     Scenario: As an admin, Deleting a non existing contact should return an HTTP error 500
       Given I set bearer token
   		And I DELETE /admin/contacts?email=unknown@mail.org

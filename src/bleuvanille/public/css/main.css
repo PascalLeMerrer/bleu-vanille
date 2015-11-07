@@ -53,12 +53,15 @@ h6 {
 
 h1,
 h2,
-h3,
+h3 {
+    color: var(--primary-color);
+}
+
 h4,
 h5,
 h6,
 label {
-    color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 .pure-img-responsive {
@@ -83,8 +86,6 @@ label {
     text-align: center;
 }
 
-
-
 /*
  * -- PURE FORM STYLES --
  * Style the form inputs and labels
@@ -96,22 +97,24 @@ label {
 }
 
 .pure-form input[type] {
-    border: 2px solid #ddd;
-    box-shadow: none;
-    font-size: 100%;
-    width: 100%;
-    margin-bottom: 1em;
+    /*border: 2px solid #ddd;
+    box-shadow: none;*/
+    font-size: 150%;
+    width: 97%;
+    /*margin-bottom: 1em;*/
 }
+
 
 /*
  * -- PURE BUTTON STYLES --
  * I want my pure-button elements to look a little different
  */
 .pure-button {
-    background-color: var(--secondary-color-light);
+    background-color: var(--primary-color-light);
     color: var(--third-color-light);
     padding: 0.5em 2em;
     border-radius: 5px;
+    border: none;
 }
 
 a.pure-button-primary {
@@ -121,6 +124,15 @@ a.pure-button-primary {
     font-size: 120%;
 }
 
+
+.call-to-action-button {
+    background-color: var(--primary-color-light);
+    color: var(--third-color-light);
+    padding: 0.6em 2em;
+    border-radius: 15px;
+    box-shadow: none;
+    font-size: 150%;
+}
 
 /*
  * -- MENU STYLES --
@@ -279,6 +291,7 @@ a.pure-button-primary {
 .footer {
     background: var(--primary-color);
     color: var(--third-color-light);
+    font-size: 150%;
 }
 
 /*
@@ -363,4 +376,21 @@ div.alert {
   text-align: center;
   width:100%;
   color: var(--dark-text-color);
+}
+
+/* TODO these styles are specific to the landing page, because it does not use
+   riot based component 'alert'
+   either we should move them to a specific CSS, or the landing page should use riot */
+div#success-alert {
+  background-color: #ACCD69;
+}
+
+div#error-alert {
+  background-color: #F5A3AD;
+}
+
+.fa-angle-down {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 200%;
 }

@@ -14,13 +14,16 @@ type Contact struct {
 	ara.Document
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
+	UserAgent string
+	Referer   string
+	TimeSpent int
 }
 
 // Contacts is a list of Contact
 type Contacts []Contact
 
 // New creates a Contact instance
-func New(email string) (Contact, error) {
+func New(email string, userAgent string, referer string, timeSpent int) (Contact, error) {
 	var contact Contact
 	if email == "" {
 		errorMessage := "Cannot create contact, email is missing"
@@ -29,6 +32,9 @@ func New(email string) (Contact, error) {
 	}
 	contact.Email = email
 	contact.CreatedAt = time.Now()
+	contact.UserAgent = userAgent
+	contact.Referer = referer
+	contact.TimeSpent = timeSpent
 
 	return contact, nil
 }

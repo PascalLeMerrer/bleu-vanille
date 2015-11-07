@@ -1,12 +1,21 @@
+var contactEmail = "info" + "@" + "bleuvanille.com"
+var startTime;
+
 /* Hide alerts on page loading */
 $(document).ready(function() {
   $('#success-alert').hide();
   $('#error-alert').hide();
   initScrollspy();
+  startTime = new Date();
+  addScroll('#menuButton')
+  addScroll('#arrowToMenu')
+  $('#contact').text(contactEmail);
+});
 
-  $('#menuButton').click(function(e) {
+function addScroll(id) {
+  $(id).click(function(e) {
     topMenu = $("#top-menu"),
-    topMenuHeight = topMenu.outerHeight() + 15;
+      topMenuHeight = topMenu.outerHeight() + 15;
 
     var offsetTop = $('#menu').offset().top - topMenuHeight + 1;
     $('html, body').stop().animate({
@@ -14,8 +23,7 @@ $(document).ready(function() {
     }, 600);
     e.preventDefault();
   });
-});
-
+}
 
 /* -------------------------------------------------------------------------------------------*/
 /* Highlights the current menu item                                                           */
@@ -71,9 +79,11 @@ function initScrollspy() {
 $("#emailRegistrationForm").submit(function(event) {
   var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
   var email = $('#emailInput').val();
+  var timeSpentSeconds = Math.round((new Date() - startTime)/1000); // time spent on the page
   if (regex.test(email)) {
     var body = {
-      email: email
+      email: email,
+      timeSpent: timeSpentSeconds
     }
     var posting = $.post('/contacts', body);
     posting.done(function(response) {
@@ -81,7 +91,11 @@ $("#emailRegistrationForm").submit(function(event) {
       $('#success-alert').show().delay(2000).fadeOut(1000);
     });
     posting.fail(function(response) {
-      $('#error-alert').text("Une erreur s'est produite. Veuillez réessayer dans quelques minutes.")
+      if (response.status == 409) {
+        $('#error-alert').text("Vous êtes déjà inscrit.")
+      } else {
+        $('#error-alert').text("Une erreur s'est produite. Veuillez réessayer dans quelques minutes. Si l'erreur persiste, prévenez-nous à " + contactEmail)
+      }
       $('#error-alert').show().delay(2000).fadeOut(1000);
     });
   } else {
