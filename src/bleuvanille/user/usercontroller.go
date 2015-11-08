@@ -189,7 +189,8 @@ func addCookie(context *echo.Context, authToken string) {
 		Expires: expire,
 		Value:   auth.Bearer + " " + authToken,
 		Path:    "/",
-		Domain:  config.HostName,
+		// Domain must not be set for auth to work with chrome without domain name
+		// http://stackoverflow.com/questions/5849013/setcookie-does-not-set-cookie-in-google-chrome
 	}
 	http.SetCookie(context.Response().Writer(), cookie)
 }
