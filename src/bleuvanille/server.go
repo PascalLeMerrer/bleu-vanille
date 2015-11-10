@@ -92,8 +92,8 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
-	echoServer.Post("/users/sendresetlink", user.SendResetLink)
-	echoServer.Get("/users/resetform", user.DisplayResetForm)
+	echoServer.Post("/users/sendResetLink", user.SendResetLink)
+	echoServer.Get("/users/resetForm", user.DisplayResetForm)
 }
 
 // privates Routes require a valid user auth token and a sessionID
@@ -113,7 +113,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 func declareSpecialRoutes(echoServer *echo.Echo) {
 	specialRoutes := echoServer.Group("/special")
 	specialRoutes.Use(auth.JWTAuth())
-	specialRoutes.Post("/resetpassword", user.ResetPassword)
+	specialRoutes.Post("/resetPassword", user.ResetPassword)
 }
 
 // Admin routes require a valid auth token AND the user to have the admin rights
