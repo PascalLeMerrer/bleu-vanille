@@ -1,0 +1,66 @@
+/* palette: http://paletton.com/#uid=63o0R0kttxNilGMnCAhxNqXB2lc */
+:root {
+  --primary-color:                #D76D00;
+  --primary-color-light:          #FFA243;
+  --secondary-color:              #1284A4;
+  --secondary-color-light:        #3293AF;
+  --third-color:                  #DDDDDD;
+  --third-color-light:            #FFFFFF;
+  --default-text-color:           #7f8c8d;
+  --dark-text-color:              #444444;
+}
+
+@font-face {
+    font-family: 'quicksandregular';
+    src: url('../fonts/quicksand-webfont/quicksand-regular-webfont.eot');
+    src: url('../fonts/quicksand-webfont/quicksand-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/quicksand-webfont/quicksand-regular-webfont.woff2') format('woff2'),
+         url('../fonts/quicksand-webfont/quicksand-regular-webfont.woff') format('woff'),
+         url('../fonts/quicksand-webfont/quicksand-regular-webfont.ttf') format('truetype'),
+         url('../fonts/quicksand-webfont/quicksand-regular-webfont.svg#quicksandregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'quicksandregular';
+}
+
+h1,
+h2,
+h3 {
+    color: var(--secondary-color);
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2.0rem;
+}
+
+
+header {
+    background-color: var(--secondary-color-light);
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+
+header h1,
+header h2,
+header h3,
+header a {
+    color: var(--third-color-light);
+}
+
+

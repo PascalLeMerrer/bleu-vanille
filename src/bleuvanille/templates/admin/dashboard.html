@@ -1,29 +1,58 @@
 {{define "admin/dashboard"}}
-{{template "header"}}
-    <div class="pure-g">
-      <div class="pure-u-1-5"><strong>Admin Dashboard</strong></div>
-      <div class="pure-u-2-5">&nbsp;</div>
-      <div class="pure-u-1-5">
-        <logout firstname="{{ .Firstname }}" lastname="{{ .Lastname }}"></logout>
-      </div>
-      <div class="pure-u-1-5">&nbsp;</div>
-      <alert></alert>
-      <contact-list></contact-list>
+<!doctype html>
+<html class="no-js" lang="fr">
+<head>
+        <meta charset="UTF-8">
+        <title>Bleu Vanille</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/css/knacss.css" media="all">
+        <link rel="stylesheet" href="/css/admin.css">
+        <link rel="stylesheet" href="/css/animate.css">
+        <link rel="stylesheet" href="/css/font-awesome.min.css">
+</head>
+<body>
+
+    <header id="header" role="banner" class="grid-3">
+        <div><h1>Bleu Vanille</h1></div>
+        <div><h1>Administration</h1></div>
+        <div class="txtright"><logout firstname="{{ .Firstname }}" lastname="{{ .Lastname }}"></logout></div>
+    </header>
+    <div class="flex-container">
+        <admin-menu></admin-menu>
+        <div id="main" role="main" class="flex-item-fluid pam">
+            <alert></alert>
+            <contact-list></contact-list>
+            <user-list></user-list>
+        </div>
     </div>
+    <footer id="footer" role="contentinfo" class="line pam txtcenter">
+        contenu du pied de page
+    </footer>
     <script type="text/javascript" src="/js/superagent.js"></script>
     <script type="text/javascript" src="/js/riot.min.js"></script>
     <script type="text/javascript" src="/tags/alert.js"></script>
     <script type="text/javascript" src="/tags/logout.js"></script>
+    <script type="text/javascript" src="/tags/admin-menu.js"></script>
     <script type="text/javascript" src="/tags/contactlist.js"></script>
+    <script type="text/javascript" src="/tags/user-list.js"></script>
     <script type="text/javascript">
       var bus = {};
+      var tags = null;
       riot.observable(bus);
       bus.on('disconnected', function() {
         window.location = '/admin'
       })
       riot.mount('alert', { bus: bus })
       riot.mount('logout', { bus: bus })
-      riot.mount('contact-list', { bus: bus})
+      bus.on('display', function(selectedTag) {
+        if(tags) {
+            tags[0].unmount(true); // removes previous component
+        }
+        tags = riot.mount(selectedTag, { bus: bus})
+      })
+      riot.mount('admin-menu', { bus: bus})
+
     </script>
-{{template "footer"}}
+</body>
+</html>
 {{end}}
