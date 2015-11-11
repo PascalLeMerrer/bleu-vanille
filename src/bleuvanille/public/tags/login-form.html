@@ -1,10 +1,10 @@
 <login-form>
-  <form class="pure-form pure-form-stacked" onsubmit="{ login }">
-    <label for="username">Adresse email</label>
-    <input name="username" type="email" class="login">
-    <label for="password">Mot de passe</label>
-    <input name="password" type="password" class="login" value="xeCuf8CHapreNe=">
-    <input id="connect" type="submit" value="Me connecter" class="login pure-button-primary pure-button"/>
+  <form class="w40 center" onsubmit="{ login }">
+    <label for="username" class="row mts mrs mls">Adresse email</label>
+    <input name="username" type="email" class="row mrs mls login">
+    <label for="password" class="row mts mrs mls">Mot de passe</label>
+    <input name="password" type="password" class="row mrs mls login" value="xeCuf8CHapreNe=">
+    <input id="connect" type="submit" value="Me connecter" class="row mts mls btn primary-btn"/>
   </form>
 
   <script>
@@ -29,14 +29,4 @@
     riot.update()
   }
   </script>
-
-  <style>
-    #connect {
-      margin-top: 1em;
-      width: 50%
-    }
-    .pure-form input.login {
-      font-size: 100%
-    }
-  </style>
 </login-form>

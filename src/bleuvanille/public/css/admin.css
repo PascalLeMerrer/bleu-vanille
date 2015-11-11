@@ -60,7 +60,25 @@ header h1,
 header h2,
 header h3,
 header a {
-    color: var(--third-color-light);
+  color: var(--third-color-light);
+}
+
+label {
+  color: var(--dark-text-color);
 }
 
 
+.primary-btn {
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--third-color-light);
+  font-size: 120%;
+  margin: 1rem;
+  height: 2em;
+}
+
+.primary-btn:hover {
+  background-color: var(--primary-color-light);
+  color: #444;
+}
