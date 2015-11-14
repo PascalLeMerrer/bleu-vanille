@@ -1,32 +1,62 @@
 <login-form>
-  <form class="w40 center" onsubmit="{ login }">
+  <form class="w50 center" onsubmit="{ login }">
     <label for="username" class="row mts mrs mls">Adresse email</label>
     <input name="username" type="email" class="row mrs mls login">
     <label for="password" class="row mts mrs mls">Mot de passe</label>
     <input name="password" type="password" class="row mrs mls login" value="xeCuf8CHapreNe=">
-    <input id="connect" type="submit" value="Me connecter" class="row mts mls btn primary-btn"/>
+    <input id="connect" type="submit" value="Me connecter" class="row btn primary-btn"/>
   </form>
-
+  <div class="w50 center pls">
+    <a href="#" onclick={ sendResetLink } >J'ai oublié mon mot de passe</a>
+  </div>
   <script>
+  var self = this
   // Sends an authentication request to the server
   login() {
-    var payload = 'email=' + this.username.value + ';password=' + this.password.value
+    var payload = 'email=' + self.username.value + ';password=' + self.password.value
     superagent.post('/users/login')
       .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
       .send(payload)
-      .end(this.loginCallback)
+      .end(self.loginCallback)
   }
 
   // process connection request response
   loginCallback(err, response) {
     if(response.ok) {
-      this.firstname = response.body.firstname
-      this.lastname = response.body.lastname
-      this.opts.bus.trigger('logged')
+      self.firstname = response.body.firstname
+      self.lastname = response.body.lastname
+      self.opts.bus.trigger('logged')
     } else {
-      this.opts.bus.trigger('displayError', "Cette combinaison email / mot de passe est erronée.")
+      self.opts.bus.trigger('displayError', "Cette combinaison email / mot de passe est erronée.")
     }
     riot.update()
   }
+
+  sendResetLink() {
+    if(self.username.value != undefined && self.username.value != '')
+    {
+      var payload = 'email=' + self.username.value
+      console.log(payload)
+      superagent.post('/users/sendresetlink')
+        .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+        .send(payload)
+        .end(self.sendResetLinkCallback)
+    }
+    else {
+      console.log("empty email")
+      self.opts.bus.trigger('displayError', "Veuillez remplir le champ email SVP.")
+    }
+  }
+
+  sendResetLinkCallback(err, response) {
+    console.log(response);
+    if(err) {
+      self.opts.bus.trigger('displayError', "l'evoi du mail contenant un lien de réinitialisation du mot de passe a échoué. Votre adresse email est-elle correcte ?")
+    }
+    else {
+      self.opts.bus.trigger('displaySuccess', "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé.")
+    }
+  }
+
   </script>
 </login-form>
