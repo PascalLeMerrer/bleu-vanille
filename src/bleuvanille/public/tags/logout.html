@@ -10,9 +10,9 @@
       .end(this.logoutCallback)
   }
 
-  // process disconnection request response
+  // process disconnection request response.
   logoutCallback(err, response) {
-    if(response.ok) {
+    if(response.ok || response.unauthorized) {
       this.logged = false
       this.opts.bus.trigger('disconnected')
     } else {

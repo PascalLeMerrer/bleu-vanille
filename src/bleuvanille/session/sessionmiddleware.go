@@ -32,8 +32,7 @@ func AdminMiddleware() echo.HandlerFunc {
 	return func(context *echo.Context) error {
 		session := context.Get("session").(*Session)
 
-		log.Debug(context, fmt.Sprintf("Session %v \n", session))
-		if session.IsAdmin {
+		if session != nil && session.IsAdmin {
 			return nil
 		}
 		return echo.NewHTTPError(http.StatusUnauthorized)
