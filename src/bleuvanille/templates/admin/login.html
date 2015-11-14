@@ -7,9 +7,11 @@
       </div>
       <div></div>
     </div>
+    <alert></alert>
     <script type="text/javascript" src="/js/superagent.js"></script>
     <script type="text/javascript" src="/js/riot.min.js"></script>
     <script type="text/javascript" src="/tags/login-form.js"></script>
+    <script type="text/javascript" src="/tags/alert.js"></script>
     <script type="text/javascript">
       var bus = {};
       riot.observable(bus);
@@ -17,6 +19,7 @@
         window.location = 'admin/dashboard'
       })
       riot.mount('login-form', {bus: bus})
+      riot.mount('alert', {bus: bus})
     </script>
 {{template "footer"}}
 {{end}}
