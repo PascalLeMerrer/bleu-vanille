@@ -89,6 +89,11 @@ input {
   color: #444;
 }
 
+.disabled{
+  opacity: 0.3;
+  color: #000;
+}
+
 .passwordShow {
   float:right;
   width: 30%;
