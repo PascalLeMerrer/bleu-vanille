@@ -48,7 +48,7 @@
   }
 
   sendResetLinkCallback(err, response) {
-    if(response.ok) {
+    if(!err && response.ok) {
       self.opts.bus.trigger('displaySuccess', "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé.")
     }
     else {
