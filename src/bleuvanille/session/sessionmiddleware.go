@@ -1,8 +1,6 @@
 package session
 
 import (
-	"bleuvanille/log"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo"
