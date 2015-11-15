@@ -263,7 +263,7 @@ var SendResetLink = emailRequired(
 	func(context *echo.Context) error {
 		email := context.Form("email")
 		user, err := LoadByEmail(email)
-		if err != nil {
+		if err != nil || user == nil {
 			log.Println(err)
 			return context.JSON(http.StatusNotFound, errors.New("Cannot find user for email "+email))
 		}
