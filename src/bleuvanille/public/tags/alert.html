@@ -1,62 +1,107 @@
 <alert>
-  <div id="error-alert" show="{ failed }" class={error-alert: true, animated: true, fadeOut:out} animationend={ end }>
-    { errorMessage }
-  </div>
-  <div id="success-alert" show="{ success }" class={success-alert: true, animated: true, fadeOut:out} animationend={ end }>
-    { successMessage }
+  <div each="{ alerts }" show="{ isVisible }" class="alert {type} animated { fadeOut: out }" animationend={ dismiss }>
+      { message }
+      <a class="close" aria-label="Fermer" onclick="{ parent.close }">
+      <span aria-hidden="true">&times;</span>
+    </a>
   </div>
   <script>
-    this.failed = false
-    this.success = false
-    this.errorMessage = ""
-    this.successMessage = ""
-    this.out = false
-
     self = this
+    self.type = ""
+    self.message = ""
+    self.alerts = []
+
     this.opts.bus.on('displayError', function(message) {
-      self.errorMessage = message
-      self.failed = true
-      self.success = false
-      self.out = false
-      self.update()
-      setTimeout(self.hide, 3000)
+      var alertDescriptor = { message: message, type: "error" }
+      self.add(alertDescriptor)
     })
 
+    /* Displays a sucess message taht is automatically dismissed after a few seconds */
     this.opts.bus.on('displaySuccess', function(message) {
-      self.successMessage = message
-      self.failed = false
-      self.success = true
-      self.out = false
-      self.update()
-      setTimeout(self.hide, 3000)
+      var alertDescriptor = { message: message, type: "success" }
+      setTimeout( function() {
+          self.hide(alertDescriptor)
+        }, 5000)
+      self.add(alertDescriptor)
     })
 
-    /* Starts the animation for hiding the current message */
-    hide() {
-      self.out = true
+    /* adds an alert to the list of displayed ones */
+    add(alertDescriptor) {
+      self.alerts.push(alertDescriptor)
+      alertDescriptor.isVisible = true
+      alertDescriptor.out = false
       self.update()
+
     }
 
     /* Cleanup after the animation end */
-    end() {
-      self.failed = false
-      self.success = false
-      self.out = false
+    dismiss(event) {
+      var alertDescriptor = event.item
+      var index = self.alerts.indexOf(alertDescriptor)
+      self.alerts.splice(index, 1)
+    }
+
+    /* Starts the animation for hiding the given message */
+    close(event) {
+      self.hide(event.item)
+    }
+
+    /* Starts the animation for hiding the given message */
+    hide(alertDescriptor) {
+      alertDescriptor.out = true
       self.update()
     }
+
   </script>
-  <style>
+  <style scoped>
+      :scope {
+        font-size: 1em;
+        position: relative;
+        top: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+      }
 
-    div#success-alert {
-      text-align: center;
-      color: black;
-      background-color: #ACCD69;
-    }
+      .alert {
+        position: relative;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem 3.5rem 1.5rem 1.5rem;
+      }
 
-    div#error-alert {
-      text-align: center;
-      color: black;
-      background-color: #F5A3AD;
-    }
-  </style>
+      .close {
+        position: absolute;
+        top: 50%;
+        right: 2.0rem;
+        line-height: 1.2rem;
+        font-size: 1.1em;
+        border: 0;
+        background-color: transparent;
+        color: rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+        outline: none;
+        transform: translate3d(0, -50%, 0);
+      }
+
+      .error {
+        color: #8f1d2e;
+        background-color: #ffced8;
+      }
+
+      .information {
+        color: #31708f;
+        background-color: #d9edf7;
+      }
+
+      .success {
+        color: #2d8f40;
+        background-color: #ccf7d4;
+      }
+
+      .warning {
+        color: #c06329;
+        background-color: #f7dfd0;
+      }
+
+    </style>
 </alert>
