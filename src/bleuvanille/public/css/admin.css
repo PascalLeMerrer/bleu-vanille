@@ -75,7 +75,9 @@ label {
   color: var(--third-color-light);
   font-size: 120%;
   margin: 1rem;
+  padding-top: 0.5rem;
   height: 2em;
+  cursor: pointer;
 }
 
 .primary-btn:hover {

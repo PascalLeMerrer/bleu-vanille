@@ -1,40 +1,66 @@
 <login-form>
   <form class="w50 center" onsubmit="{ login }">
     <label for="username" class="row mts mrs mls">Adresse email</label>
-    <input name="username" type="email" class="row mrs mls login">
+    <input name="username" type="email" class="row mrs mls">
     <label for="password" class="row mts mrs mls">Mot de passe</label>
-    <input name="password" type="password" class="row mrs mls login" value="xeCuf8CHapreNe=">
-    <input type="submit" value="Me connecter" class="row btn primary-btn"/>
+    <input name="password" type="password" class="row mrs mls" value="xeCuf8CHapreNe=">
+    <a onclick={ login } class="row btn primary-btn">
+      <div class="grid-3-1">
+        <div class="txtcenter" >{ buttonLabel }</div>
+        <div><i if="{ isWaitingConnect }" class="fa fa-spinner fa-pulse fa-lg"></i></div>
+      </div>
+    </a>
   </form>
   <div class="w50 center pls">
-    <a href="#" onclick={ sendResetLink } >J'ai oublié mon mot de passe</a>
+    <a href="#" onclick={ sendResetLink } >{ forgotMessage }</a> <i show="{ isWaitingReset }" class="fa fa-spinner fa-pulse fa-lg"></i>
   </div>
   <script>
   var self = this
+  self.isWaitingConnect = false
+  self.isWaitingReset = false
+  self.buttonLabel = "Me connecter"
+  self.forgotMessage = "J'ai oublié mon mot de passe"
+
   // Sends an authentication request to the server
   login() {
-    var payload = 'email=' + self.username.value + ';password=' + self.password.value
-    superagent.post('/users/login')
-      .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-      .send(payload)
-      .end(self.loginCallback)
+    if(self.username.value != undefined && self.username.value != '')
+    {
+      self.isWaitingConnect = true
+      self.buttonLabel = "Connexion"
+      self.update()
+      var payload = 'email=' + self.username.value + ';password=' + self.password.value
+      superagent.post('/users/login')
+        .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+        .send(payload)
+        .end(self.loginCallback)
+    }
+    else {
+      self.opts.bus.trigger('displayError', "Veuillez remplir le champ email.")
+    }
+
   }
 
   // process connection request response
   loginCallback(err, response) {
+    self.isWaitingConnect = false
     if(response.ok) {
       self.firstname = response.body.firstname
       self.lastname = response.body.lastname
       self.opts.bus.trigger('logged')
     } else {
+      self.buttonLabel = "Me connecter"
       self.opts.bus.trigger('displayError', "Cette combinaison email / mot de passe est erronée.")
+      self.update()
     }
-    riot.update()
   }
 
+  // sends a reset link via email
   sendResetLink() {
     if(self.username.value != undefined && self.username.value != '')
     {
+      self.isWaitingReset = true
+      self.forgotMessage = "Envoi en cours"
+      self.update()
       var payload = 'email=' + self.username.value
       superagent.post('/users/sendresetlink')
         .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
@@ -42,18 +68,20 @@
         .end(self.sendResetLinkCallback)
     }
     else {
-      console.log("empty email")
-      self.opts.bus.trigger('displayError', "Veuillez remplir le champ email SVP.")
+      self.opts.bus.trigger('displayError', "Veuillez remplir le champ email.")
     }
   }
 
   sendResetLinkCallback(err, response) {
+    self.isWaitingReset = false
+    self.forgotMessage = "J'ai oublié mon mot de passe"
     if(!err && response.ok) {
       self.opts.bus.trigger('displaySuccess', "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé.")
     }
     else {
       self.opts.bus.trigger('displayError', "l'envoi du mail contenant un lien de réinitialisation du mot de passe a échoué. Votre adresse email est-elle correcte ?")
     }
+    self.update()
   }
 
   </script>
