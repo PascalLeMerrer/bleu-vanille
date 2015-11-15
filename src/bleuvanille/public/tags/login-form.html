@@ -4,7 +4,7 @@
     <input name="username" type="email" class="row mrs mls login">
     <label for="password" class="row mts mrs mls">Mot de passe</label>
     <input name="password" type="password" class="row mrs mls login" value="xeCuf8CHapreNe=">
-    <input id="connect" type="submit" value="Me connecter" class="row btn primary-btn"/>
+    <input type="submit" value="Me connecter" class="row btn primary-btn"/>
   </form>
   <div class="w50 center pls">
     <a href="#" onclick={ sendResetLink } >J'ai oublié mon mot de passe</a>
@@ -36,7 +36,6 @@
     if(self.username.value != undefined && self.username.value != '')
     {
       var payload = 'email=' + self.username.value
-      console.log(payload)
       superagent.post('/users/sendresetlink')
         .set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
         .send(payload)
@@ -49,12 +48,11 @@
   }
 
   sendResetLinkCallback(err, response) {
-    console.log(response);
-    if(err) {
-      self.opts.bus.trigger('displayError', "l'evoi du mail contenant un lien de réinitialisation du mot de passe a échoué. Votre adresse email est-elle correcte ?")
+    if(response.ok) {
+      self.opts.bus.trigger('displaySuccess', "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé.")
     }
     else {
-      self.opts.bus.trigger('displaySuccess', "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé.")
+      self.opts.bus.trigger('displayError', "l'envoi du mail contenant un lien de réinitialisation du mot de passe a échoué. Votre adresse email est-elle correcte ?")
     }
   }
 
