@@ -1,9 +1,10 @@
 <login-form>
-  <form class="w50 center" onsubmit="{ login }">
-    <label for="username" class="row mts mrs mls">Adresse email</label>
-    <input name="username" type="email" class="row mrs mls">
-    <label for="password" class="row mts mrs mls">Mot de passe</label>
-    <input name="password" type="password" class="row mrs mls" value="xeCuf8CHapreNe=">
+  <form class="w70 center" onsubmit="{ login }">
+    <label for="username" class="row mts">Adresse email</label>
+    <input name="username" type="email" class="row">
+    <label for="password" class="row mts">Mot de passe</label>
+    <input name="password" class="mbs w70" type="{ passwordFieldType }" onkeyup={ check } value="xeCuf8CHapreNe=">
+    <div class="passwordShow"><input checked={ isPasswordVisible } type="checkbox" onclick={ toggle }> Afficher</div>
     <a onclick={ login } class="row btn primary-btn">
       <div class="grid-3-1">
         <div class="txtcenter" >{ buttonLabel }</div>
@@ -11,7 +12,7 @@
       </div>
     </a>
   </form>
-  <div class="w50 center pls">
+  <div class="w50 center">
     <a href="#" onclick={ sendResetLink } >{ forgotMessage }</a> <i show="{ isWaitingReset }" class="fa fa-spinner fa-pulse fa-lg"></i>
   </div>
   <script>
@@ -20,6 +21,8 @@
   self.isWaitingReset = false
   self.buttonLabel = "Me connecter"
   self.forgotMessage = "J'ai oublié mon mot de passe"
+  self.isPasswordVisible = false
+  self.passwordFieldType = "password"
 
   // Sends an authentication request to the server
   login() {
@@ -76,12 +79,18 @@
     self.isWaitingReset = false
     self.forgotMessage = "J'ai oublié mon mot de passe"
     if(!err && response.ok) {
-      self.opts.bus.trigger('displaySuccess', "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé.")
+      self.opts.bus.trigger('displaySuccess',
+        "Un email contenant un lien de réinitialisation du mot de passe vous a été adressé. Pour des questions de sécurité, il n'est valable que cinq minutes.")
     }
     else {
       self.opts.bus.trigger('displayError', "l'envoi du mail contenant un lien de réinitialisation du mot de passe a échoué. Votre adresse email est-elle correcte ?")
     }
     self.update()
+  }
+
+  toggle(event) {
+    self.isPasswordVisible = !self.isPasswordVisible
+    self.passwordFieldType = self.isPasswordVisible ? "text" : "password"
   }
 
   </script>
