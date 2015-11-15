@@ -113,7 +113,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 func declareSpecialRoutes(echoServer *echo.Echo) {
 	specialRoutes := echoServer.Group("/special")
 	specialRoutes.Use(auth.JWTAuth())
-	specialRoutes.Post("/resetpassword", user.ResetPassword)
+	specialRoutes.Post("/resetPassword", user.ResetPassword)
 }
 
 // Admin routes require a valid auth token AND the user to have the admin rights
