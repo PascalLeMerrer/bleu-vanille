@@ -1,5 +1,5 @@
 <alert>
-  <div each="{ alerts }" show="{ isVisible }" class="alert {type} animated { fadeOut: out }" animationend={ dismiss }>
+  <div each="{ alerts }" if="{ isVisible }" class="alert {type} animated { fadeOut: out }" animationend={ dismiss }>
       { message }
       <a class="close" aria-label="Fermer" onclick="{ parent.close }">
       <span aria-hidden="true">&times;</span>
@@ -35,8 +35,8 @@
     }
 
     /* Cleanup after the animation end */
-    dismiss(event) {
-      var alertDescriptor = event.item
+    dismiss(alertDescriptor) {
+      console.log("dismisssed")
       var index = self.alerts.indexOf(alertDescriptor)
       self.alerts.splice(index, 1)
     }
@@ -49,6 +49,9 @@
     /* Starts the animation for hiding the given message */
     hide(alertDescriptor) {
       alertDescriptor.out = true
+      setTimeout( function() {
+          self.dismiss(alertDescriptor)
+      }, 1000)
       self.update()
     }
 
