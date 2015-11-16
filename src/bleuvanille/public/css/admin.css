@@ -67,6 +67,9 @@ label {
   color: var(--dark-text-color);
 }
 
+input {
+  height: 2em;
+}
 
 .primary-btn {
   background-color: var(--primary-color);
@@ -74,11 +77,29 @@ label {
   border-radius: 0.5rem;
   color: var(--third-color-light);
   font-size: 120%;
-  margin: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
   height: 2em;
+  cursor: pointer;
 }
 
 .primary-btn:hover {
   background-color: var(--primary-color-light);
   color: #444;
+}
+
+.disabled{
+  opacity: 0.3;
+  color: #000;
+}
+
+.passwordShow {
+  float:right;
+  width: 30%;
+  border: 1px #888 solid;
+  border-left: none;
+  background-color: #CCC;
+  padding-left: 1em;
+  height: 2em;
 }
