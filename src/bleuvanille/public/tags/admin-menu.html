@@ -1,0 +1,52 @@
+<admin-menu>
+    <aside class="mrs aside">
+        <nav id="navigation" role="navigation">
+            <ul class="unstyled">
+                <li><div id="user-list"    onclick={ display } class={ active: isSelected('user-list') }>Utilisateurs</div></li>
+                <li><div id="contact-list" onclick={ display } class={ active: isSelected('contact-list') }>Contacts</div></li>
+            </ul>
+        </nav>
+    </aside>
+    <script>
+      var self = this;
+      self.selected = 'contact-list' // default view
+      self.opts.bus.trigger('display', self.selected)
+
+      isSelected(id) {
+        return self.selected == id;
+      }
+
+      display(event) {
+        self.selected = event.target.id
+        self.opts.bus.trigger('display', self.selected) // update the main view
+                                                        // self.selected is the name of the component to display
+      }
+    </script>
+    <style>
+    admin-menu {
+        background-color: black;
+        color: #999;
+        padding-top: 1em;
+    }
+
+    admin-menu nav ul li {
+        cursor: pointer;
+    }
+
+    admin-menu nav ul li:hover {
+        color: #FFF;
+    }
+
+    admin-menu nav ul li div {
+        padding-left: 1.0rem;
+        padding-right: 1.0rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    admin-menu ul li div.active {
+        background-color: #1284A4;
+        color: #FFF;
+    }
+    </style>
+</admin-menu>

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+
 	"github.com/labstack/echo"
 	"github.com/twinj/uuid"
 )
@@ -31,9 +32,10 @@ func JWTAuth() echo.HandlerFunc {
 		header := context.Request().Header.Get("Authorization")
 		if header == "" {
 			cookie, err := context.Request().Cookie("token")
-			if err == nil {
-				header = cookie.Value
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized)
 			}
+			header = cookie.Value
 		}
 		prefixLength := len(Bearer)
 		if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
