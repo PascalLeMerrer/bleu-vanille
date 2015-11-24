@@ -31,12 +31,10 @@
       alertDescriptor.isVisible = true
       alertDescriptor.out = false
       self.update()
-
     }
 
     /* Cleanup after the animation end */
     dismiss(alertDescriptor) {
-      console.log("dismisssed")
       var index = self.alerts.indexOf(alertDescriptor)
       self.alerts.splice(index, 1)
     }
