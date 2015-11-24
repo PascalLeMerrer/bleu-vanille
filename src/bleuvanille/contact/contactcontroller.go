@@ -88,10 +88,10 @@ func GetAll(context *echo.Context) error {
 	return context.File(filepath, filename, true)
 }
 
-// Create a CSV file containing the list of contactlist
+// Create a CSV file containing the list of contacts
 // returns the absolute file name (including the path) and the filename
 func createCsvFile(formattedContacts []formattedContact) (string, string, error) {
-	csvString := ""
+	csvString := "Email, Date d'inscription, User Agent, Provenance, Temps passé sur landing page"
 	for j := range formattedContacts {
 		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%d\"\n", formattedContacts[j].Email, formattedContacts[j].CreatedAt, formattedContacts[j].UserAgent, formattedContacts[j].Referer, formattedContacts[j].TimeSpent)
 	}
