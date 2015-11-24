@@ -1,5 +1,5 @@
 <contact-list>
-  <table class="contact-table">
+  <table>
     <div class="grid-2">
       <div><h2>Contacts</h2></div>
       <div class="txtright"><a href="" onclick={ download } alt="Télécharger"><i class="fa fa-download"></i>Télécharger</a></div>
@@ -12,14 +12,14 @@
         <th class="useragent-column">UserAgent</th>
         <th class="referer-column">Referer</th>
         <th class="timespent-column">Temps passé (sec)</th>
-        <th class="action-column">Suppr</th>
+        <th class="action-column"></th>
       </tr>
       </thead>
       <tbody>
       <tr each={contact, index in contacts} >
         <td>{ index + 1 }</td>
         <td>{ contact.email }</td>
-        <td>{ contact.created_at }</td>
+        <td>{ contact.createdAt }</td>
         <td>{ contact.userAgent }</td>
         <td>{ contact.referer }</td>
         <td>{ contact.timeSpent }</td>
@@ -62,7 +62,12 @@
 
     // sort the contact list by email address
     sortByEmail() {
-      self.sorting = "email"
+        if(self.sorting == "emailAsc") {
+            self.sorting = "emailDesc"
+        }
+        else {
+            self.sorting = "emailAsc"
+        }
       self.load()
     }
 
@@ -70,7 +75,7 @@
     loadCallback(err, response) {
       if (response.ok) {
         self.contacts = response.body
-        riot.update()
+        self.update()
       } else {
         self.opts.bus.trigger('displayError', "Le chargement de la liste des contacts a échoué.")
       }
@@ -87,7 +92,7 @@
     deleteCallback(err, response) {
       if (response.ok) {
         self.contacts.splice(self.contacts.indexOf(self.selectedContact), 1)
-        riot.update()
+        self.update()
       } else {
         self.opts.bus.trigger('displayError',
             "La suppression du contact " + self.selectedContact.email + " a échoué.")
@@ -105,11 +110,15 @@
      width: 2em;
    }
 
-   .email-column {
-     width: 20em;
+   .date-column {
+     width: 6em;
    }
 
-   .date-column {
+   .useragent-column {
+     width: 10em;
+   }
+
+   .referer-column {
      width: 10em;
    }
 

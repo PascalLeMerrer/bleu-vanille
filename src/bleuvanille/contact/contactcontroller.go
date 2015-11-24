@@ -22,7 +22,7 @@ type errorMessage struct {
 
 type formattedContact struct {
 	Email     string `json:"email"`
-	CreatedAt string `json:"created_at"`
+	CreatedAt string `json:"createdAt"`
 	UserAgent string `json:"userAgent"`
 	Referer   string `json:"referer"`
 	TimeSpent int    `json:"timeSpent"`
@@ -58,8 +58,10 @@ func GetAll(context *echo.Context) error {
 		contacts, err = LoadAll("created_at", "DESC")
 	case "older":
 		contacts, err = LoadAll("created_at", "ASC")
-	case "email":
+	case "emailAsc":
 		contacts, err = LoadAll("email", "ASC")
+	case "emailDesc":
+		contacts, err = LoadAll("email", "DESC")
 	default:
 		contacts, err = LoadAll("created_at", "DESC")
 	}
