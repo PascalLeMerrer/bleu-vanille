@@ -299,7 +299,7 @@ var ChangePassword = emailAndPasswordRequired(
 		return context.JSON(http.StatusOK, nil)
 	})
 
-// ResetPassword updates the password of the authenticated user without proving the old one
+// ResetPassword updates the password of the authenticated user without providing the old one
 func ResetPassword(context *echo.Context) error {
 	newPassword := context.Form("password")
 	var email string
@@ -368,14 +368,21 @@ var SendResetLink = emailRequired(
 // DisplayResetForm displays the reset password form
 func DisplayResetForm(context *echo.Context) error {
 	token := context.Query("token")
-	if token == "" {
+	email := context.Query("email")
+	if token == "" || email == "" {
 		return context.JSON(http.StatusUnauthorized, "Invalid URL for password reset")
-
 	}
+	user, err := LoadByEmail(email)
+	if user == nil || err != nil {
+		return context.JSON(http.StatusUnauthorized, "Invalid user for password reset")
+	}
+
 	data := struct {
-		Token string
+		Token   string
+		IsAdmin bool
 	}{
-		Token: token,
+		Token:   token,
+		IsAdmin: user.IsAdmin,
 	}
 	return context.Render(http.StatusOK, "passwordreset", data)
 }
