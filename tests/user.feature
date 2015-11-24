@@ -1,3 +1,4 @@
+@user
 Feature:
     As a visitor of the website I create an account, connect, disconnect and manage my account
 
@@ -150,3 +151,21 @@ Feature:
       Then response code should be 204
       And response header Set-Cookie should not exist
       And response body should not contain token
+
+
+    Scenario: Authenticate as an admin
+      When I set body to email=admin@bleuvanille.com;password=xeCuf8CHapreNe=
+      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      When I POST to /users/login
+      Then response code should be 200
+      And response body should be valid json
+      And response header Authorization should exist
+      And I store the value of header Authorization as access token
+      And I set bearer token
+
+    Scenario: As an admin, Get all users
+      When I set bearer token
+      And I set Content-Type header to application/json; charset=UTF-8
+      And I GET /admin/users
+      Then response code should be 200
+      And response body should contain "email":"admin@bleuvanille.com"

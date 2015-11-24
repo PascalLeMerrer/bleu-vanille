@@ -126,6 +126,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 
 	adminRoutes.Get("/dashboard", admin.Dashboard)
 	adminRoutes.Get("/contacts", contact.GetAll)
+	adminRoutes.Get("/users", user.GetAll)
 	adminRoutes.Delete("/contacts", contact.Remove)
 }
 

@@ -67,29 +67,23 @@ func LoadByID(ID string) (*User, error) {
 }
 
 // LoadAll returns the list of all Users in the database
-func LoadAll() (*[]User, error) {
-	var user User
-	queryStr := fmt.Sprintf("FOR u in users RETURN u")
+func LoadAll(sort string, order string) ([]User, error) {
+	queryString := "FOR u in users SORT u." + sort + " " + order + " RETURN u"
 
-	arangoQuery := ara.NewQuery(queryStr)
+	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
 
-	//return an error
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
-
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		result := make([]User, len(cursor.Result))
-
-		for cursor.FetchOne(&user) {
-			result = append(result, user)
-		}
-
-		return &result, nil
+	result := make([]User, len(cursor.Result))
+	err = cursor.FetchBatch(&result)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
-
-	return nil, nil
+	return result, nil
 }
 
 // Delete delete the given user from the database

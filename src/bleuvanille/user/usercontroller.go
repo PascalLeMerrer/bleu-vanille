@@ -11,9 +11,12 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"path"
 	"text/template"
 	"time"
 
+	"github.com/goodsign/monday"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo"
@@ -28,6 +31,14 @@ type passwordResetData struct {
 	Token    string
 	Now      string
 	Boundary string
+}
+
+type formattedUser struct {
+	Email     string `json:"email"`
+	CreatedAt string `json:"createdAt"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	IsAdmin   bool   `json:"isAdmin"`
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -112,12 +123,73 @@ var Get = emailRequired(
 
 // GetAll writes the list of all users
 func GetAll(context *echo.Context) error {
-	users, err := LoadAll()
+	sortParam := context.Query("sort")
+	var users Users
+	var err error
+	switch sortParam {
+	case "newer":
+		users, err = LoadAll("createdAt", "DESC")
+	case "older":
+		users, err = LoadAll("createdAt", "ASC")
+	case "emailAsc":
+		users, err = LoadAll("email", "ASC")
+	case "emailDesc":
+		users, err = LoadAll("email", "DESC")
+	case "nameAsc":
+		users, err = LoadAll("lastname", "ASC")
+	case "nameDesc":
+		users, err = LoadAll("lastname", "DESC")
+	default:
+		users, err = LoadAll("createdAt", "DESC")
+	}
+
 	if err != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("User list retrieval error"))
 	}
-	return context.JSON(http.StatusOK, users)
+	formattedUsers := make([]formattedUser, len(users))
+	for i := range users {
+		formattedDate := monday.Format(users[i].CreatedAt, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
+		formattedUsers[i] = formattedUser{users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
+		i++
+	}
+	contentType := context.Request().Header.Get(echo.ContentType)
+	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		return context.JSON(http.StatusOK, formattedUsers)
+	}
+	filepath, filename, err := createCsvFile(formattedUsers)
+	if err != nil {
+		fmt.Printf("Cannot create User list file: %v", err)
+		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot open file: %v", err))
+	}
+	// TODO: How to cleanup the temp dir?
+	return context.File(filepath, filename, true)
+}
+
+// Create a CSV file containing the list of users
+// returns the absolute file name (including the path) and the filename
+func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
+	csvString := "Email, Date d'inscription, Prénom, Nom, Admin"
+	for j := range formattedUsers {
+		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%t\"\n", formattedUsers[j].Email, formattedUsers[j].CreatedAt, formattedUsers[j].Firstname, formattedUsers[j].Lastname, formattedUsers[j].IsAdmin)
+	}
+	now := monday.Format(time.Now(), "2006-01-02-15h04", monday.LocaleFrFR)
+	filename := "Userlist-" + now + ".csv"
+	filepath := path.Join(os.TempDir(), filename)
+
+	fileHandler, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0666)
+
+	if err != nil {
+		return "", "", fmt.Errorf("Cannot open file: %v", err)
+	}
+
+	defer fileHandler.Close()
+
+	_, err = fileHandler.Write([]byte(csvString))
+	if err != nil {
+		return "", "", fmt.Errorf("Cannot write file: %v", err)
+	}
+	return filepath, filename, nil
 }
 
 // Remove removes the user account for a given email

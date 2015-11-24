@@ -63,7 +63,7 @@ header a {
   color: var(--third-color-light);
 }
 
-label {
+label, modal .body, modal .close{
   color: var(--dark-text-color);
 }
 
@@ -76,17 +76,29 @@ input {
   border: none;
   border-radius: 0.5rem;
   color: var(--third-color-light);
-  font-size: 120%;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  padding-top: 0.5rem;
-  height: 2em;
+  font-size: 1.5rem;
+  margin: 1rem 2rem 1rem 2rem;
+  padding: 1rem 2rem 1rem 2rem;
   cursor: pointer;
 }
-
 .primary-btn:hover {
   background-color: var(--primary-color-light);
   color: #444;
+}
+
+.danger-btn:hover {
+  background-color: #FA0C5C;
+  color: #FFFFFF;
+}
+.danger-btn {
+  background-color: #F21818;
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--third-color-light);
+  font-size: 1.5rem;
+  margin: 1rem 2rem 1rem 2rem;
+  padding: 1rem 2rem 1rem 2rem;
+  cursor: pointer;
 }
 
 .disabled{

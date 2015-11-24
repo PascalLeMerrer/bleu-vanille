@@ -1,12 +1,12 @@
 {{define "admin/dashboard"}}
 {{template "header"}}
-
     <header id="header" role="banner" class="grid-3">
         <div><h1>Bleu Vanille</h1></div>
         <div><h1>Administration</h1></div>
         <div class="txtright"><logout firstname="{{ .Firstname }}" lastname="{{ .Lastname }}"></logout></div>
     </header>
     <div class="flex-container">
+        <modal></modal>
         <admin-menu></admin-menu>
         <div id="main" role="main" class="flex-item-fluid pam">
             <alert></alert>
@@ -24,22 +24,30 @@
     <script type="text/javascript" src="/tags/admin-menu.js"></script>
     <script type="text/javascript" src="/tags/contactlist.js"></script>
     <script type="text/javascript" src="/tags/user-list.js"></script>
+    <script type="text/javascript" src="/tags/modal.js"></script>
     <script type="text/javascript">
       var bus = {};
-      var tags = null;
+      var currentTagName = null;
       riot.observable(bus);
       bus.on('disconnected', function() {
         window.location = '/admin'
       })
-      riot.mount('alert', { bus: bus })
-      riot.mount('logout', { bus: bus })
-      bus.on('display', function(selectedTag) {
-        if(tags) {
-            tags[0].unmount(true); // removes previous component
-        }
-        tags = riot.mount(selectedTag, { bus: bus})
+      var tags = riot.mount('user-list', { bus: bus})
+
+      bus.on('display', function(selectedTagName) {
+        for (var i = tags.length - 1; i >= 0; i--) {
+          if(tags[i].root.localName === currentTagName) {
+            tags[i].unmount(true);
+          }
+        };
+        tags = riot.mount(selectedTagName, { bus: bus})
+        console.log(currentTagName, selectedTagName)
+        currentTagName = selectedTagName
+        riot.update()
       })
       riot.mount('admin-menu', { bus: bus})
+      riot.mount('logout', { bus: bus})
+      riot.mount('modal', { bus: bus})
 
     </script>
 {{template "footer"}}
