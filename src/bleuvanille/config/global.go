@@ -10,6 +10,9 @@ const (
 	// AdminEmail is the email is the login of the administrator account
 	AdminEmail = "admin@bleuvanille.com"
 
+	// TestUserEmail is the email is the login of the basic test account used by the test scripts
+	TestUserEmail = "testuser@bleuvanille.com"
+
 	// NoReplyAddress Email address to be used as sender of email for which no response is expected
 	NoReplyAddress = "noreply@bleuvanille.com"
 
@@ -53,6 +56,9 @@ var (
 
 	// SMTPUser is the email address of the account used for authentication on the SMTP SMTPServer
 	SMTPUser = getEnv("SMTPUser")
+	
+	// ProductionMode indicates if the instance is running in production.
+	ProductionMode = getBooleanEnvWithDefault("ProductionMode", false)
 )
 
 func getNumericEnv(name string) int {
@@ -76,4 +82,35 @@ func getEnv(name string) string {
 		log.Printf("Please define the environment variable %v, then relaunch the server.\n", name)
 	}
 	return value
+}
+
+func getBooleanEnv(name string) bool {
+	value := os.Getenv(name)
+
+	if value == "" {
+		log.Printf("Please define the environment variable %v, then relaunch the server.\n", name)
+		return false
+	}
+	
+	result, err := strconv.ParseBool(value)
+	if err != nil {
+		log.Printf("The environment variable %v, must be a boolean. Please fix it, then relaunch the server.\n", name)
+		result = false
+	}
+	return result
+}
+
+func getBooleanEnvWithDefault(name string, defaultvalue bool) bool {
+	value := os.Getenv(name)
+
+	if value == "" {
+		return defaultvalue;
+	}
+	
+	result, err := strconv.ParseBool(value)
+	if err != nil {
+		log.Printf("The environment variable %v, must be a boolean. Please fix it, then relaunch the server.\n", name)
+		result = false
+	}
+	return result
 }
