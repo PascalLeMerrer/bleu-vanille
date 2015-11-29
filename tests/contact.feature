@@ -5,7 +5,7 @@ Feature:
   		When I GET /
   		Then response code should be 200
       Then response header Content-Type should be text/html
-      Then response body should contain <input id="emailInput" type="email"
+      Then response body should contain input id="emailInput" type="email"
 
     Scenario: Registering a contact
       Given I set body to email=testemail@mail.org
