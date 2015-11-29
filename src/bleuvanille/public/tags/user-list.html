@@ -1,5 +1,5 @@
 <user-list>
-  <table class="w100">
+  <table class="w100 focusable">
     <div class="grid-2">
       <div><h2>Utilisateurs</h2></div>
       <div class="txtright"><a href="" onclick={ download } alt="Télécharger"><i class="fa fa-download"></i>Télécharger</a></div>
@@ -16,7 +16,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr each={ user, index in users } >
+      <tr each={ user, index in users } class="animated { fadeOut: user.deleted, highlighted: user.deleted } ">
         <td>{ index + 1 }</td>
         <td>{ user.email }</td>
         <td>{ user.createdAt }</td>
@@ -32,6 +32,7 @@
     var self = this
     self.selectedUser = null
     self.sorting = "newer"
+    self.modal = null
     self.on('mount', function() {
       self.load()
     });
@@ -97,18 +98,22 @@
       self.selectedUser = event.item.user;
 
       var params = {
-        "title": "Supprimer un contact",
+        "title": "Supprimer un utilisateur",
         "content": "Êtes-vous certain de vouloir détruire le compte de l'utilisateur " + self.selectedUser.email + " ? Cette opération est irréversible.",
-        "buttons": [ { "action": function(){ this.close() },
-                       "label": "Annuler",
-                       "isPrimary": true
-                    },{ "action": function(){
-                            superagent.del('/admin/users?email=' + self.selectedUser.email)
+        "buttons": [ { "action": function(e){
+                            e.item.isWaiting = true
+                            e.item.label = 'Suppression...'
+                            superagent.del('/admin/users/' + self.selectedUser.id)
                             .set('Content-Type', 'application/json; charset=UTF-8')
                             .end(self.deleteCallback)
                         },
-                       "label": "Supprimer",
-                       "isDangerous": true
+                        "label": "Supprimer",
+                        "isWaiting": false,
+                        "isDangerous": true
+                    },
+                    { "action": function(){ this.close() },
+                       "label": "Annuler",
+                       "isPrimary": true
                     }]
       }
       self.opts.bus.trigger('openModal', params)
@@ -116,9 +121,14 @@
 
     // processes user removal response
     deleteCallback(err, response) {
+      self.opts.bus.trigger('closeModal')
       if (response.ok) {
-        self.users.splice(self.contacts.indexOf(self.selectedUser), 1)
+        self.selectedUser.deleted = true
         self.update()
+        setTimeout(function() {
+          self.users.splice(self.users.indexOf(self.selectedUser), 1)
+          self.update()
+        }, 1000)
       } else {
         self.opts.bus.trigger('displayError',
             "La suppression du compte " + self.selectedUser.email + " a échoué.")

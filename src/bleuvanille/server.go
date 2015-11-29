@@ -89,6 +89,7 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Get("/", contact.LandingPage)
 	echoServer.Get("/admin", admin.LoginPage)
+	echoServer.Get("/admin/", admin.LoginPage)
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
@@ -127,6 +128,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/dashboard", admin.Dashboard)
 	adminRoutes.Get("/contacts", contact.GetAll)
 	adminRoutes.Get("/users", user.GetAll)
+	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
 }
 

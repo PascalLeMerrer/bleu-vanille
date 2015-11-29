@@ -34,6 +34,7 @@ type passwordResetData struct {
 }
 
 type formattedUser struct {
+	ID        string `json:"id"`
 	Email     string `json:"email"`
 	CreatedAt string `json:"createdAt"`
 	Firstname string `json:"firstname"`
@@ -150,7 +151,7 @@ func GetAll(context *echo.Context) error {
 	formattedUsers := make([]formattedUser, len(users))
 	for i := range users {
 		formattedDate := monday.Format(users[i].CreatedAt, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
-		formattedUsers[i] = formattedUser{users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
+		formattedUsers[i] = formattedUser{users[i].ID, users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
 		i++
 	}
 	contentType := context.Request().Header.Get(echo.ContentType)
@@ -192,6 +193,17 @@ func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
 	return filepath, filename, nil
 }
 
+// RemoveByAdmin removes the user account for a given ID
+// This is an admin feature, not supposed to be used by normal users
+func RemoveByAdmin(context *echo.Context) error {
+	user, err := LoadByID(context.Param("userID"))
+	if err != nil || user == nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
+
+	}
+	return _delete(context, user)
+}
+
 // Remove removes the user account for a given email
 func Remove(context *echo.Context) error {
 	userID := context.Get("session").(*session.Session).UserID
@@ -205,20 +217,23 @@ func Remove(context *echo.Context) error {
 		return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in DELETE request"))
 	}
 	user, err := LoadByID(userID)
-
-	if err != nil {
-		log.Println(err)
+	if err != nil || user == nil {
+		log.Printf("Cannot load user with ID %s", userID)
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(password))
 	if err != nil {
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
+	return _delete(context, user)
+}
 
+// Effective deletion of a user account
+func _delete(context *echo.Context, user *User) error {
 	deleteErr := Delete(user)
 	if deleteErr != nil {
-		log.Println(err)
-		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+userID))
+		log.Printf("Cannot delete user %v", deleteErr)
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+user.ID))
 	}
 	return context.NoContent(http.StatusNoContent)
 }

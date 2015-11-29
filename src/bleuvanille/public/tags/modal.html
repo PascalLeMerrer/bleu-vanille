@@ -12,10 +12,13 @@
       { content }
     </div>
 
-    <footer class="footer">
-      <button class="btn { primary-btn: isPrimary, danger-btn: isDangerous }" each="{ buttons }" type="button" onclick="{ action }">
-          { label }
-      </button>
+    <footer class="footer mod">
+      <div class="fr btn-container" each="{ buttons }" >
+        <button class="btn { primary-btn: isPrimary, danger-btn: isDangerous }" type="button" onclick="{ action }">
+            { label }
+            <i if="{ isWaiting }" class="fa fa-spinner fa-pulse fa-lg"></i>
+        </button>
+      </div>
       <div class="clear"></div>
     </footer>
   </div>
@@ -33,10 +36,17 @@
         self.content = params.content
         self.buttons = params.buttons
         self.update()
+    }) 
+
+    self.opts.bus.on('closeModal', function() {
+        console.log("closeModal event received")
+        self.close()
     })
 
     close() {
+        console.log("close called")
         self.showModal = false
+        self.update()
     }
   </script>
   <style scoped>
@@ -103,20 +113,9 @@
       padding: 0 2.0rem 2.0rem 2.0rem;
     }
 
-    .button {
-      float: right;
-      padding: 1.0rem;
-      margin: 0 5px 0 0;
-      border: none;
-      font-size: 0.9em;
-      text-transform: uppercase;
-      cursor: pointer;
-      outline: none;
-      background-color: white;
+    .btn-container {
+      margin-left: 2rem;
     }
 
-    .clear {
-      clear: both;
-    }
   </style>
 </modal>
