@@ -10,7 +10,7 @@ import (
 	ara "github.com/diegogub/aranGO"
 )
 
-// Save inserts a eatable into the database
+// Save inserts an eatable into the database
 func Save(eatable *Eatable) error {
 	errorMap := config.Context().Save(eatable)
 	if value, ok := errorMap["error"]; ok {
