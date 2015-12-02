@@ -39,11 +39,64 @@ Feature:
     Then response code should be 200
     And response body should contain "email":"admin@bleuvanille.com"
     And response body should be valid json
-    And response body path $[0].id should be \d+
+    And response body path $[0].id should be \w
     And response body path $[0].firstname should be \w
     And response body path $[0].lastname should be \w
     And response body path $[0].email should be \w
     And response body path $[0].createdAt should be \w
+
+
+  Scenario: check rights on account used for admin tests
+    Given I set bearer token
+    And I set Content-Type header to application/json; charset=UTF-8
+    When I GET /users/`userId`
+    Then response code should be 200
+    And response body path $.isAdmin should be false
+
+
+  Scenario: modifying email on account should not modify rights
+    Given I set bearer token
+    And I set Content-Type header to application/json; charset=UTF-8
+    When I PATCH /users/`userId` with body
+    """
+    {
+        "email": "admin_test2@mail.org",
+        "firstname": "Alphonse",
+        "lastname": "Dans l'tas"
+    }
+    """
+    Then response code should be 200
+    When I GET /users/`userId`
+    Then response code should be 200
+    And response body path $.isAdmin should be false
+    And response body path $.email should be admin_test2@mail.org
+    And response body path $.firstname should be Alphonse
+    And response body path $.lastname should be Dans l'tas
+
+
+  Scenario: modifying rights on account used for admin tests
+    Given I set bearer token
+    And I set Content-Type header to application/json; charset=UTF-8
+    When I PATCH /users/`userId` with body
+    """
+    {
+        "isAdmin": true
+    }
+    """
+    Then response code should be 200
+    When I GET /users/`userId`
+    Then response code should be 200
+    And response body path $.isAdmin should be true
+    When I PATCH /users/`userId` with body
+    """
+    {
+        "isAdmin": false
+    }
+    """
+    Then response code should be 200
+    When I GET /users/`userId`
+    Then response code should be 200
+    And response body path $.isAdmin should be false
 
 
   Scenario: Cleanup test data - delete account used for admin test

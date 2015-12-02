@@ -107,7 +107,8 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	// echo does not accept Delete request with body so we use a Post instead
 	userRoutes.Post("/delete", user.Remove)
 	userRoutes.Put("/password", user.ChangePassword)
-	userRoutes.Get("/:userID/profile", user.Profile)
+	userRoutes.Get("/:userID", user.Profile)
+	userRoutes.Patch("/:userID", user.Patch)
 }
 
 // special Routes require a valid user auth token but no sessionID

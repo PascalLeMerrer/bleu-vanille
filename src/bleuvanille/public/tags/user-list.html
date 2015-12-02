@@ -12,7 +12,7 @@
         <th class="firstname-column">Prénom</th>
         <th class="lastname-column">Nom <a href="" onclick={ sortByLastname } alt="Trier par nom"><i class="fa fa-sort"></i></a></th>
         <th class="admin-column">Admin</th>
-        <th class="action-column"></th>
+        <th class="action-column">Suppr</th>
       </tr>
       </thead>
       <tbody>
@@ -22,7 +22,7 @@
         <td>{ user.createdAt }</td>
         <td>{ user.firstname }</td>
         <td>{ user.lastname }</td>
-        <td>{ user.isAdmin }</td>
+        <td><input type="checkbox" checked={ user.isAdmin } onclick={ toggleAdmin }></td>
         <td class="action-column"><a href="" onclick={ parent.delete } alt="Supprimer"><i class="fa fa-times"></i></a></td>
       </tr>
     </tbody>
@@ -104,8 +104,8 @@
                             e.item.isWaiting = true
                             e.item.label = 'Suppression...'
                             superagent.del('/admin/users/' + self.selectedUser.id)
-                            .set('Content-Type', 'application/json; charset=UTF-8')
-                            .end(self.deleteCallback)
+                                      .set('Content-Type', 'application/json; charset=UTF-8')
+                                      .end(self.deleteCallback)
                         },
                         "label": "Supprimer",
                         "isWaiting": false,
@@ -134,6 +134,30 @@
             "La suppression du compte " + self.selectedUser.email + " a échoué.")
       }
     }
+
+    // gives/removes admin rights
+    toggleAdmin(event) {
+      self.selectedUser = event.item.user
+      superagent.patch('/users/' + self.selectedUser.id)
+                .send({ "isAdmin": !self.selectedUser.isAdmin })
+                .set('Content-Type', 'application/json; charset=UTF-8')
+                .end(self.patchCallback)
+    }
+
+    // processes user modification response
+    patchCallback(err, response) {
+      if (response.ok) {
+        self.selectedUser = response.body
+        self.update()
+        self.opts.bus.trigger('displaySuccess',
+            "Le compte de l\'utilisateur " + self.selectedUser.email + " a été mis à jour.")
+
+      } else {
+        self.opts.bus.trigger('displayError',
+            "La modification de l\'utilisateur ' " + self.selectedUser.email + " a échoué.")
+      }
+    }
+
   </script>
 
   <style>
@@ -157,7 +181,7 @@
      width: 4rem;
    }
    .admin-column {
-     width: 4rem;
+     width: 3rem;
    }
 
    .action-column {

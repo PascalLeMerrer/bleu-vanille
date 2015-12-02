@@ -35,7 +35,7 @@ type passwordResetData struct {
 
 type formattedUser struct {
 	ID        string `json:"id"`
-	Email     string `json:"email"`
+	Email     string `json:"email,omitempty"`
 	CreatedAt string `json:"createdAt"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
@@ -150,7 +150,7 @@ func GetAll(context *echo.Context) error {
 	}
 	formattedUsers := make([]formattedUser, len(users))
 	for i := range users {
-		formattedDate := monday.Format(users[i].CreatedAt, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
+		formattedDate := formatDate(users[i].CreatedAt)
 		formattedUsers[i] = formattedUser{users[i].ID, users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
 		i++
 	}
@@ -167,6 +167,11 @@ func GetAll(context *echo.Context) error {
 	return context.File(filepath, filename, true)
 }
 
+// formats a date according to FR locale
+func formatDate(date time.Time) string {
+	return monday.Format(date, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
+}
+
 // Create a CSV file containing the list of users
 // returns the absolute file name (including the path) and the filename
 func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
@@ -174,7 +179,7 @@ func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
 	for j := range formattedUsers {
 		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%t\"\n", formattedUsers[j].Email, formattedUsers[j].CreatedAt, formattedUsers[j].Firstname, formattedUsers[j].Lastname, formattedUsers[j].IsAdmin)
 	}
-	now := monday.Format(time.Now(), "2006-01-02-15h04", monday.LocaleFrFR)
+	now := formatDate(time.Now())
 	filename := "Userlist-" + now + ".csv"
 	filepath := path.Join(os.TempDir(), filename)
 
@@ -191,6 +196,57 @@ func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
 		return "", "", fmt.Errorf("Cannot write file: %v", err)
 	}
 	return filepath, filename, nil
+}
+
+// Patch modifies the user account for a given ID
+// This is an admin feature, not supposed to be used by normal users
+func Patch(context *echo.Context) error {
+	userID := context.Param("userID")
+	session := context.Get("session").(*session.Session)
+	if session == nil || (session.UserID != userID && !session.IsAdmin) {
+		log.Printf("ERROR: unauthorized attempt to modify account %s by  user with session %+v", userID, session)
+		return context.JSON(http.StatusUnauthorized, "")
+	}
+
+	user, err := LoadByID(userID)
+	if err != nil || user == nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
+	}
+	tempUser := struct {
+		ID        string `json:"id"`
+		Email     string `json:"email"`
+		Firstname string `json:"firstname"`
+		Lastname  string `json:"lastname"`
+		IsAdmin   *bool  `json:"isAdmin"`
+	}{}
+	err = context.Bind(&tempUser) // TODO test with the real user
+	if err != nil {
+		log.Printf("Cannot bind user %v", err)
+		return context.JSON(http.StatusBadRequest, errors.New("Cannot decode request body"))
+	}
+	if tempUser.IsAdmin != nil {
+		if session.IsAdmin {
+			user.IsAdmin = *tempUser.IsAdmin
+		} else {
+			log.Printf("ERROR: attempt to give admin rights to account %s by %+v", user.Email, session)
+			return context.JSON(http.StatusUnauthorized, "")
+		}
+	}
+	if tempUser.Email != "" {
+		user.Email = tempUser.Email
+	}
+	if tempUser.Firstname != "" {
+		user.Firstname = tempUser.Firstname
+	}
+	if tempUser.Lastname != "" {
+		user.Lastname = tempUser.Lastname
+	}
+	saveErr := Save(user)
+	if saveErr != nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot update user "+user.ID))
+	}
+	user.Hash = "" // never leak the hash
+	return context.JSON(http.StatusOK, user)
 }
 
 // RemoveByAdmin removes the user account for a given ID
@@ -402,11 +458,32 @@ func DisplayResetForm(context *echo.Context) error {
 	return context.Render(http.StatusOK, "passwordreset", data)
 }
 
-// Profile Returns the profile of a given user
-// If it's the current one, the returned profile is richer
+// Get Returns the profile of a given user
+// If it's the current one,or if if it's an admin that requires it,
+// the returned profile is richer than if it a normal user that asks
 func Profile(context *echo.Context) error {
-	//TODO implement
-	return context.JSON(http.StatusOK, "user profile")
+	user, err := LoadByID(context.Param("userID"))
+	if err != nil || user == nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
+
+	}
+
+	session := context.Get("session").(*session.Session)
+
+	if session != nil && (session.IsAdmin || session.UserID == user.ID) {
+		user.Hash = "" // don't leak user Hash, for security
+		return context.JSON(http.StatusOK, user)
+	}
+
+	publicProfile := formattedUser{
+		user.ID,
+		"",
+		formatDate(user.CreatedAt),
+		user.Firstname,
+		user.Lastname,
+		user.IsAdmin,
+	}
+	return context.JSON(http.StatusOK, publicProfile)
 }
 
 // emailRequired verifies the presence of an "email" parameter in the body of the request
