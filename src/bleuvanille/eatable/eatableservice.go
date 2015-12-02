@@ -1,6 +1,6 @@
 package eatable
 
-// Ensures persistance of eatables in Postgresql database
+// Ensures persistance of eatables in ArangoDB database
 
 import (
 	"bleuvanille/config"
@@ -19,19 +19,19 @@ func Save(eatable *Eatable) error {
 	return nil
 }
 
-func SaveParent(id,parentid string) error {
+func SaveParent(id, parentid string) error {
 	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
-	err := col.Relate("eatables/" + id, "eatables/" + parentid, map[string]interface{}{ "is" : "friend" })
-	
+	err := col.Relate("eatables/"+id, "eatables/"+parentid, map[string]interface{}{})
+
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
 // LoadById returns the eatable object for a given id, if any
-func LoadById(id string) (*Eatable, error) {
+func FindById(id string) (*Eatable, error) {
 	var result Eatable
 
 	col := config.GetCollection(&result)
@@ -44,8 +44,37 @@ func LoadById(id string) (*Eatable, error) {
 	return &result, nil
 }
 
+type Edge struct {
+		Id   string `json:"_id,omitempty"  `
+		From string `json:"_from"`
+		To   string `json:"_to"  `	
+}
+
+type Edges struct {
+	EdgesArray []Edge `json:"edges,omitempty"`
+	Error bool `json:"error,omitempty"`
+}
+
+// GetParent returns the parent of a given eatable
+func GetParent(child *Eatable) (*Edge, error) {
+	var arrayofresult Edges
+	
+	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
+	err := col.Edges(child.Id, "out", &arrayofresult)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(arrayofresult.EdgesArray) > 0 {
+		return &arrayofresult.EdgesArray[0], nil
+	}
+	
+	return nil, nil
+}
+
 // LoadByName returns the eatable object for a given name, if any
-func LoadByName(name string) (*Eatable, error) {
+func FindByName(name string) (*Eatable, error) {
 	var result Eatable
 
 	col := config.GetCollection(&result)
@@ -63,7 +92,7 @@ func LoadByName(name string) (*Eatable, error) {
 // LoadAll returns the list of all eatables in the database
 // sort defines the sorting property name
 // order must be either ASC or DESC
-func LoadAll(sort string, order string) ([]Eatable, error) {
+func FindAll(sort string, order string) ([]Eatable, error) {
 	queryString := "FOR e in eatables SORT c." + sort + " " + order + " RETURN c"
 	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)

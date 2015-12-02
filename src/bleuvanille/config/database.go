@@ -26,7 +26,7 @@ func DatabaseInit() {
 
 	connexionString := fmt.Sprintf("http://localhost:%d", DatabasePort)
 
-	s, err := ara.Connect(connexionString, DatabaseUser, DatabasePassword, false)
+	s, err := ara.Connect(connexionString, DatabaseUser, DatabasePassword, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,34 +111,12 @@ func createTables() {
 
 		edgeDefinitionList = append(edgeDefinitionList, *edgeDefinition)
 
-		graph, err := db.CreateGraph(GRAPHNAME_EATABLE_PARENT, edgeDefinitionList)
-
-		fmt.Print(graph)
+		_, err := db.CreateGraph(GRAPHNAME_EATABLE_PARENT, edgeDefinitionList)
 
 		if err != nil {
 			log.Fatal("Database : error when creating the graph " + GRAPHNAME_EATABLE_PARENT + " : " + err.Error())
 		}
 	}
-
-	//	graph, err := db.CreateGraph(GRAPHNAME_EATABLE_PARENT, nil)
-	//
-	//	if err != nil {
-	//		log.Fatal(err)
-	//
-	//	}
-	//
-	//	graph.E("string", nil)
-
-	//	if !db.ColExist(EDGENAME_EATABLE_PARENT) {
-	//		// CollectionOptions has much more options, here we just define name , sync
-	//		etableParentEdge := ara.NewCollectionOptions(EDGENAME_EATABLE_PARENT, false)
-	//		etableParentEdge.IsEdge()
-	//		err := db.CreateCollection(etableParentEdge)
-	//
-	//		if err != nil {
-	//			log.Fatal(err)
-	//		}
-	//	}
 }
 
 //GetCollection returns the collection object related to the given object modeler

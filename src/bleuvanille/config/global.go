@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	// AdminEmail is the email is the login of the administrator account
+	// AdminEmail is the login of the administrator account
 	AdminEmail = "admin@bleuvanille.com"
 
-	// TestUserEmail is the email is the login of the basic test account used by the test scripts
+	// TestUserEmail is the login of the basic test account used by the test scripts
 	TestUserEmail = "testuser@bleuvanille.com"
 
 	// NoReplyAddress Email address to be used as sender of email for which no response is expected
