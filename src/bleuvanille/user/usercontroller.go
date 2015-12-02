@@ -212,35 +212,19 @@ func Patch(context *echo.Context) error {
 	if err != nil || user == nil {
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
 	}
-	tempUser := struct {
-		ID        string `json:"id"`
-		Email     string `json:"email"`
-		Firstname string `json:"firstname"`
-		Lastname  string `json:"lastname"`
-		IsAdmin   *bool  `json:"isAdmin"`
-	}{}
-	err = context.Bind(&tempUser) // TODO test with the real user
+
+	previousIsAdmin := user.IsAdmin
+
+	err = context.Bind(&user)
 	if err != nil {
 		log.Printf("Cannot bind user %v", err)
 		return context.JSON(http.StatusBadRequest, errors.New("Cannot decode request body"))
 	}
-	if tempUser.IsAdmin != nil {
-		if session.IsAdmin {
-			user.IsAdmin = *tempUser.IsAdmin
-		} else {
-			log.Printf("ERROR: attempt to give admin rights to account %s by %+v", user.Email, session)
-			return context.JSON(http.StatusUnauthorized, "")
-		}
+	if user.IsAdmin != previousIsAdmin && !session.IsAdmin {
+		log.Printf("ERROR: unauthorized attempt to give admin rights to account %s by user with session %+v", user.Email, session)
+		return context.JSON(http.StatusUnauthorized, "")
 	}
-	if tempUser.Email != "" {
-		user.Email = tempUser.Email
-	}
-	if tempUser.Firstname != "" {
-		user.Firstname = tempUser.Firstname
-	}
-	if tempUser.Lastname != "" {
-		user.Lastname = tempUser.Lastname
-	}
+
 	saveErr := Save(user)
 	if saveErr != nil {
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot update user "+user.ID))
