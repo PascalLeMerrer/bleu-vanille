@@ -55,12 +55,35 @@ func CreateDefault() {
 		admin.IsAdmin = true
 		err = Save(&admin)
 		if err != nil {
-			log.Fatalf("Cannot create user with email %v. Error: %v", config.AdminEmail, err.Error())
+			log.Fatalf("Cannot create admin user with email %v. Error: %v", config.AdminEmail, err.Error())
 		}
 		log.Println("Admin account created with default password. You should change it.")
 		return
 	}
 	log.Println("Admin account found.")
+
+	//Create the test user if we are not in production
+	if !config.ProductionMode {
+		existingTestUser, err := LoadByEmail(config.TestUserEmail)
+		
+		if err != nil {
+			log.Println(err)
+		}
+
+		if existingTestUser == nil {
+			testuser, err := New(config.TestUserEmail, "TestUser", "TestUser", "xaFqJDeJldIEcdfZS")
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = Save(&testuser)
+			if err != nil {
+				log.Fatalf("Cannot create user with email %v. Error: %v", config.TestUserEmail, err.Error())
+			}
+			log.Println("Test account created with default password. You should change it.")
+			return
+		}
+		log.Println("Test account found.")
+	}
 }
 
 // Create creates a new user

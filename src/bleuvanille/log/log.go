@@ -1,10 +1,10 @@
 package log
 
 import (
-	"time"
-	golog "log"
 	"github.com/labstack/echo"
 	"github.com/twinj/uuid"
+	golog "log"
+	"time"
 )
 
 // log package wraps the default GO log package
@@ -25,7 +25,16 @@ func Debug(context *echo.Context, message string) {
 
 // Info writes any other message
 func Info(context *echo.Context, message string) {
-	_log("INFO", context, message)	
+	_log("INFO", context, message)
+}
+
+// Info writes any other message
+func Fatal(v ...interface{}) {
+	golog.Fatal(v)
+}
+
+func Printf(format string, v ...interface{}) {
+	golog.Printf(format, v)
 }
 
 // Middleware retrieves the session for an authenticated user
@@ -33,19 +42,25 @@ func Info(context *echo.Context, message string) {
 func Middleware() echo.HandlerFunc {
 	return func(context *echo.Context) error {
 		correlationId := uuid.NewV4().String()
-		
+
 		context.Set("correlationId", correlationId)
 		return nil
 	}
 }
 
 func _log(level string, context *echo.Context, message string) {
-	correlationId := context.Get("correlationId")
+	var correlationId string
 	nowstr := time.Now().Format(time.UnixDate)
-	
-	if id, ok := correlationId.(string) ; ok {
-		golog.Println(level + " - " + nowstr + " - " + id + " - " + message);	
+
+	if context == nil {
+		correlationId = "no correlationId"
 	} else {
-		golog.Println(nowstr + " - no correlationId - " + message);	
+		if correlationIdAux, ok := context.Get("correlationId").(string); !ok {
+			golog.Println(nowstr + " - no correlationId - " + message)
+			return
+		} else {
+			correlationId = correlationIdAux
+		}
 	}
+	golog.Println(level + " - " + nowstr + " - " + correlationId + " - " + message)
 }

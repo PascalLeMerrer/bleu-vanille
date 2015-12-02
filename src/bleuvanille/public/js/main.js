@@ -111,7 +111,7 @@ $("#passwordResetForm").submit(function(event) {
   if (password && password.length > 8) {
     header = "Bearer " + $('#token').val()
     var posting = $.ajax({
-        url: '/special/resetpassword',
+        url: '/special/resetPassword',
         data: { password: password },
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', header);},
         type: "POST"
