@@ -5,7 +5,6 @@ import (
 
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -49,19 +48,6 @@ func Get(context *echo.Context) error {
 	}
 
 	if parentEdge == nil {
-
-		testcsa := struct {
-			*Eatable
-			Id      string `json:"id,omitempty"`
-			OmitId  omit   `json:"_id,omitempty"`
-			OmitRev omit   `json:"_rev,omitempty"`
-			OmitKey omit   `json:"_key,omitempty"`
-		}{Eatable: eatable, Id: eatable.Id}
-
-		eatablejsonstring, _ := json.Marshal(testcsa)
-
-		log.Debug(context, fmt.Sprintf("%s", eatablejsonstring))
-
 		//The temporary struct is used to remove the fields _id, _rev and _key and add id field
 		return context.JSON(http.StatusOK, struct {
 			*Eatable
@@ -80,9 +66,6 @@ func Get(context *echo.Context) error {
 			OmitRev  omit   `json:"_rev,omitempty"`
 			OmitKey  omit   `json:"_key,omitempty"`
 		}{Eatable: eatable, Id: eatable.Id, ParentId: parentEdge.To}
-
-		eatablejsonstring, _ := json.Marshal(parentEdge)
-		log.Debug(context, fmt.Sprintf("%s", eatablejsonstring))
 
 		return context.JSON(http.StatusOK, result)
 	}

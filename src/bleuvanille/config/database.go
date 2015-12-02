@@ -26,7 +26,7 @@ func DatabaseInit() {
 
 	connexionString := fmt.Sprintf("http://localhost:%d", DatabasePort)
 
-	s, err := ara.Connect(connexionString, DatabaseUser, DatabasePassword, true)
+	s, err := ara.Connect(connexionString, DatabaseUser, DatabasePassword, false)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -94,10 +94,7 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
 	echoServer.Post("/users/sendResetLink", user.SendResetLink)
-	echoServer.Get("/users/resetForm", user.DisplayResetForm) 
-	
-	//TESTCSA
-	echoServer.Get("/eatablestest/:id", eatable.Get)
+	echoServer.Get("/users/resetForm", user.DisplayResetForm) 	
 }
 
 // privates Routes require a valid user auth token and a sessionID
