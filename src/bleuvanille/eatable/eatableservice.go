@@ -73,7 +73,7 @@ func GetParent(child *Eatable) (*Edge, error) {
 	return nil, nil
 }
 
-// LoadByName returns the eatable object for a given name, if any
+// FindByName returns the eatable object for a given name, if any
 func FindByName(name string) (*Eatable, error) {
 	var result Eatable
 
@@ -89,7 +89,7 @@ func FindByName(name string) (*Eatable, error) {
 	return nil, nil
 }
 
-// LoadAll returns the list of all eatables in the database
+// FindAll returns the list of all eatables in the database
 // sort defines the sorting property name
 // order must be either ASC or DESC
 func FindAll(sort string, order string) ([]Eatable, error) {
