@@ -21,7 +21,7 @@ const (
 	GRAPHNAME_EATABLE_PARENT string = "graph_eatable_parent"
 )
 
-// DatabaseInit opens a connection to postgres
+// DatabaseInit opens a connection to ArangoDB and creates the database if it doesn't exist
 func DatabaseInit() {
 
 	connexionString := fmt.Sprintf("http://localhost:%d", DatabasePort)
@@ -63,7 +63,7 @@ func createTables() {
 			log.Fatal(err)
 		}
 
-		Db().Col(COLNAME_CONTACTS).CreateHash(true, "email")
+		db.Col(COLNAME_CONTACTS).CreateHash(true, "email")
 	}
 
 	if !db.ColExist(COLNAME_USERS) {
@@ -77,7 +77,7 @@ func createTables() {
 			log.Fatal(err)
 		}
 
-		Db().Col(COLNAME_USERS).CreateHash(true, "email")
+		db.Col(COLNAME_USERS).CreateHash(true, "email")
 	}
 
 	if !db.ColExist(COLNAME_SESSIONS) {

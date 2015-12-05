@@ -26,13 +26,13 @@ func init() {
 	validEatableType = auxmap
 }
 
-//Return the object stored in database
+// Get returns the eatable object stored in database
 func Get(context *echo.Context) error {
 	id := context.Param("id")
 
 	eatable, error := FindById(id)
 
-	//Verify if the result is correctly retreived from database
+	// Verify if the result is correctly retrieved from database
 	if error != nil {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Invalid ID : " + id})
 	}
@@ -48,7 +48,7 @@ func Get(context *echo.Context) error {
 	}
 
 	if parentEdge == nil {
-		//The temporary struct is used to remove the fields _id, _rev and _key and add id field
+		// The temporary struct is used to remove the fields _id, _rev and _key and add id field
 		return context.JSON(http.StatusOK, struct {
 			*Eatable
 			Id      string `json:"id,omitempty"`
@@ -222,9 +222,9 @@ func SetNutrient(context *echo.Context) error {
 // SetParent sets or modifies the main parent of an eatable.
 func SetParent(context *echo.Context) error {
 	id := context.Param("id")
-	idParent := context.Param("newParentId")
+	parentID := context.Param("newParentId")
 
-	err := SaveParent(id, idParent)
+	err := SaveParent(id, parentID)
 
 	if err != nil {
 		log.Error(context, "Impossible to set parent: "+err.Error())

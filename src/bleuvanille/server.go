@@ -5,10 +5,10 @@ import (
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
+	"bleuvanille/eatable"
 	"bleuvanille/log"
 	"bleuvanille/session"
 	"bleuvanille/user"
-	"bleuvanille/eatable"
 	"fmt"
 	"html/template"
 	"io"
@@ -94,7 +94,7 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
 	echoServer.Post("/users/sendResetLink", user.SendResetLink)
-	echoServer.Get("/users/resetForm", user.DisplayResetForm) 	
+	echoServer.Get("/users/resetForm", user.DisplayResetForm)
 }
 
 // privates Routes require a valid user auth token and a sessionID
@@ -112,23 +112,18 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes := echoServer.Group("/eatables")
 	eatableRoutes.Use(auth.JWTAuth())
 	eatableRoutes.Use(session.Middleware())
-		
-	//Create a new etable object
-	eatableRoutes.Post("", eatable.Create)
 
-	// Get an eatable object
+	eatableRoutes.Post("", eatable.Create)
 	eatableRoutes.Get("/:id", eatable.Get)
-	
-	//Update an etable object
 	eatableRoutes.Put("/:id", eatable.Update)
 
-	//Update the nutrient of an etable object
+	//Update the nutrient of an eatable object
 	eatableRoutes.Put("/:id/nutrient", eatable.SetNutrient)
-//
-//	//Update the new status of an etable object
-//	eatableRoutes.Patch("/:id/status/:newstatus", )
-//	
-	eatableRoutes.Put("/:id/parent/:newParentId",eatable.SetParent)
+	//
+	//	//Update the new status of an eatable object
+	//	eatableRoutes.Patch("/:id/status/:newstatus", )
+	//
+	eatableRoutes.Put("/:id/parent/:newParentId", eatable.SetParent)
 }
 
 // special Routes require a valid user auth token but no sessionID
