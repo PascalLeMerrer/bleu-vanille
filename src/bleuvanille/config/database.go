@@ -103,15 +103,16 @@ func createTables() {
 		}
 	}
 
+	if !db.ColExist(EDGENAME_EATABLE_PARENT) {
+		edges := ara.NewCollectionOptions(EDGENAME_EATABLE_PARENT, true)
+		edges.IsEdge() // sets the collection options as edge...
+		db.CreateCollection(edges)
+	}
+
 	if db.Graph(GRAPHNAME_EATABLE_PARENT) == nil {
 
 		edgeDefinition := ara.NewEdgeDefinition(EDGENAME_EATABLE_PARENT, []string{COLNAME_ETABLES}, []string{COLNAME_ETABLES})
-
-		edgeDefinitionList := make([]ara.EdgeDefinition, 0)
-
-		edgeDefinitionList = append(edgeDefinitionList, *edgeDefinition)
-
-		_, err := db.CreateGraph(GRAPHNAME_EATABLE_PARENT, edgeDefinitionList)
+		_, err := db.CreateGraph(GRAPHNAME_EATABLE_PARENT, []ara.EdgeDefinition{*edgeDefinition})
 
 		if err != nil {
 			log.Fatal("Database : error when creating the graph " + GRAPHNAME_EATABLE_PARENT + " : " + err.Error())
