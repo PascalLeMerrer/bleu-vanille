@@ -18,10 +18,10 @@
       <tbody>
       <tr each={ user, index in users } class="animated { fadeOut: user.deleted, highlighted: user.deleted } ">
         <td>{ index + 1 }</td>
-        <td>{ user.email }</td>
+        <td><editable-text bus={ self.opts.bus } callback="{ save }" property="email" id="{ user.id }" text="{ user.email }" type="email"></editable-text></td>
         <td>{ user.createdAt }</td>
-        <td>{ user.firstname }</td>
-        <td>{ user.lastname }</td>
+        <td><editable-text bus={ self.opts.bus } callback="{ save }" property="firstname" id="{ user.id }" text="{ user.firstname }"></editable-text></td>
+        <td><editable-text bus={ self.opts.bus } callback="{ save }" property="lastname" id="{ user.id }" text="{ user.lastname }"></editable-text></td>
         <td><input type="checkbox" checked={ user.isAdmin } onclick={ toggleAdmin }></td>
         <td class="action-column"><a href="" onclick={ parent.delete } alt="Supprimer"><i class="fa fa-times"></i></a></td>
       </tr>
@@ -156,6 +156,15 @@
         self.opts.bus.trigger('displayError',
             "La modification de l\'utilisateur ' " + self.selectedUser.email + " a échoué.")
       }
+    }
+
+
+    // Saves the new value of a given user property
+    save(id, property, value, callback) {
+      superagent.patch('/users/' + id)
+                .send('{"' + property + '":"' + value +'"}')
+                .set('Content-Type', 'application/json; charset=UTF-8')
+                .end(callback)
     }
 
   </script>
