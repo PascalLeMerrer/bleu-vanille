@@ -227,7 +227,8 @@ func SetParent(context *echo.Context) error {
 	err := SaveParent(id, idParent)
 
 	if err != nil {
-		return context.JSON(http.StatusBadRequest, errors.New("Impossible to set parent : "+err.Error()))
+		log.Error(context, "Impossible to set parent: "+err.Error())
+		return context.JSON(http.StatusInternalServerError, errors.New("Impossible to set parent: "+err.Error()))
 	}
 
 	return context.JSON(http.StatusOK, "ok")
