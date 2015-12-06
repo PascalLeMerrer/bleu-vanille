@@ -41,6 +41,7 @@
     load() {
       superagent.get('/admin/users?sort=' + self.sorting)
         .set('Content-Type', 'application/json; charset=UTF-8')
+        .set('Accept', 'application/json')
         .end(self.loadCallback)
     }
 

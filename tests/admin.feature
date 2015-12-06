@@ -35,6 +35,7 @@ Feature:
   Scenario: As an admin, Get all users
     Given I set bearer token
     And I set Content-Type header to application/json; charset=UTF-8
+    And I set Accept header to application/json
     When I GET /admin/users
     Then response code should be 200
     And response body should contain "email":"admin@bleuvanille.com"

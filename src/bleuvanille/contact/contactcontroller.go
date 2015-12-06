@@ -75,7 +75,7 @@ func GetAll(context *echo.Context) error {
 		formattedContacts[i] = formattedContact{contacts[i].Email, formattedDate, contacts[i].UserAgent, contacts[i].Referer, contacts[i].TimeSpent}
 		i++
 	}
-	contentType := context.Request().Header.Get(echo.ContentType)
+	contentType := context.Request().Header.Get("Accept")
 	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
 		return context.JSON(http.StatusOK, formattedContacts)
 	}

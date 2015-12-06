@@ -154,7 +154,7 @@ func GetAll(context *echo.Context) error {
 		formattedUsers[i] = formattedUser{users[i].ID, users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
 		i++
 	}
-	contentType := context.Request().Header.Get(echo.ContentType)
+	contentType := context.Request().Header.Get("Accept")
 	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
 		return context.JSON(http.StatusOK, formattedUsers)
 	}

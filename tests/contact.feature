@@ -1,3 +1,4 @@
+@contact
 Feature:
     As a visitor of the website I want to see the Landing Page and be able to register my email
 
@@ -34,13 +35,16 @@ Feature:
 
     Scenario: As an admin, Verify contact is registered
       When I set bearer token
-    	And I GET /admin/contacts
-    	Then response code should be 200
+      And I set Content-Type header to application/json; charset=UTF-8
+      And I set Accept header to application/json
+      And I GET /admin/contacts
+      Then response code should be 200
       And response body should contain testemail@mail.org
 
     Scenario: As an admin, Get all contacts
       When I set bearer token
       And I set Content-Type header to application/json; charset=UTF-8
+      And I set Accept header to application/json
       And I GET /admin/contacts
       Then response code should be 200
       And response body should contain testemail@mail.org
@@ -48,7 +52,7 @@ Feature:
 
     Scenario: As an admin, Download contacts
       When I set bearer token
-      And I set Content-Type header to text/csv
+      And I set Accept header to text/csv
       And I GET /admin/contacts
       Then response code should be 200
 
