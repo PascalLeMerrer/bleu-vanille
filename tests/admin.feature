@@ -22,6 +22,7 @@ Feature:
     When I GET /admin/contacts
     Then response code should be 401
 
+
   Scenario: Authenticate as an admin
     Given I set body to email=admin@bleuvanille.com;password=xeCuf8CHapreNe=
     And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
@@ -31,6 +32,7 @@ Feature:
     And response header Authorization should exist
     And I store the value of header Authorization as access token
     And I set bearer token
+
 
   Scenario: As an admin, Get all users
     Given I set bearer token
@@ -45,6 +47,26 @@ Feature:
     And response body path $[0].lastname should be \w
     And response body path $[0].email should be \w
     And response body path $[0].createdAt should be \w
+
+  Scenario: As an admin, get a limited subset of user list
+    Given I set bearer token
+    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Accept header to application/json
+    When I GET /admin/users?offset=1&limit=2
+    Then response code should be 200
+    And response body should be valid json
+    And response body at path $.* should be a json array
+    And response body at path $.* should be an array of length 2
+    And response body path $[0].id should be \w
+    And response body path $[0].firstname should be \w
+    And response body path $[0].lastname should be \w
+    And response body path $[0].email should be \w
+    And response body path $[0].createdAt should be \w
+    And response body path $[1].id should be \w
+    And response body path $[1].firstname should be \w
+    And response body path $[1].lastname should be \w
+    And response body path $[1].email should be \w
+    And response body path $[1].createdAt should be \w
 
 
   Scenario: check rights on account used for admin tests

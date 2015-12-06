@@ -6,8 +6,9 @@ import (
 	"bleuvanille/config"
 	"errors"
 	"fmt"
-
 	ara "github.com/diegogub/aranGO"
+	"math"
+	"strconv"
 )
 
 // Save inserts a contact into the database
@@ -38,8 +39,16 @@ func LoadByEmail(email string) (*Contact, error) {
 // LoadAll returns the list of all contacts in the database
 // sort defines the sorting property name
 // order must be either ASC or DESC
-func LoadAll(sort string, order string) ([]Contact, error) {
-	queryString := "FOR c in contacts SORT c." + sort + " " + order + " RETURN c"
+// offset is the start index
+// limit défines the max number of results to be returned
+func LoadAll(sort string, order string, offset int, limit int) ([]Contact, error) {
+	limitString := ""
+	if limit > 0 {
+		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
+	} else {
+		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(math.MaxUint16)
+	}
+	queryString := "FOR c in contacts SORT c." + sort + " " + order + limitString + " RETURN c"
 	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
 

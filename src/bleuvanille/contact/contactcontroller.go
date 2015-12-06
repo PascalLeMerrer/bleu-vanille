@@ -51,19 +51,27 @@ func LandingPage(context *echo.Context) error {
 // GetAll writes the list of all contacts
 func GetAll(context *echo.Context) error {
 	sortParam := context.Query("sort")
+	offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+	if offsetErr != nil {
+		offsetParam = 0
+	}
+	limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+	if limitErr != nil {
+		limitParam = 0
+	}
 	var contacts Contacts
 	var err error
 	switch sortParam {
 	case "newer":
-		contacts, err = LoadAll("created_at", "DESC")
+		contacts, err = LoadAll("created_at", "DESC", offsetParam, limitParam)
 	case "older":
-		contacts, err = LoadAll("created_at", "ASC")
+		contacts, err = LoadAll("created_at", "ASC", offsetParam, limitParam)
 	case "emailAsc":
-		contacts, err = LoadAll("email", "ASC")
+		contacts, err = LoadAll("email", "ASC", offsetParam, limitParam)
 	case "emailDesc":
-		contacts, err = LoadAll("email", "DESC")
+		contacts, err = LoadAll("email", "DESC", offsetParam, limitParam)
 	default:
-		contacts, err = LoadAll("created_at", "DESC")
+		contacts, err = LoadAll("created_at", "DESC", offsetParam, limitParam)
 	}
 
 	if err != nil {

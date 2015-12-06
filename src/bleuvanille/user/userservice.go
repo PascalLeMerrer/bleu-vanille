@@ -6,6 +6,8 @@ import (
 	"bleuvanille/config"
 	"errors"
 	"fmt"
+	"math"
+	"strconv"
 
 	ara "github.com/diegogub/aranGO"
 )
@@ -66,10 +68,17 @@ func LoadByID(ID string) (*User, error) {
 	return nil, nil
 }
 
-// LoadAll returns the list of all Users in the database
-func LoadAll(sort string, order string) ([]User, error) {
-	queryString := "FOR u in users SORT u." + sort + " " + order + " RETURN u"
-
+// offset is the start index
+// limit défines the max number of results to be returned
+func LoadAll(sort string, order string, offset int, limit int) ([]User, error) {
+	limitString := ""
+	if limit > 0 {
+		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
+	} else {
+		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(math.MaxUint16)
+	}
+	queryString := "FOR u in users SORT u." + sort + " " + order + limitString + " RETURN u"
+	fmt.Printf("queryString is %v\n", queryString)
 	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
 

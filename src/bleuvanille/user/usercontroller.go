@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -122,26 +123,34 @@ var Get = emailRequired(
 		return context.JSON(http.StatusOK, user)
 	})
 
-// GetAll writes the list of all users
+// GetAll returns the list of all users
 func GetAll(context *echo.Context) error {
 	sortParam := context.Query("sort")
+	offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+	if offsetErr != nil {
+		offsetParam = 0
+	}
+	limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+	if limitErr != nil {
+		limitParam = 0
+	}
 	var users Users
 	var err error
 	switch sortParam {
 	case "newer":
-		users, err = LoadAll("createdAt", "DESC")
+		users, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
 	case "older":
-		users, err = LoadAll("createdAt", "ASC")
+		users, err = LoadAll("createdAt", "ASC", offsetParam, limitParam)
 	case "emailAsc":
-		users, err = LoadAll("email", "ASC")
+		users, err = LoadAll("email", "ASC", offsetParam, limitParam)
 	case "emailDesc":
-		users, err = LoadAll("email", "DESC")
+		users, err = LoadAll("email", "DESC", offsetParam, limitParam)
 	case "nameAsc":
-		users, err = LoadAll("lastname", "ASC")
+		users, err = LoadAll("lastname", "ASC", offsetParam, limitParam)
 	case "nameDesc":
-		users, err = LoadAll("lastname", "DESC")
+		users, err = LoadAll("lastname", "DESC", offsetParam, limitParam)
 	default:
-		users, err = LoadAll("createdAt", "DESC")
+		users, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
 	}
 
 	if err != nil {
