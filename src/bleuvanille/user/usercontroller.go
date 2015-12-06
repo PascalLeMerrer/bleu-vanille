@@ -179,7 +179,7 @@ func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
 	for j := range formattedUsers {
 		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%t\"\n", formattedUsers[j].Email, formattedUsers[j].CreatedAt, formattedUsers[j].Firstname, formattedUsers[j].Lastname, formattedUsers[j].IsAdmin)
 	}
-	now := formatDate(time.Now())
+	now := monday.Format(time.Now(), "2006-01-02-15h04", monday.LocaleFrFR)
 	filename := "Userlist-" + now + ".csv"
 	filepath := path.Join(os.TempDir(), filename)
 
