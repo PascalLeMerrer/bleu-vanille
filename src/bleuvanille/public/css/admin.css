@@ -114,10 +114,20 @@ input {
   height: 2em;
 }
 
-table.focusable tr:hover {
+table.focusable tr:hover, table.focusable tr:hover input {
   background-color: var(--secondary-color-light);
 }
 
 .highlighted {
   background-color: var(--primary-color-light);
+}
+
+input.editable {
+    border: none;
+
+}
+
+table.focusable input.editable:hover {
+    background-color: var(--third-color-light);
+    border: 1px solid var(--third-color);
 }
