@@ -40,6 +40,8 @@ Feature:
     And I set Accept header to application/json
     When I GET /admin/users
     Then response code should be 200
+    And response header X-TOTAL-COUNT should exist
+    And response header X-TOTAL-COUNT should be \d+
     And response body should contain "email":"admin@bleuvanille.com"
     And response body should be valid json
     And response body path $[0].id should be \w
@@ -54,6 +56,8 @@ Feature:
     And I set Accept header to application/json
     When I GET /admin/users?offset=1&limit=2
     Then response code should be 200
+    And response header X-TOTAL-COUNT should exist
+    And response header X-TOTAL-COUNT should be \d+
     And response body should be valid json
     And response body at path $.* should be a json array
     And response body at path $.* should be an array of length 2

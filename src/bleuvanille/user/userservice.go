@@ -68,9 +68,13 @@ func LoadByID(ID string) (*User, error) {
 	return nil, nil
 }
 
+// LoadAll returns the list of all users in the database
+// sort defines the sorting property name
+// order must be either ASC or DESC
 // offset is the start index
-// limit défines the max number of results to be returned
-func LoadAll(sort string, order string, offset int, limit int) ([]User, error) {
+// limit defines the max number of results to be returned
+// returns an array of user, the total number of users, an error
+func LoadAll(sort string, order string, offset int, limit int) ([]User, int, error) {
 	limitString := ""
 	if limit > 0 {
 		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
@@ -78,21 +82,22 @@ func LoadAll(sort string, order string, offset int, limit int) ([]User, error) {
 		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(math.MaxUint16)
 	}
 	queryString := "FOR u in users SORT u." + sort + " " + order + limitString + " RETURN u"
-	fmt.Printf("queryString is %v\n", queryString)
 	arangoQuery := ara.NewQuery(queryString)
 	cursor, err := config.Db().Execute(arangoQuery)
+	fmt.Printf("\n*****************\ncursor.FullCount is %+v\n", cursor.FullCount())
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return nil, 0, err
 	}
 	result := make([]User, len(cursor.Result))
 	err = cursor.FetchBatch(&result)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return nil, 0, err
 	}
-	return result, nil
+	fmt.Printf("\ncursor.FullCount is %+v\n*****************\n", cursor.FullCount())
+	return result, cursor.FullCount(), nil
 }
 
 // Delete delete the given user from the database

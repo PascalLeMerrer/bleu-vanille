@@ -135,22 +135,23 @@ func GetAll(context *echo.Context) error {
 		limitParam = 0
 	}
 	var users Users
+	var totalCount int
 	var err error
 	switch sortParam {
 	case "newer":
-		users, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
 	case "older":
-		users, err = LoadAll("createdAt", "ASC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("createdAt", "ASC", offsetParam, limitParam)
 	case "emailAsc":
-		users, err = LoadAll("email", "ASC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam)
 	case "emailDesc":
-		users, err = LoadAll("email", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam)
 	case "nameAsc":
-		users, err = LoadAll("lastname", "ASC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("lastname", "ASC", offsetParam, limitParam)
 	case "nameDesc":
-		users, err = LoadAll("lastname", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("lastname", "DESC", offsetParam, limitParam)
 	default:
-		users, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
 	}
 
 	if err != nil {
@@ -165,6 +166,7 @@ func GetAll(context *echo.Context) error {
 	}
 	contentType := context.Request().Header.Get("Accept")
 	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
 		return context.JSON(http.StatusOK, formattedUsers)
 	}
 	filepath, filename, err := createCsvFile(formattedUsers)
