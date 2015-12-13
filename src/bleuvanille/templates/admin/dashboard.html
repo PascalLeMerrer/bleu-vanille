@@ -29,22 +29,9 @@
     <script type="text/javascript" src="/tags/modal.js"></script>
     <script type="text/javascript">
       var bus = {};
-      var currentTagName = null;
       riot.observable(bus);
       bus.on('disconnected', function() {
         window.location = '/admin'
-      })
-      var tags = riot.mount('user-list', { bus: bus})
-
-      bus.on('display', function(selectedTagName) {
-        for (var i = tags.length - 1; i >= 0; i--) {
-          if(tags[i].root.localName === currentTagName) {
-            tags[i].unmount(true);
-          }
-        };
-        tags = riot.mount(selectedTagName, { bus: bus})
-        currentTagName = selectedTagName
-        riot.update()
       })
       riot.mount('admin-menu', { bus: bus})
       riot.mount('logout', { bus: bus})

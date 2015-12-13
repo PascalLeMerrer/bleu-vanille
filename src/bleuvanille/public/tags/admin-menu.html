@@ -9,17 +9,31 @@
     </aside>
     <script>
       var self = this;
+
       self.selected = 'user-list' // default view
+      self.currentTagName = self.selected;
+
+      var tags = null
+      self.on('mount', function() {
+        tags = riot.mount(self.selected, { bus: self.opts.bus})
+      })
       
+      display(event) {
+        self.selected = event.target.id
+        for (var i = tags.length - 1; i >= 0; i--) {
+          if(tags[i].root.localName === self.currentTagName) {
+            tags[i].unmount(true);
+          }
+        };
+        tags = riot.mount(self.selected, { bus: self.opts.bus})
+        self.currentTagName = self.selected
+        riot.update()
+      }
+
       isSelected(id) {
         return self.selected == id;
       }
 
-      display(event) {
-        self.selected = event.target.id
-        self.opts.bus.trigger('display', self.selected) // update the main view
-                                                        // self.selected is the name of the component to display
-      }
     </script>
     <style>
     admin-menu {
