@@ -73,18 +73,31 @@ func LoadByID(ID string) (*User, error) {
 // order must be either ASC or DESC
 // offset is the start index
 // limit defines the max number of results to be returned
+// email is a filtering criteria - may be an empty string to return all or an email address.
 // returns an array of user, the total number of users, an error
-func LoadAll(sort string, order string, offset int, limit int) ([]User, int, error) {
+func LoadAll(sort string, order string, offset int, limit int, email string, name string) ([]User, int, error) {
 	limitString := ""
 	if limit > 0 {
 		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
 	} else {
 		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(math.MaxUint16)
 	}
-	queryString := "FOR u in users SORT u." + sort + " " + order + limitString + " RETURN u"
+	emailString := ""
+	if email != "" {
+		emailString = " FILTER u.email == \"" + email + "\""
+	}
+	nameString := ""
+	if name != "" {
+		nameString = " FILTER u.lastname == \"" + name + "\""
+	}
+
+	queryString := "FOR u in users " + emailString + nameString + " SORT u." + sort + " " + order + limitString + " RETURN u"
+
+	fmt.Println(queryString)
+
 	arangoQuery := ara.NewQuery(queryString)
+	arangoQuery.SetFullCount(true)
 	cursor, err := config.Db().Execute(arangoQuery)
-	fmt.Printf("\n*****************\ncursor.FullCount is %+v\n", cursor.FullCount())
 
 	if err != nil {
 		fmt.Println(err)
@@ -96,7 +109,6 @@ func LoadAll(sort string, order string, offset int, limit int) ([]User, int, err
 		fmt.Println(err)
 		return nil, 0, err
 	}
-	fmt.Printf("\ncursor.FullCount is %+v\n*****************\n", cursor.FullCount())
 	return result, cursor.FullCount(), nil
 }
 

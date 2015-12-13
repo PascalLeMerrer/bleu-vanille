@@ -1,8 +1,28 @@
 <user-list>
   <table class="w100 focusable">
-    <div class="grid-2">
-      <div><h2>Utilisateurs</h2></div>
-      <div class="txtright"><a href="" onclick={ download } alt="Télécharger"><i class="fa fa-download"></i>Télécharger</a></div>
+    <div class="grid-5 navbar">
+      <div>
+        <h2>{ getTitle() }</h2>
+      </div>
+
+      <div>
+        <pagination pager="{ pager }" loader="{ load }"></pagination>
+      </div>
+
+      <div>
+        <input name="searchcriteria" type="{ searchType }" onkeyup="{ search }">
+      </div>
+
+      <div>
+        <select name="searchtype">
+          <option value="email">email</option>
+          <option value="name">nom</option>
+        </select>
+      </div>
+      
+      <div class="txtright">
+        <a href="" onclick="{ download }" alt="Télécharger"><i class="fa fa-download"></i>Télécharger</a>
+      </div>
     </div>
     <thead>
       <tr>
@@ -18,28 +38,48 @@
       <tbody>
       <tr each={ user, index in users } class="animated { fadeOut: user.deleted, highlighted: user.deleted } ">
         <td>{ index + 1 }</td>
-        <td><editable-text bus={ self.opts.bus } callback="{ save }" property="email" id="{ user.id }" text="{ user.email }" type="email"></editable-text></td>
+        <td><editable-text bus="{ self.opts.bus }" callback="{ save }" property="email" id="{ user.id }" text="{ user.email }" type="email"></editable-text></td>
         <td>{ user.createdAt }</td>
-        <td><editable-text bus={ self.opts.bus } callback="{ save }" property="firstname" id="{ user.id }" text="{ user.firstname }"></editable-text></td>
-        <td><editable-text bus={ self.opts.bus } callback="{ save }" property="lastname" id="{ user.id }" text="{ user.lastname }"></editable-text></td>
-        <td><input type="checkbox" checked={ user.isAdmin } onclick={ toggleAdmin }></td>
-        <td class="action-column"><a href="" onclick={ parent.delete } alt="Supprimer"><i class="fa fa-times"></i></a></td>
+        <td><editable-text bus="{ self.opts.bus }" callback="{ save }" property="firstname" id="{ user.id }" text="{ user.firstname }"></editable-text></td>
+        <td><editable-text bus="{ self.opts.bus }" callback="{ save }" property="lastname" id="{ user.id }" text="{ user.lastname }"></editable-text></td>
+        <td><input type="checkbox" checked="{ user.isAdmin }" onclick="{ toggleAdmin }"></td>
+        <td class="action-column"><a href="" onclick="{ parent.delete }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
       </tr>
     </tbody>
   </table>
-    <test></test>
+  <div class="txtcenter">
+    <pagination pager="{ pager }" loader="{ load }"></pagination>
+  </div>
   <script>
     var self = this
     self.selectedUser = null
-    self.sorting = "newer"
+    self.sorting = 'newer'
     self.modal = null
+    self.totalCount = 0
+    self.searchCriteria = 'email'
+    self.pager = {
+      maxPage: 0,
+      itemPerPage: 20,
+      currentPage: 1
+    }
+
     self.on('mount', function() {
       self.load()
     });
 
+    getTitle() {
+      return self.totalCount + ' utilisateur' + (self.totalCount > 1 ? 's' : '')
+    }
+
     // load and display the user list
-    load() {
-      superagent.get('/admin/users?sort=' + self.sorting)
+    load(offset, limit) {
+      if(offset === undefined) {
+        offset = 0
+      }
+      if(limit === undefined) {
+        limit = self.pager.itemPerPage
+      }
+      superagent.get('/admin/users?offset=' + offset + '&limit=' + limit + '&sort=' + self.sorting)
         .set('Content-Type', 'application/json; charset=UTF-8')
         .set('Accept', 'application/json')
         .end(self.loadCallback)
@@ -87,7 +127,9 @@
     // processes user list loading response
     loadCallback(err, response) {
       if (response.ok) {
-        self.users = response.body
+        self.totalCount = response.headers['x-total-count']
+        self.pager.maxPage = Math.ceil(self.totalCount/self.pager.itemPerPage)
+        self.users = response.body;
         self.update()
       } else {
         self.opts.bus.trigger('displayError', "Le chargement de la liste des utilisateurs a échoué.")
@@ -168,9 +210,39 @@
                 .end(callback)
     }
 
+    // search user matching the criteria
+    search(event) {
+      var criteriaName = self.searchtype.value
+      var criteriaValue = self.searchcriteria.value
+      var query
+      if (event.keyCode === 13 & criteriaValue != undefined && criteriaValue.length > 1) {
+        if(criteriaName === 'email') {
+          query = 'sort=emailAsc&email=' + criteriaValue
+        } else {
+          query = 'sort=nameAsc&name=' + criteriaValue
+        }
+        superagent.get('/admin/users?limit=20&' + query)
+        .set('Content-Type', 'application/json; charset=UTF-8')
+        .set('Accept', 'application/json')
+        .end(self.loadCallback)      
+      }
+    }
+
   </script>
 
   <style>
+    div.navbar {
+      margin-bottom: 2rem;
+      vertical-align: middle;
+    }
+
+    div.navbar select, div.navbar pagination, {
+      font-size: 2.0rem;
+    }
+    
+    div.navbar input {
+      width: 100%;
+    }
 
    .id-column {
      width: 2rem;

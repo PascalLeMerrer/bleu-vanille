@@ -1,0 +1,45 @@
+<pagination>
+	<span if="{ opts.pager.maxPage }">
+		<i class="fa fa-chevron-left { disabled: !isPreviousActive() } navigation" onclick="{ previous }" ></i>
+		&nbsp;<span>{ opts.pager.currentPage } / { opts.pager.maxPage } <span>&nbsp;
+		<i class="fa fa-chevron-right { disabled: !isNextActive() } navigation" onclick="{ next }"></i>
+	</span>
+	<script>
+		var self = this
+
+		isPreviousActive() {
+			return self.opts.pager.currentPage > 1
+		}
+
+		isNextActive() {
+			return self.opts.pager.currentPage < self.opts.pager.maxPage
+		}
+
+		previous() {
+	      if(self.opts.pager.currentPage > 1) {
+	        self.opts.pager.currentPage--
+	        var offset = (self.opts.pager.currentPage - 1) * self.opts.pager.itemPerPage
+	        self.opts.loader(offset, self.opts.pager.itemPerPage)
+	      }
+	    }
+
+	    next() {
+	      if (self.opts.pager.currentPage < self.opts.pager.maxPage) {
+	        self.opts.pager.currentPage++
+	        var offset = (self.opts.pager.currentPage - 1) * self.opts.pager.itemPerPage
+	        self.opts.loader(offset, self.opts.pager.itemPerPage)
+	      }
+	    }
+
+
+	</script>
+	<style scoped>
+		i {
+			cursor: pointer;
+		}
+
+		i.disabled {
+			cursor: text;
+		}
+	</style>
+</pagination>

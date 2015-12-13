@@ -131,3 +131,7 @@ table.focusable input.editable:hover {
     background-color: var(--third-color-light);
     border: 1px solid var(--third-color);
 }
+
+.navigation {
+  color: var(--secondary-color);
+}

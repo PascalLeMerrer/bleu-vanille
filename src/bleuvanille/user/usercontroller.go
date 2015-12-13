@@ -126,6 +126,8 @@ var Get = emailRequired(
 // GetAll returns the list of all users
 func GetAll(context *echo.Context) error {
 	sortParam := context.Query("sort")
+	emailParam := context.Query("email")
+	nameParam := context.Query("name")
 	offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
 	if offsetErr != nil {
 		offsetParam = 0
@@ -137,21 +139,22 @@ func GetAll(context *echo.Context) error {
 	var users Users
 	var totalCount int
 	var err error
+	// TODO: refactor
 	switch sortParam {
 	case "newer":
-		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam, emailParam, nameParam)
 	case "older":
-		users, totalCount, err = LoadAll("createdAt", "ASC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("createdAt", "ASC", offsetParam, limitParam, emailParam, nameParam)
 	case "emailAsc":
-		users, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam, emailParam, nameParam)
 	case "emailDesc":
-		users, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam, emailParam, nameParam)
 	case "nameAsc":
-		users, totalCount, err = LoadAll("lastname", "ASC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("lastname", "ASC", offsetParam, limitParam, emailParam, nameParam)
 	case "nameDesc":
-		users, totalCount, err = LoadAll("lastname", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("lastname", "DESC", offsetParam, limitParam, emailParam, nameParam)
 	default:
-		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam)
+		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam, emailParam, nameParam)
 	}
 
 	if err != nil {

@@ -24,6 +24,7 @@
     <script type="text/javascript" src="/tags/logout.js"></script>
     <script type="text/javascript" src="/tags/admin-menu.js"></script>
     <script type="text/javascript" src="/tags/contactlist.js"></script>
+    <script type="text/javascript" src="/tags/pagination.js"></script>
     <script type="text/javascript" src="/tags/user-list.js"></script>
     <script type="text/javascript" src="/tags/modal.js"></script>
     <script type="text/javascript">
@@ -42,7 +43,6 @@
           }
         };
         tags = riot.mount(selectedTagName, { bus: bus})
-        console.log(currentTagName, selectedTagName)
         currentTagName = selectedTagName
         riot.update()
       })

@@ -1,7 +1,7 @@
 <contact-list>
   <table>
     <div class="grid-2">
-      <div><h2>Contacts</h2></div>
+      <div><h2>{ getTitle() }</h2></div>
       <div class="txtright"><a href="" onclick={ download } alt="Télécharger"><i class="fa fa-download"></i>Télécharger</a></div>
     </div>
     <thead>
@@ -27,22 +27,43 @@
       </tr>
     </tbody>
   </table>
-
+  <div class="txtcenter">
+    <pagination pager="{ pager }" loader="{ load }"></pagination>
+  </div>
   <script>
     var self = this
     self.selectedContact = null
     self.sorting = "newer"
+    self.totalCount = 0
+    self.pager = {
+      maxPage: 0,
+      itemPerPage: 20,
+      currentPage: 1
+    }
+
+
     self.on('mount', function() {
       self.load()
     });
 
+    getTitle() {
+      return self.totalCount + ' contact' + (self.totalCount > 1 ? 's' : '')
+    }
+
     // load and display the contact list
-    load() {
-      superagent.get('/admin/contacts?sort=' + self.sorting)
+    load(offset, limit) {
+      if(offset === undefined) {
+        offset = 0
+      }
+      if(limit === undefined) {
+        limit = self.pager.itemPerPage
+      }
+      superagent.get('/admin/contacts?offset=' + offset + '&limit=' + limit + '&sort=' + self.sorting)
         .set('Content-Type', 'application/json; charset=UTF-8')
         .set('Accept', 'application/json')
         .end(self.loadCallback)
     }
+
 
     // download contact list as a CSV file
     download() {
@@ -76,6 +97,8 @@
     loadCallback(err, response) {
       if (response.ok) {
         self.contacts = response.body
+        self.totalCount = response.headers['x-total-count']
+        self.pager.maxPage = Math.ceil(self.totalCount/self.pager.itemPerPage)
         self.update()
       } else {
         self.opts.bus.trigger('displayError', "Le chargement de la liste des contacts a échoué.")
