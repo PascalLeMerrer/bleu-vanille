@@ -1,7 +1,10 @@
 <contact-list>
   <table>
-    <div class="grid-2">
+    <div class="grid-3">
       <div><h2>{ getTitle() }</h2></div>
+        <div class="txtcenter">
+          <pagination pager="{ pager }" loader="{ load }"></pagination>
+      </div>
       <div class="txtright"><a href="" onclick={ download } alt="Télécharger"><i class="fa fa-download"></i>Télécharger</a></div>
     </div>
     <thead>
