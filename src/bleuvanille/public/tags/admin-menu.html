@@ -10,8 +10,7 @@
     <script>
       var self = this;
       self.selected = 'user-list' // default view
-      self.opts.bus.trigger('display', self.selected)
-
+      
       isSelected(id) {
         return self.selected == id;
       }
