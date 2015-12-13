@@ -82,12 +82,12 @@ input {
 }
 .primary-btn:hover {
   background-color: var(--primary-color-light);
-  color: #444;
+  color: var(--dark-text-color);
 }
 
 .danger-btn:hover {
   background-color: #FA0C5C;
-  color: #FFFFFF;
+  color: var(--third-color-light);
 }
 .danger-btn {
   background-color: #F21818;
@@ -101,7 +101,7 @@ input {
 
 .disabled{
   opacity: 0.3;
-  color: #000;
+  color: var(--dark-text-color);
 }
 
 .passwordShow {
