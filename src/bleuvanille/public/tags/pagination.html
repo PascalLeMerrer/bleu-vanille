@@ -1,8 +1,12 @@
 <pagination>
 	<span if="{ opts.pager.maxPage }">
-		<i class="fa fa-chevron-left { disabled: !isPreviousActive() } navigation" onclick="{ previous }" ></i>
-		&nbsp;<input id="currentPage" type="text" value="{ opts.pager.currentPage }" onkeyup="{ goto }"> / { opts.pager.maxPage } <span>&nbsp;
-		<i class="fa fa-chevron-right { disabled: !isNextActive() } navigation" onclick="{ next }"></i>
+		<i class="fa fa-lg fa-angle-double-left { disabled: !isPreviousActive() } navigation" onclick="{ first }" ></i>
+		&nbsp;
+		<i class="fa fa-lg fa-angle-left { disabled: !isPreviousActive() } navigation" onclick="{ previous }" ></i>
+		&nbsp;<span><input id="currentPage" type="text" value="{ opts.pager.currentPage }" onkeyup="{ goto }"> / { opts.pager.maxPage } </span>&nbsp;
+		<i class="fa fa-lg fa-angle-right { disabled: !isNextActive() } navigation" onclick="{ next }"></i>
+		&nbsp;
+		<i class="fa fa-lg fa-angle-double-right { disabled: !isNextActive() } navigation" onclick="{ last }"></i>
 	</span>
 	<script>
 		var self = this
@@ -13,6 +17,11 @@
 
 		isNextActive() {
 			return self.opts.pager.currentPage < self.opts.pager.maxPage
+		}
+
+		first() {
+	      	self.opts.pager.currentPage = 1
+	        self.loadPage()
 		}
 
 		previous() {
@@ -27,6 +36,11 @@
 	        self.opts.pager.currentPage++
 	        self.loadPage()
 	      }
+	    }
+
+	    last() {
+	      self.opts.pager.currentPage = self.opts.pager.maxPage
+	      self.loadPage()
 	    }
 
 	    // goto the given page number
