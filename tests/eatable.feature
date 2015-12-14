@@ -1,3 +1,4 @@
+@eatable
 Feature:  
 	As a admin of the website, I want to manage my eatables
 
@@ -98,7 +99,7 @@ Scenario: Changing the parent of an eatable with admin user from its id
 	  		}
 	  		"""
 	Then response code should be 201
-    And I store the value of body path $._key as createdIngredientParentId in scenario scope
+    And I store the value of body path $._key as createdIngredientParentId in global scope
     And I store the value of body path $._key as createdIngredientParentGlobalId in global scope
 	Given I set Cookie header to global variable cookie  
 	When  I PUT /eatables/`createdIngredientId`/parent/`createdIngredientParentId`

@@ -21,16 +21,11 @@ func Save(eatable *Eatable) error {
 
 func SaveParent(id, parentid string) error {
 	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
-	err := col.Relate("eatables/"+id, "eatables/"+parentid, map[string]interface{}{})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	err := col.Relate("eatables/"+id, "eatables/"+parentid, map[string]interface{}{"is": "parent"})
+	return err
 }
 
-// LoadById returns the eatable object for a given id, if any
+// FindById returns the eatable object for a given id, if any
 func FindById(id string) (*Eatable, error) {
 	var result Eatable
 
@@ -45,20 +40,20 @@ func FindById(id string) (*Eatable, error) {
 }
 
 type Edge struct {
-		Id   string `json:"_id,omitempty"  `
-		From string `json:"_from"`
-		To   string `json:"_to"  `	
+	Id   string `json:"_id,omitempty"  `
+	From string `json:"_from"`
+	To   string `json:"_to"  `
 }
 
 type Edges struct {
 	EdgesArray []Edge `json:"edges,omitempty"`
-	Error bool `json:"error,omitempty"`
+	Error      bool   `json:"error,omitempty"`
 }
 
 // GetParent returns the parent of a given eatable
 func GetParent(child *Eatable) (*Edge, error) {
 	var arrayofresult Edges
-	
+
 	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
 	err := col.Edges(child.Id, "out", &arrayofresult)
 
@@ -69,7 +64,7 @@ func GetParent(child *Eatable) (*Edge, error) {
 	if len(arrayofresult.EdgesArray) > 0 {
 		return &arrayofresult.EdgesArray[0], nil
 	}
-	
+
 	return nil, nil
 }
 
