@@ -21,7 +21,7 @@ func Save(eatable *Eatable) error {
 
 func SaveParent(id, parentid string) error {
 	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
-	err := col.Relate("eatables/"+id, "eatables/"+parentid, map[string]interface{}{"is": "parent"})
+	err := col.Relate("eatables/"+id, "eatables/"+parentid, map[string]interface{}{"is": "child"})
 	return err
 }
 
