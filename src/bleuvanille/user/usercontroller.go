@@ -11,9 +11,13 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"path"
+	"strconv"
 	"text/template"
 	"time"
 
+	"github.com/goodsign/monday"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo"
@@ -28,6 +32,15 @@ type passwordResetData struct {
 	Token    string
 	Now      string
 	Boundary string
+}
+
+type formattedUser struct {
+	ID        string `json:"id"`
+	Email     string `json:"email,omitempty"`
+	CreatedAt string `json:"createdAt"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	IsAdmin   bool   `json:"isAdmin"`
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -133,14 +146,139 @@ var Get = emailRequired(
 		return context.JSON(http.StatusOK, user)
 	})
 
-// GetAll writes the list of all users
+// GetAll returns the list of all users
 func GetAll(context *echo.Context) error {
-	users, err := LoadAll()
+	sortParam := context.Query("sort")
+	emailParam := context.Query("email")
+	nameParam := context.Query("name")
+	offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+	if offsetErr != nil {
+		offsetParam = 0
+	}
+	limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+	if limitErr != nil {
+		limitParam = 0
+	}
+	var users Users
+	var totalCount int
+	var err error
+	// TODO: refactor
+	switch sortParam {
+	case "newer":
+		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam, emailParam, nameParam)
+	case "older":
+		users, totalCount, err = LoadAll("createdAt", "ASC", offsetParam, limitParam, emailParam, nameParam)
+	case "emailAsc":
+		users, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam, emailParam, nameParam)
+	case "emailDesc":
+		users, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam, emailParam, nameParam)
+	case "nameAsc":
+		users, totalCount, err = LoadAll("lastname", "ASC", offsetParam, limitParam, emailParam, nameParam)
+	case "nameDesc":
+		users, totalCount, err = LoadAll("lastname", "DESC", offsetParam, limitParam, emailParam, nameParam)
+	default:
+		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam, emailParam, nameParam)
+	}
+
 	if err != nil {
 		log.Println(err)
 		return context.JSON(http.StatusInternalServerError, errors.New("User list retrieval error"))
 	}
-	return context.JSON(http.StatusOK, users)
+	formattedUsers := make([]formattedUser, len(users))
+	for i := range users {
+		formattedDate := formatDate(users[i].CreatedAt)
+		formattedUsers[i] = formattedUser{users[i].ID, users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
+		i++
+	}
+	contentType := context.Request().Header.Get("Accept")
+	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
+		return context.JSON(http.StatusOK, formattedUsers)
+	}
+	filepath, filename, err := createCsvFile(formattedUsers)
+	if err != nil {
+		fmt.Printf("Cannot create User list file: %v", err)
+		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot open file: %v", err))
+	}
+	// TODO: How to cleanup the temp dir?
+	return context.File(filepath, filename, true)
+}
+
+// formats a date according to FR locale
+func formatDate(date time.Time) string {
+	return monday.Format(date, "Mon _2 Jan 2006 15:04", monday.LocaleFrFR)
+}
+
+// Create a CSV file containing the list of users
+// returns the absolute file name (including the path) and the filename
+func createCsvFile(formattedUsers []formattedUser) (string, string, error) {
+	csvString := "Email, Date d'inscription, Prénom, Nom, Admin"
+	for j := range formattedUsers {
+		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%t\"\n", formattedUsers[j].Email, formattedUsers[j].CreatedAt, formattedUsers[j].Firstname, formattedUsers[j].Lastname, formattedUsers[j].IsAdmin)
+	}
+	now := monday.Format(time.Now(), "2006-01-02-15h04", monday.LocaleFrFR)
+	filename := "Userlist-" + now + ".csv"
+	filepath := path.Join(os.TempDir(), filename)
+
+	fileHandler, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0666)
+
+	if err != nil {
+		return "", "", fmt.Errorf("Cannot open file: %v", err)
+	}
+
+	defer fileHandler.Close()
+
+	_, err = fileHandler.Write([]byte(csvString))
+	if err != nil {
+		return "", "", fmt.Errorf("Cannot write file: %v", err)
+	}
+	return filepath, filename, nil
+}
+
+// Patch modifies the user account for a given ID
+// This is an admin feature, not supposed to be used by normal users
+func Patch(context *echo.Context) error {
+	userID := context.Param("userID")
+	session := context.Get("session").(*session.Session)
+	if session == nil || (session.UserID != userID && !session.IsAdmin) {
+		log.Printf("ERROR: unauthorized attempt to modify account %s by  user with session %+v", userID, session)
+		return context.JSON(http.StatusUnauthorized, "")
+	}
+
+	user, err := LoadByID(userID)
+	if err != nil || user == nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
+	}
+
+	previousIsAdmin := user.IsAdmin
+
+	err = context.Bind(&user)
+	if err != nil {
+		log.Printf("Cannot bind user %v", err)
+		return context.JSON(http.StatusBadRequest, errors.New("Cannot decode request body"))
+	}
+	if user.IsAdmin != previousIsAdmin && !session.IsAdmin {
+		log.Printf("ERROR: unauthorized attempt to give admin rights to account %s by user with session %+v", user.Email, session)
+		return context.JSON(http.StatusUnauthorized, "")
+	}
+
+	saveErr := Save(user)
+	if saveErr != nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot update user "+user.ID))
+	}
+	user.Hash = "" // never leak the hash
+	return context.JSON(http.StatusOK, user)
+}
+
+// RemoveByAdmin removes the user account for a given ID
+// This is an admin feature, not supposed to be used by normal users
+func RemoveByAdmin(context *echo.Context) error {
+	user, err := LoadByID(context.Param("userID"))
+	if err != nil || user == nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
+
+	}
+	return _delete(context, user)
 }
 
 // Remove removes the user account for a given email
@@ -156,20 +294,23 @@ func Remove(context *echo.Context) error {
 		return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in DELETE request"))
 	}
 	user, err := LoadByID(userID)
-
-	if err != nil {
-		log.Println(err)
+	if err != nil || user == nil {
+		log.Printf("Cannot load user with ID %s", userID)
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(password))
 	if err != nil {
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
 	}
+	return _delete(context, user)
+}
 
+// Effective deletion of a user account
+func _delete(context *echo.Context, user *User) error {
 	deleteErr := Delete(user)
 	if deleteErr != nil {
-		log.Println(err)
-		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+userID))
+		log.Printf("Cannot delete user %v", deleteErr)
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+user.ID))
 	}
 	return context.NoContent(http.StatusNoContent)
 }
@@ -250,7 +391,7 @@ var ChangePassword = emailAndPasswordRequired(
 		return context.JSON(http.StatusOK, nil)
 	})
 
-// ResetPassword updates the password of the authenticated user without proving the old one
+// ResetPassword updates the password of the authenticated user without providing the old one
 func ResetPassword(context *echo.Context) error {
 	newPassword := context.Form("password")
 	var email string
@@ -319,23 +460,51 @@ var SendResetLink = emailRequired(
 // DisplayResetForm displays the reset password form
 func DisplayResetForm(context *echo.Context) error {
 	token := context.Query("token")
-	if token == "" {
+	email := context.Query("email")
+	if token == "" || email == "" {
 		return context.JSON(http.StatusUnauthorized, "Invalid URL for password reset")
-
 	}
+	user, err := LoadByEmail(email)
+	if user == nil || err != nil {
+		return context.JSON(http.StatusUnauthorized, "Invalid user for password reset")
+	}
+
 	data := struct {
-		Token string
+		Token   string
+		IsAdmin bool
 	}{
-		Token: token,
+		Token:   token,
+		IsAdmin: user.IsAdmin,
 	}
 	return context.Render(http.StatusOK, "passwordreset", data)
 }
 
-// Profile Returns the profile of a given user
-// If it's the current one, the returned profile is richer
+// Get Returns the profile of a given user
+// If it's the current one,or if if it's an admin that requires it,
+// the returned profile is richer than if it a normal user that asks
 func Profile(context *echo.Context) error {
-	//TODO implement
-	return context.JSON(http.StatusOK, "user profile")
+	user, err := LoadByID(context.Param("userID"))
+	if err != nil || user == nil {
+		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
+
+	}
+
+	session := context.Get("session").(*session.Session)
+
+	if session != nil && (session.IsAdmin || session.UserID == user.ID) {
+		user.Hash = "" // don't leak user Hash, for security
+		return context.JSON(http.StatusOK, user)
+	}
+
+	publicProfile := formattedUser{
+		user.ID,
+		"",
+		formatDate(user.CreatedAt),
+		user.Firstname,
+		user.Lastname,
+		user.IsAdmin,
+	}
+	return context.JSON(http.StatusOK, publicProfile)
 }
 
 // emailRequired verifies the presence of an "email" parameter in the body of the request

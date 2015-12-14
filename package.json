@@ -22,6 +22,7 @@
     "gulp-cssnext": "latest",
     "gulp-cucumber": "latest",
     "gulp-riot": "latest",
-    "gulp-watch": "latest"
+    "gulp-watch": "latest",
+    "multipipe": "^0.2.1"
   }
 }

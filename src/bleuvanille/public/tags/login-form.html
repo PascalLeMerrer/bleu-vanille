@@ -1,9 +1,9 @@
 <login-form>
   <form class="w70 center" onsubmit="{ login }">
     <label for="username" class="row mts">Adresse email</label>
-    <input name="username" type="email" class="row">
+    <input name="username" type="email" class="row" onkeyup={ submit }>
     <label for="password" class="row mts">Mot de passe</label>
-    <input name="password" class="mbs w70" type="{ passwordFieldType }" onkeyup={ check } value="xeCuf8CHapreNe=">
+    <input name="password" class="mbs w70" type="{ passwordFieldType }" onkeyup={ submit } value="xeCuf8CHapreNe=">
     <div class="passwordShow"><input checked={ isPasswordVisible } type="checkbox" onclick={ toggle }> Afficher</div>
     <a onclick={ login } class="row btn primary-btn">
       <div class="grid-3-1">
@@ -23,6 +23,13 @@
   self.forgotMessage = "J'ai oublié mon mot de passe"
   self.isPasswordVisible = false
   self.passwordFieldType = "password"
+
+  // validates the form when enter is pressed
+  submit(e) {
+    if (e.keyCode == 13) {
+      self.login()
+    }
+  }
 
   // Sends an authentication request to the server
   login() {

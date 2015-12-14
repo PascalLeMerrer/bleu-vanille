@@ -63,7 +63,7 @@ header a {
   color: var(--third-color-light);
 }
 
-label {
+label, modal .body, modal .close{
   color: var(--dark-text-color);
 }
 
@@ -76,22 +76,32 @@ input {
   border: none;
   border-radius: 0.5rem;
   color: var(--third-color-light);
-  font-size: 120%;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  padding-top: 0.5rem;
-  height: 2em;
+  font-size: 1.5rem;
+  padding: 1rem 2rem 1rem 2rem;
   cursor: pointer;
 }
-
 .primary-btn:hover {
   background-color: var(--primary-color-light);
-  color: #444;
+  color: var(--dark-text-color);
+}
+
+.danger-btn:hover {
+  background-color: #FA0C5C;
+  color: var(--third-color-light);
+}
+.danger-btn {
+  background-color: #F21818;
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--third-color-light);
+  font-size: 1.5rem;
+  padding: 1rem 2rem 1rem 2rem;
+  cursor: pointer;
 }
 
 .disabled{
   opacity: 0.3;
-  color: #000;
+  color: var(--dark-text-color);
 }
 
 .passwordShow {
@@ -102,4 +112,26 @@ input {
   background-color: #CCC;
   padding-left: 1em;
   height: 2em;
+}
+
+table.focusable tr:hover, table.focusable tr:hover input {
+  background-color: var(--secondary-color-light);
+}
+
+.highlighted {
+  background-color: var(--primary-color-light);
+}
+
+input.editable {
+    border: none;
+
+}
+
+table.focusable input.editable:hover {
+    background-color: var(--third-color-light);
+    border: 1px solid var(--third-color);
+}
+
+.navigation {
+  color: var(--secondary-color);
 }

@@ -21,7 +21,7 @@ type User struct {
 	Firstname  string `json:"firstname"`
 	Lastname   string `json:"lastname"`
 	Hash       string
-	IsAdmin    bool
+	IsAdmin    bool      `json:"isAdmin"`
 	CreatedAt  time.Time `json:"createdAt"`
 	ResetToken string
 }

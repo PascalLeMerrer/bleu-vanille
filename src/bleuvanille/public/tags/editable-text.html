@@ -1,0 +1,38 @@
+<editable-text>
+    <input name="input" class="editable" type="{ opts.type || text }" value={ opts.text } onkeyup={ submit } onblur={ invokeCallback }>
+    <script>
+        var self=this;
+        var initialValue = self.opts.text;
+        var value
+
+        // validates the form when enter is pressed
+        submit(e) {
+            if (e.keyCode == 13) {
+                self.invokeCallback()
+            }
+        }
+
+        // invoke the continer's callback to save the new input value
+        invokeCallback() {
+            value = self.input.value
+            if( value != initialValue) {
+                self.opts.callback(self.opts.id, self.opts.property, value, self.valueUpdated)
+            }
+        }
+
+        // updates the variable used to detect changes when the new value has been saved
+        valueUpdated(err, response) {
+            if(!err) {
+                initialValue = value
+            } else {
+                self.opts.bus.trigger("displayError", "La mise à jour de la propriété " + self.opts.property + " a échoué.")
+            }
+        }
+
+    </script>
+    <style>
+        input.editable {
+            width: 100%;
+        }
+    </style>
+</editable-text>

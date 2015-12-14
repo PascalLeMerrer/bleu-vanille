@@ -22,7 +22,7 @@ type errorMessage struct {
 
 type formattedContact struct {
 	Email     string `json:"email"`
-	CreatedAt string `json:"created_at"`
+	CreatedAt string `json:"createdAt"`
 	UserAgent string `json:"userAgent"`
 	Referer   string `json:"referer"`
 	TimeSpent int    `json:"timeSpent"`
@@ -51,17 +51,28 @@ func LandingPage(context *echo.Context) error {
 // GetAll writes the list of all contacts
 func GetAll(context *echo.Context) error {
 	sortParam := context.Query("sort")
+	offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+	if offsetErr != nil {
+		offsetParam = 0
+	}
+	limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+	if limitErr != nil {
+		limitParam = 0
+	}
 	var contacts Contacts
+	var totalCount int
 	var err error
 	switch sortParam {
 	case "newer":
-		contacts, err = LoadAll("created_at", "DESC")
+		contacts, totalCount, err = LoadAll("created_at", "DESC", offsetParam, limitParam)
 	case "older":
-		contacts, err = LoadAll("created_at", "ASC")
-	case "email":
-		contacts, err = LoadAll("email", "ASC")
+		contacts, totalCount, err = LoadAll("created_at", "ASC", offsetParam, limitParam)
+	case "emailAsc":
+		contacts, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam)
+	case "emailDesc":
+		contacts, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam)
 	default:
-		contacts, err = LoadAll("created_at", "DESC")
+		contacts, totalCount, err = LoadAll("created_at", "DESC", offsetParam, limitParam)
 	}
 
 	if err != nil {
@@ -73,8 +84,9 @@ func GetAll(context *echo.Context) error {
 		formattedContacts[i] = formattedContact{contacts[i].Email, formattedDate, contacts[i].UserAgent, contacts[i].Referer, contacts[i].TimeSpent}
 		i++
 	}
-	contentType := context.Request().Header.Get(echo.ContentType)
+	contentType := context.Request().Header.Get("Accept")
 	if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
 		return context.JSON(http.StatusOK, formattedContacts)
 	}
 	filepath, filename, err := createCsvFile(formattedContacts)
@@ -86,10 +98,10 @@ func GetAll(context *echo.Context) error {
 	return context.File(filepath, filename, true)
 }
 
-// Create a CSV file containing the list of contactlist
+// Create a CSV file containing the list of contacts
 // returns the absolute file name (including the path) and the filename
 func createCsvFile(formattedContacts []formattedContact) (string, string, error) {
-	csvString := ""
+	csvString := "Email, Date d'inscription, User Agent, Provenance, Temps passé sur landing page"
 	for j := range formattedContacts {
 		csvString += fmt.Sprintf("\"%s\", \"%s\", \"%s\", \"%s\", \"%d\"\n", formattedContacts[j].Email, formattedContacts[j].CreatedAt, formattedContacts[j].UserAgent, formattedContacts[j].Referer, formattedContacts[j].TimeSpent)
 	}

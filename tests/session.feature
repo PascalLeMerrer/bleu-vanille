@@ -8,7 +8,7 @@ Feature:
     Then response code should be 201
 
   Scenario: I should no be able to get my profile without Authorization header
-    When I GET /users/FAKE_USER_PROFILE/profile
+    When I GET /users/FAKE_USER_PROFILE
     Then response code should be 401
 
   Scenario: I should no be able to get a user profile with an invalid Authorization header
@@ -16,7 +16,7 @@ Feature:
     And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
     And I POST to /users/login
     And I store the value of header Content-Type as access token
-    When I GET /users/FAKE_USER_PROFILE/profile
+    When I GET /users/FAKE_USER_PROFILE
     Then response code should be 401
 
   Scenario: Sign in (login) should return an Authorization header

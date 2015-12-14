@@ -90,6 +90,7 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Get("/", contact.LandingPage)
 	echoServer.Get("/admin", admin.LoginPage)
+	echoServer.Get("/admin/", admin.LoginPage)
 	echoServer.Post("/contacts", contact.Create)
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
@@ -107,7 +108,8 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	// echo does not accept Delete request with body so we use a Post instead
 	userRoutes.Post("/delete", user.Remove)
 	userRoutes.Put("/password", user.ChangePassword)
-	userRoutes.Get("/:userID/profile", user.Profile)
+	userRoutes.Get("/:userID", user.Profile)
+	userRoutes.Patch("/:userID", user.Patch)
 
 	eatableRoutes := echoServer.Group("/eatables")
 	eatableRoutes.Use(auth.JWTAuth())
@@ -143,6 +145,8 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 
 	adminRoutes.Get("/dashboard", admin.Dashboard)
 	adminRoutes.Get("/contacts", contact.GetAll)
+	adminRoutes.Get("/users", user.GetAll)
+	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
 }
 

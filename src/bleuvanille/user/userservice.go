@@ -6,6 +6,8 @@ import (
 	"bleuvanille/config"
 	"errors"
 	"fmt"
+	"math"
+	"strconv"
 
 	ara "github.com/diegogub/aranGO"
 )
@@ -66,30 +68,48 @@ func LoadByID(ID string) (*User, error) {
 	return nil, nil
 }
 
-// LoadAll returns the list of all Users in the database
-func LoadAll() (*[]User, error) {
-	var user User
-	queryStr := fmt.Sprintf("FOR u in users RETURN u")
+// LoadAll returns the list of all users in the database
+// sort defines the sorting property name
+// order must be either ASC or DESC
+// offset is the start index
+// limit defines the max number of results to be returned
+// email is a filtering criteria - may be an empty string to return all or an email address.
+// returns an array of user, the total number of users, an error
+func LoadAll(sort string, order string, offset int, limit int, email string, name string) ([]User, int, error) {
+	limitString := ""
+	if limit > 0 {
+		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
+	} else {
+		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(math.MaxUint16)
+	}
+	emailString := ""
+	if email != "" {
+		emailString = " FILTER u.email == \"" + email + "\""
+	}
+	nameString := ""
+	if name != "" {
+		nameString = " FILTER u.lastname == \"" + name + "\""
+	}
 
-	arangoQuery := ara.NewQuery(queryStr)
+	queryString := "FOR u in users " + emailString + nameString + " SORT u." + sort + " " + order + limitString + " RETURN u"
+
+	fmt.Println(queryString)
+
+	arangoQuery := ara.NewQuery(queryString)
+	arangoQuery.SetFullCount(true)
 	cursor, err := config.Db().Execute(arangoQuery)
 
-	//return an error
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
+		return nil, 0, err
 	}
-
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		result := make([]User, len(cursor.Result))
-
-		for cursor.FetchOne(&user) {
-			result = append(result, user)
-		}
-
-		return &result, nil
+	result := make([]User, len(cursor.Result))
+	err = cursor.FetchBatch(&result)
+	if err != nil {
+		fmt.Println(err)
+		return nil, 0, err
 	}
-
-	return nil, nil
+	return result, cursor.FullCount(), nil
 }
 
 // Delete delete the given user from the database

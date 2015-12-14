@@ -1,0 +1,89 @@
+<pagination>
+	<span if="{ opts.pager.maxPage }">
+		<i class="fa fa-lg fa-angle-double-left { disabled: !isPreviousActive() } navigation" onclick="{ first }" ></i>
+		&nbsp;
+		<i class="fa fa-lg fa-angle-left { disabled: !isPreviousActive() } navigation" onclick="{ previous }" ></i>
+		&nbsp;<span><input id="currentPage" type="text" value="{ opts.pager.currentPage }" onkeyup="{ goto }"> / { opts.pager.maxPage } </span>&nbsp;
+		<i class="fa fa-lg fa-angle-right { disabled: !isNextActive() } navigation" onclick="{ next }"></i>
+		&nbsp;
+		<i class="fa fa-lg fa-angle-double-right { disabled: !isNextActive() } navigation" onclick="{ last }"></i>
+	</span>
+	<script>
+		var self = this
+
+		isPreviousActive() {
+			return self.opts.pager.currentPage > 1
+		}
+
+		isNextActive() {
+			return self.opts.pager.currentPage < self.opts.pager.maxPage
+		}
+
+		first() {
+	      	self.opts.pager.currentPage = 1
+	        self.loadPage()
+		}
+
+		previous() {
+	      if(self.opts.pager.currentPage > 1) {
+	        self.opts.pager.currentPage--
+	        self.loadPage()
+	      }
+	    }
+
+	    next() {
+	      if (self.opts.pager.currentPage < self.opts.pager.maxPage) {
+	        self.opts.pager.currentPage++
+	        self.loadPage()
+	      }
+	    }
+
+	    last() {
+	      self.opts.pager.currentPage = self.opts.pager.maxPage
+	      self.loadPage()
+	    }
+
+	    // goto the given page number
+	    goto(e) {
+            if (e.keyCode == 13) {
+            	if(!self.isInt(self.currentPage.value)) {
+            		return
+            	}
+                if(self.currentPage.value > self.opts.pager.maxPage) {
+                	self.currentPage.value = self.opts.pager.maxPage
+                }
+                self.opts.pager.currentPage = self.currentPage.value
+	        	self.loadPage()
+            }
+        }
+
+        // requires the loading of the selected page
+	    loadPage() {
+	    	var offset = (self.opts.pager.currentPage - 1) * self.opts.pager.itemPerPage
+	        self.opts.loader(offset, self.opts.pager.itemPerPage)
+	    }
+
+	    // returns true when the given value is an integer
+		isInt(value){
+		  if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+		      return true;
+		  } else {
+		      return false;
+		  }
+		}
+
+	</script>
+	<style scoped>
+		i {
+			cursor: pointer;
+		}
+
+		i.disabled {
+			cursor: text;
+		}
+
+		input#currentPage {
+			width: 2rem;
+		}
+	</style>
+</pagination>

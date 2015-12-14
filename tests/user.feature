@@ -1,3 +1,4 @@
+@user
 Feature:
     As a visitor of the website I create an account, connect, disconnect and manage my account
 
@@ -33,7 +34,7 @@ Feature:
       And I store the value of header Authorization as access token
       And I set bearer token
       And I store the value of body path $.id as userId in scenario scope
-      When I GET /users/`userId`/profile
+      When I GET /users/`userId`
       Then response code should be 200
       # TODO: to complete
 
@@ -44,7 +45,7 @@ Feature:
       And I store the value of response header Set-Cookie as authToken in scenario scope
       And I set Cookie header to scenario variable authToken
       And I store the value of body path $.id as userId in scenario scope
-      When I GET /users/`userId`/profile
+      When I GET /users/`userId`
       Then response code should be 200
 
     Scenario: Sign in with without email should fail
@@ -108,6 +109,7 @@ Feature:
       And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
   		And I POST to /users
   		Then response code should be 201
+      And I store the value of body path $.id as userId in global scope
 
     Scenario: Sign in with initial password
       Given I set body to email=user_test2@mail.org;password=OLDPASSWORD
@@ -141,6 +143,27 @@ Feature:
       And I set bearer token
       When I POST to /users/delete
       Then response code should be 401
+
+
+    Scenario: modifying my profile
+      Given I set bearer token
+      And I set Content-Type header to application/json; charset=UTF-8
+      When I PATCH /users/`userId` with body
+      """
+      {
+          "email": "admin_test2@mail.org",
+          "firstname": "Alphonse",
+          "lastname": "Dans l'tas"
+      }
+      """
+      Then response code should be 200
+      When I GET /users/`userId`
+      Then response code should be 200
+      And response body path $.isAdmin should be false
+      And response body path $.email should be admin_test2@mail.org
+      And response body path $.firstname should be Alphonse
+      And response body path $.lastname should be Dans l'tas
+
 
     Scenario: Delete the account used for password change
       Given I set body to password=NEWPASSWORD

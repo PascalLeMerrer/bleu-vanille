@@ -1,3 +1,4 @@
+@contact
 Feature:
     As a visitor of the website I want to see the Landing Page and be able to register my email
 
@@ -5,7 +6,7 @@ Feature:
   		When I GET /
   		Then response code should be 200
       Then response header Content-Type should be text/html
-      Then response body should contain <input id="emailInput" type="email"
+      Then response body should contain input id="emailInput" type="email"
 
     Scenario: Registering a contact
       Given I set body to email=testemail@mail.org
@@ -34,23 +35,26 @@ Feature:
 
     Scenario: As an admin, Verify contact is registered
       When I set bearer token
-    	And I GET /admin/contacts
-    	Then response code should be 200
+      And I set Content-Type header to application/json; charset=UTF-8
+      And I set Accept header to application/json
+      And I GET /admin/contacts
+      Then response code should be 200
       And response body should contain testemail@mail.org
 
     Scenario: As an admin, Get all contacts
       When I set bearer token
       And I set Content-Type header to application/json; charset=UTF-8
-    	And I GET /admin/contacts
-    	Then response code should be 200
+      And I set Accept header to application/json
+      And I GET /admin/contacts
+      Then response code should be 200
       And response body should contain testemail@mail.org
       And response header Content-Type should be application/json
 
     Scenario: As an admin, Download contacts
       When I set bearer token
-      And I set Content-Type header to text/csv
-    	And I GET /admin/contacts
-    	Then response code should be 200
+      And I set Accept header to text/csv
+      And I GET /admin/contacts
+      Then response code should be 200
 
     Scenario: As an admin, Deleting a non existing contact should return an HTTP error 500
       Given I set bearer token
