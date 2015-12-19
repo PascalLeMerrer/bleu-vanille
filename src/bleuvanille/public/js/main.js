@@ -15,7 +15,7 @@ $(document).ready(function() {
 function addScroll(id) {
   $(id).click(function(e) {
     topMenu = $("#top-menu"),
-      topMenuHeight = topMenu.outerHeight() + 15;
+      topMenuHeight = topMenu.outerHeight();
 
     var offsetTop = $('#menu').offset().top - topMenuHeight + 1;
     $('html, body').stop().animate({
@@ -33,7 +33,7 @@ function initScrollspy() {
   // Cache selectors
   var lastId,
     topMenu = $("#top-menu"),
-    topMenuHeight = topMenu.outerHeight() + 15,
+    topMenuHeight = topMenu.outerHeight(),
     // All list items
     menuItems = topMenu.find("a"),
     // Anchors corresponding to menu items
@@ -68,15 +68,15 @@ function initScrollspy() {
     cur = cur[cur.length - 1];
     var id = cur && cur.length ? cur[0].id : "";
     if (lastId !== id) {
-      $('#' + lastId + "Link").removeClass("pure-menu-selected");
-      $('#' + id + "Link").addClass("pure-menu-selected");
+      $('#' + lastId + "Link").removeClass("menu-selected");
+      $('#' + id + "Link").addClass("menu-selected");
       lastId = id;
     }
   });
 }
 /* -------------------------------------------------------------------------------------------*/
 /* Registers the email address of the user if it is valid */
-$("#emailRegistrationForm").submit(function(event) {
+$("#submit").click(function(event) {
   var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
   var email = $('#emailInput').val();
   var timeSpentSeconds = Math.round((new Date() - startTime)/1000); // time spent on the page
