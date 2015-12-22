@@ -28,10 +28,20 @@ func DatabaseInit() {
 
 	s, err := ara.Connect(connexionString, DatabaseUser, DatabasePassword, false)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Sprintf("Cannot connect to database %v", err))
 	}
 
-	db = s.DB(DatabaseName)
+	availableDBs, dbListError := s.AvailableDBs()
+
+	if dbListError != nil {
+		log.Fatal(fmt.Sprintf("Cannot list available databases %v", err))
+	}
+
+	for _, dbName := range availableDBs {
+		if dbName == DatabaseName {
+			db = s.DB(DatabaseName)
+		}
+	}
 
 	//Create the database if necessary
 	if db == nil {
