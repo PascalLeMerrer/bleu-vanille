@@ -4,6 +4,7 @@ daemon
 gulpfile.old.js
 httbin.feature
 node_modules
+dist
 pkg
 /public/
 !src/public/
