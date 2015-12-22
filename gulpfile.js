@@ -44,13 +44,37 @@ gulp.task('riot', function() {
     .pipe(gulp.dest('./public/tags'));
 });
 
-
 gulp.task('test', function() {
     return gulp.src('tests/*')
 			.pipe(cucumber({
 				'steps': 'tests/step_definitions/*.js',
 				'format': 'pretty'
+        // ,'tags': '@admin'
 			}));
+});
+
+gulp.task('dist', function() {
+  gulp.src("./src/bleuvanille/public/css/*.css")
+  .pipe(cssnext({
+    compress: true
+  }))
+  .pipe(gulp.dest("./dist/public/css"))
+
+  gulp.src('./src/bleuvanille/public/img/**/*.*', {overwrite: true})
+  .pipe(gulp.dest('./dist/public/img'));
+
+  gulp.src('./src/bleuvanille/public/fonts/**/*.*', {overwrite: true})
+  .pipe(gulp.dest('./dist/public/fonts'));
+
+  gulp.src('./src/bleuvanille/public/js/**/*.js', {overwrite: true})
+    .pipe(gulp.dest('./dist/public/js'));
+
+  gulp.src('./src/bleuvanille/public/html/**/*.html', {overwrite: true})
+    .pipe(gulp.dest('./dist/public/html'));
+
+  gulp.src('./src/bleuvanille/public/tags/**/*.html', {overwrite: true})
+    .pipe(riot())
+    .pipe(gulp.dest('./dist/public/tags'));
 });
 
 /*
