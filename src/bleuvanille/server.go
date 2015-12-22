@@ -22,6 +22,8 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
+const Version = "0.1.0"
+
 // Render processes a template
 // name is the file name, without its HTML extension
 func (t *Template) Render(w io.Writer, name string, data interface{}) error {
@@ -89,6 +91,7 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 // public pages
 func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Get("/", contact.LandingPage)
+	echoServer.Get("/version", getVersion)
 	echoServer.Get("/admin", admin.LoginPage)
 	echoServer.Get("/admin/", admin.LoginPage)
 	echoServer.Post("/contacts", contact.Create)
@@ -148,6 +151,10 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/users", user.GetAll)
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
+}
+
+func getVersion(context *echo.Context) error {
+	return context.JSON(200, fmt.Sprintf("{ version: %s }", Version))
 }
 
 // Defines a custom error handler
