@@ -154,7 +154,10 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 }
 
 func getVersion(context *echo.Context) error {
-	return context.JSON(200, fmt.Sprintf("{ version: %s }", Version))
+	version := struct {
+		Version string `json:version`
+	}{"0.1.0"}
+	return context.JSON(200, version)
 }
 
 // Defines a custom error handler
