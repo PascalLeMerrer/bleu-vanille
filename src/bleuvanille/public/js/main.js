@@ -1,4 +1,4 @@
-var contactEmail = "info" + "@" + "bleuvanille.com"
+var contactEmail = "info" + "@" + "bleuvanille.fr"
 var startTime;
 
 /* Hide alerts on page loading */
