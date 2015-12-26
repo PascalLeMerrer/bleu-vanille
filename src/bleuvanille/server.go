@@ -119,11 +119,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Get("/:key", eatable.Get)
 	eatableRoutes.Put("/:key", eatable.Update)
 
-	//Update the nutrient of an eatable object
 	eatableRoutes.Put("/:key/nutrient", eatable.SetNutrient)
-
-	// //Update the new status of an eatable object
-	// eatableRoutes.Patch("/:key/status/:newstatus")
 
 	eatableRoutes.Put("/:key/parent/:parentKey", eatable.SetParent)
 }
@@ -148,6 +144,9 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/users", user.GetAll)
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
+
+	// cannot use /eatables/ in the route as it messes with echo's router
+	adminRoutes.Patch("/eatable/:key/status", eatable.SetStatus)
 }
 
 // Defines a custom error handler

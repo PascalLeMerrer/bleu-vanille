@@ -98,19 +98,8 @@ Scenario: Setting the nutrient of an eatable with admin user
     """
     Then response code should be 200 
     
-# Scenario: Disabling an eatable with admin user 
-#   Given I log as admin user 
-#   When I PATCH /eatables/`eatableKey`/status/disabled 
-#   Then  response code should be 200 
-#   And  response body should be valid json 
-#   And response body path $.status should be ok 
-#   Given I log as admin user 
-#   When I PATCH /eatables/`eatableKey`/status/active 
-#   Then  response code should be 200 
-#   And  response body should be valid json 
-#   And response body path $.status should be ok 
-    
 Scenario: Changing the parent of an eatable with admin user from its id 
+
     Given I set Cookie header to global variable cookie
     And I set Content-Type header to application/json; charset=UTF-8
     And I set Accept header to application/json 
@@ -167,3 +156,21 @@ Scenario: Get eatable with an unkown id
    """
    {"error":"No eatable found for key: 1"}
    """
+    
+Scenario: Disabling an eatable with admin user 
+  Given I log as admin user
+  And I set Cookie header to global variable cookie 
+  When I PATCH /admin/eatable/`eatableKey`/status with body
+  """
+  { "status": "disabled" }
+  """  
+  Then response code should be 200 
+  And response body should be valid json 
+  And response body path $.status should be disabled 
+  Given I PATCH /admin/eatable/`eatableKey`/status with body
+  """
+  { "status": "active" }
+  """ 
+  Then response code should be 200 
+  And response body should be valid json 
+  And response body path $.status should be active 

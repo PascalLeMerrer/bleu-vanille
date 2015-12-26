@@ -79,27 +79,12 @@ func Create(context *echo.Context) error {
 
 // Update updates an existing eatable
 func Update(context *echo.Context) error {
-	key := context.Param("key")
-	eatable, err := FindByKey(key)
-	if err != nil {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Cannot load eatable with key: " + key + " - " + err.Error()})
-	}
-	if eatable == nil {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Cannot load eatable with key: " + key})
-	}
-	body := context.Request().Body
-	bodyBytes, err := ioutil.ReadAll(body)
-
-	if err != nil {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Error while reading the eatable content: " + key})
+	eatable, bodyBytes, errMessage := findEatable(context)
+	if errMessage != "" {
+		return context.JSON(http.StatusBadRequest, errorMessage{errMessage})
 	}
 
-	//body should not be empty
-	if len(bodyBytes) == 0 {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Missing eatable content: " + key})
-	}
-
-	err = json.Unmarshal(bodyBytes, &eatable)
+	err := json.Unmarshal(bodyBytes, &eatable)
 	if !eatable.IsValid() {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Invalid eatable type or name"})
 	}
@@ -116,33 +101,45 @@ func Update(context *echo.Context) error {
 	return context.JSON(http.StatusOK, updatedEatable)
 }
 
-// SetNutrient sets or modifies the nutrient information of a given eatable
-func SetNutrient(context *echo.Context) error {
-	key := context.Param("key")
+// SetStatus sets or modifies the nutrient information of a given eatable
+func SetStatus(context *echo.Context) error {
+	eatable, bodyBytes, errMessage := findEatable(context)
+	if errMessage != "" {
+		return context.JSON(http.StatusBadRequest, errorMessage{errMessage})
+	}
 
-	bodyIo := context.Request().Body
-	bodyBytes, err := ioutil.ReadAll(bodyIo)
+	var tempEatable Eatable
+	err := json.Unmarshal(bodyBytes, &tempEatable)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, errorMessage{"Incorrect nutrient content: " + err.Error()})
+	}
+
+	if !eatable.IsValid() {
+		return context.JSON(http.StatusBadRequest, errorMessage{"Invalid eatable type"})
+	}
+
+	eatable.Status = tempEatable.Status
+
+	eatable, err = Save(eatable)
 
 	if err != nil {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Error while reading the eatable content"})
+		return context.JSON(http.StatusInternalServerError, errorMessage{"Set Eatable Status error"})
+		log.Printf("Error: cannot set status : %v\n", err)
 	}
 
-	if len(bodyBytes) == 0 {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Missing request body"})
-	}
+	return context.JSON(http.StatusOK, eatable)
+}
 
-	eatable, errLoad := FindByKey(key)
+// SetNutrient sets or modifies the nutrient information of a given eatable
+func SetNutrient(context *echo.Context) error {
+	eatable, bodyBytes, errMessage := findEatable(context)
 
-	if errLoad != nil {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Cannot load eatable with key: " + key + " - " + errLoad.Error()})
-	}
-
-	if eatable == nil {
-		return context.JSON(http.StatusBadRequest, errorMessage{"Eatable with key " + key + " not found"})
+	if errMessage != "" {
+		return context.JSON(http.StatusBadRequest, errorMessage{errMessage})
 	}
 
 	var nutrient Nutrient
-	err = json.Unmarshal(bodyBytes, &nutrient)
+	err := json.Unmarshal(bodyBytes, &nutrient)
 
 	if err != nil {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Incorrect nutrient content: " + err.Error()})
@@ -153,11 +150,41 @@ func SetNutrient(context *echo.Context) error {
 	eatable, err = Save(eatable)
 
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, errorMessage{"Set Nutrient Eatable error"})
+		return context.JSON(http.StatusInternalServerError, errorMessage{"Set Eatable Nutrient error"})
 		log.Printf("Error: cannot set nutrient : %v\n", err)
 	}
 
 	return context.JSON(http.StatusOK, eatable)
+}
+
+// loads the eatable matching the key param of the request
+// Todo rename
+func findEatable(context *echo.Context) (*Eatable, []byte, string) {
+
+	bodyIo := context.Request().Body
+	bodyBytes, err := ioutil.ReadAll(bodyIo)
+
+	if err != nil {
+		return nil, nil, "Error while reading the body content"
+	}
+
+	if len(bodyBytes) == 0 {
+		return nil, nil, "Missing request body"
+	}
+
+	key := context.Param("key")
+
+	eatable, errLoad := FindByKey(key)
+
+	if errLoad != nil {
+		return nil, nil, "Cannot load eatable with key: " + key + " - " + errLoad.Error()
+	}
+
+	if eatable == nil {
+		return nil, nil, "Eatable with key " + key + " not found"
+	}
+
+	return eatable, bodyBytes, ""
 }
 
 // SetParent sets or modifies the main parent of an eatable.
