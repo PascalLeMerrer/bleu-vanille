@@ -67,7 +67,7 @@ func createTables() {
 	}
 
 	if !db.ColExist(COLNAME_USERS) {
-		log.Info(nil, "Database : Create the collection "+COLNAME_USERS)
+		log.Info(nil, "Database: Creating the collection "+COLNAME_USERS)
 
 		// CollectionOptions has much more options, here we just define name , sync
 		contacts := ara.NewCollectionOptions(COLNAME_USERS, false)
@@ -81,7 +81,7 @@ func createTables() {
 	}
 
 	if !db.ColExist(COLNAME_SESSIONS) {
-		log.Info(nil, "Database : Create the collection "+COLNAME_SESSIONS)
+		log.Info(nil, "Database: Creating the collection "+COLNAME_SESSIONS)
 
 		// CollectionOptions has much more options, here we just define name , sync
 		sessions := ara.NewCollectionOptions(COLNAME_SESSIONS, false)
@@ -89,33 +89,6 @@ func createTables() {
 
 		if err != nil {
 			log.Fatal(err)
-		}
-	}
-
-	if !db.ColExist(COLNAME_ETABLES) {
-		log.Info(nil, "Database : Create the collection "+COLNAME_ETABLES)
-
-		etables := ara.NewCollectionOptions(COLNAME_ETABLES, false)
-		err := db.CreateCollection(etables)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if !db.ColExist(EDGENAME_EATABLE_PARENT) {
-		edges := ara.NewCollectionOptions(EDGENAME_EATABLE_PARENT, true)
-		edges.IsEdge() // sets the collection options as edge...
-		db.CreateCollection(edges)
-	}
-
-	if db.Graph(GRAPHNAME_EATABLE_PARENT) == nil {
-
-		edgeDefinition := ara.NewEdgeDefinition(EDGENAME_EATABLE_PARENT, []string{COLNAME_ETABLES}, []string{COLNAME_ETABLES})
-		_, err := db.CreateGraph(GRAPHNAME_EATABLE_PARENT, []ara.EdgeDefinition{*edgeDefinition})
-
-		if err != nil {
-			log.Fatal("Database : error when creating the graph " + GRAPHNAME_EATABLE_PARENT + " : " + err.Error())
 		}
 	}
 }
