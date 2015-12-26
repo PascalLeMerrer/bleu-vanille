@@ -196,3 +196,16 @@ Scenario: Disabling an eatable with admin user
   Then response code should be 200 
   And response body should be valid json 
   And response body path $.status should be active 
+
+    
+Scenario: Deleting an eatable with admin user 
+  Given I log as admin user
+  And I set Cookie header to global variable cookie 
+  When I DELETE /admin/eatable/`eatableKey`
+  Then response code should be 204 
+  When I GET /eatables/`eatableKey`
+  Then response code should be 404
+  When I DELETE /admin/eatable/`parentKey`
+  Then response code should be 204 
+  When I GET /eatables/`parentKey`
+  Then response code should be 404

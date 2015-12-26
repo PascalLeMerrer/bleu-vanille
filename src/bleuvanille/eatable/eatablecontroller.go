@@ -81,6 +81,19 @@ func Create(context *echo.Context) error {
 	return context.JSON(http.StatusCreated, updatedEatable)
 }
 
+// Delete removes an existing eatable from the database
+// Mainly intended for removing test data
+// For real eatables you should prefer turning their status to disabled
+func Delete(context *echo.Context) error {
+	key := context.Param("key")
+	err := Remove(key)
+	if err == nil {
+		return context.String(http.StatusNoContent, "")
+	} else {
+		return context.JSON(http.StatusForbidden, errorMessage{"Cannot remove eatable with key " + key})
+	}
+}
+
 // Update updates an existing eatable
 func Update(context *echo.Context) error {
 	eatable, bodyBytes, errMessage := prepareUpdate(context)

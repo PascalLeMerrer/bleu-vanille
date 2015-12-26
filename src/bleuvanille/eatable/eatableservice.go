@@ -71,9 +71,24 @@ func SaveParent(key, parentkey string) error {
 	return err
 }
 
-// FindById returns the eatable object for a given key, if any
+// FindByKey returns the eatable object for a given key, if any
 func FindByKey(key string) (*Eatable, error) {
 	return FindBy("_key", key)
+}
+
+// Remove deletes the eatable object for a given key, if any
+// IT also removes relationships to or from this eatable
+func Remove(key string) error {
+	query := arangolite.NewQuery(`FOR e IN EDGES(%s, @id, 'any', [ { 'is': 'child' } ]) REMOVE e IN %s`, RelationshipCollectionName, RelationshipCollectionName)
+	query.Bind("id", CollectionName+"/"+key)
+	_, err := config.DB().Run(query)
+	if err != nil {
+		return err
+	}
+	query = arangolite.NewQuery(`REMOVE @key IN %s`, CollectionName)
+	query.Bind("key", key)
+	_, err = config.DB().Run(query)
+	return err
 }
 
 // key GetParent returns the parent of a given eatable
