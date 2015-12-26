@@ -40,7 +40,6 @@ func Get(context *echo.Context) error {
 }
 
 // Create creates a new eatable
-// TODO we should prevent creating a new eatable with the name of an existing one
 func Create(context *echo.Context) error {
 
 	body := context.Request().Body
@@ -67,6 +66,11 @@ func Create(context *echo.Context) error {
 
 	if !eatable.IsValid() {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Unknown type: " + eatable.Type})
+	}
+
+	existingEatable, _ := FindByName(eatable.Name)
+	if existingEatable != nil {
+		return context.JSON(http.StatusConflict, errorMessage{"Eatable with name " + eatable.Name + " already exists."})
 	}
 
 	updatedEatable, err := Save(&eatable)

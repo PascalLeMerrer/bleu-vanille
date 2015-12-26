@@ -29,7 +29,7 @@ Scenario: Creating an eatable with authenticated user
         "status" : "statusinterditamettreajouralacreation"
     }
     """
-    Then response code should be 201 
+    Then response code should be 201     
     And response body should be valid json 
     And response body path $.name should be pomme de terre 
     And response body path $.type should be ingredient 
@@ -40,6 +40,28 @@ Scenario: Creating an eatable with authenticated user
     And response body path $._key should be \d+ 
     And I store the value of body path $._key as eatableKey in global scope 
     
+Scenario: Creating an eatable with authenticated user 
+    Given I log as test user 
+    And I set Cookie header to global variable cookie 
+    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Accept header to application/json
+    When I POST to /eatables with body 
+    """
+    {
+        "name" : "pomme de terre",
+        "type" : "ingredient",
+        "description" : "La pomme de terre est un légume découvert aux amériques.",
+        "status" : "statusinterditamettreajouralacreation"
+    }
+    """
+    Then response code should be 409
+    And the JSON should be
+    """
+    { 
+        "error" : "Eatable with name pomme de terre already exists."
+    }
+    """ 
+
 Scenario: Modifying an eatable with user with a wrong type
     Given I set Cookie header to global variable cookie 
     And I set Content-Type header to application/json; charset=UTF-8
