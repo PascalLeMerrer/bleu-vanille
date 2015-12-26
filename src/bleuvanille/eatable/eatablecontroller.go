@@ -79,7 +79,7 @@ func Create(context *echo.Context) error {
 
 // Update updates an existing eatable
 func Update(context *echo.Context) error {
-	eatable, bodyBytes, errMessage := findEatable(context)
+	eatable, bodyBytes, errMessage := prepareUpdate(context)
 	if errMessage != "" {
 		return context.JSON(http.StatusBadRequest, errorMessage{errMessage})
 	}
@@ -103,7 +103,7 @@ func Update(context *echo.Context) error {
 
 // SetStatus sets or modifies the nutrient information of a given eatable
 func SetStatus(context *echo.Context) error {
-	eatable, bodyBytes, errMessage := findEatable(context)
+	eatable, bodyBytes, errMessage := prepareUpdate(context)
 	if errMessage != "" {
 		return context.JSON(http.StatusBadRequest, errorMessage{errMessage})
 	}
@@ -132,7 +132,7 @@ func SetStatus(context *echo.Context) error {
 
 // SetNutrient sets or modifies the nutrient information of a given eatable
 func SetNutrient(context *echo.Context) error {
-	eatable, bodyBytes, errMessage := findEatable(context)
+	eatable, bodyBytes, errMessage := prepareUpdate(context)
 
 	if errMessage != "" {
 		return context.JSON(http.StatusBadRequest, errorMessage{errMessage})
@@ -158,8 +158,9 @@ func SetNutrient(context *echo.Context) error {
 }
 
 // loads the eatable matching the key param of the request
-// Todo rename
-func findEatable(context *echo.Context) (*Eatable, []byte, string) {
+// and decode the request body content to be applied to this eatable
+// returns the eatable, the property to be modified and an error message or an empty string
+func prepareUpdate(context *echo.Context) (*Eatable, []byte, string) {
 
 	bodyIo := context.Request().Body
 	bodyBytes, err := ioutil.ReadAll(bodyIo)
