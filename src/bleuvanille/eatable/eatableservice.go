@@ -4,16 +4,35 @@ package eatable
 
 import (
 	"bleuvanille/config"
+	"bleuvanille/log"
 	"encoding/json"
 	"github.com/PascalLeMerrer/arangolite"
 )
 
+const GraphName = "eatable_graph"
 const CollectionName = "eatables"
 const RelationshipCollectionName = "eatable_relations"
 
+// init creates the eatable graph and collections if they do not already exist
 func init() {
 	config.DB().Run(&arangolite.CreateCollection{Name: CollectionName})
 	config.DB().Run(&arangolite.CreateCollection{Name: RelationshipCollectionName, Type: 3})
+
+	_, err := config.DB().Run(&arangolite.GetGraph{Name: GraphName})
+	if err != nil {
+		from := make([]string, 1)
+		from[0] = CollectionName
+		to := make([]string, 1)
+		to[0] = CollectionName
+
+		edgeDefinition := arangolite.EdgeDefinition{Collection: RelationshipCollectionName, From: from, To: to}
+		edgeDefinitions := make([]arangolite.EdgeDefinition, 1)
+		edgeDefinitions[0] = edgeDefinition
+		_, err := config.DB().Run(&arangolite.CreateGraph{Name: GraphName, EdgeDefinitions: edgeDefinitions})
+		if err != nil {
+			log.Error(nil, "Cannot create graph with name "+GraphName+" - "+err.Error())
+		}
+	}
 }
 
 // Save inserts an eatable into the database
@@ -63,6 +82,7 @@ func update(eatable *Eatable) (*Eatable, error) {
 	return eatable, queryErr
 }
 
+// SaveParent adds a relationship between two eatables
 func SaveParent(key, parentkey string) error {
 	createEdgeQuery := arangolite.NewQuery(` INSERT {'_from': @id,'_to': @parentId, 'is': 'child'} IN %s `, RelationshipCollectionName)
 	createEdgeQuery.Bind("id", CollectionName+"/"+key)
