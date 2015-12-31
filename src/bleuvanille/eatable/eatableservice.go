@@ -54,23 +54,10 @@ func insert(eatable *Eatable) (*Eatable, error) {
 
 // update an eatable into the database
 func update(eatable *Eatable) (*Eatable, error) {
-	var query *arangolite.Query
 
-	if eatable.Nutrient != nil {
-		nutrient, err := json.Marshal(eatable.Nutrient)
-		if err != nil {
-			return nil, err
-		}
-		query = arangolite.NewQuery(` UPDATE "%s" WITH { "name": @name, "status": "%s", "type": @type, "description": @description, "nutrient": %s, "createdAt": "%s" } IN %s `, eatable.Key, eatable.Status, nutrient, eatable.CreatedAt.String(), CollectionName)
-	} else {
-		query = arangolite.NewQuery(` UPDATE "%s" WITH { "name": @name, "status": "%s", "type": @type, "description": @description, "createdAt": "%s" } IN %s `, eatable.Key, eatable.Status, eatable.CreatedAt.String(), CollectionName)
-	}
-
-	query.Bind("name", eatable.Name)
-	query.Bind("description", eatable.Description)
-	query.Bind("type", eatable.Type)
-	_, queryErr := config.DB().Run(query)
-	return eatable, queryErr
+	resultByte, err := config.DB().Send("UPDATE DOCUMENT", "PUT", "/_api/document/"+eatable.Id, eatable)
+	err = json.Unmarshal(resultByte, eatable)
+	return eatable, err
 }
 
 // SaveParent adds a relationship between two eatables
