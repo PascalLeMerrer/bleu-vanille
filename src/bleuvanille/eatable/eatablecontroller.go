@@ -21,6 +21,7 @@ func Get(context *echo.Context) error {
 	eatable, error := FindByKey(key)
 
 	if error != nil {
+		log.Error(context, error.Error())
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Invalid key: " + key})
 	}
 
