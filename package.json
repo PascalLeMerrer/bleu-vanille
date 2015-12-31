@@ -23,6 +23,7 @@
     "gulp-cucumber": "latest",
     "gulp-riot": "latest",
     "gulp-watch": "latest",
-    "multipipe": "^0.2.1"
+    "multipipe": "^0.2.1",
+    "yargs": "^3.31.0"
   }
 }

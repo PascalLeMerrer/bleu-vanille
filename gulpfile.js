@@ -3,6 +3,7 @@ var cssnext  = require("gulp-cssnext");
 var watch    = require('gulp-watch');
 var riot     = require('gulp-riot');
 var cucumber = require('gulp-cucumber');
+var argv     = require('yargs').argv;
 
 gulp.task('styles', function() {
   gulp.src("./src/bleuvanille/public/css/*.css")
@@ -45,12 +46,29 @@ gulp.task('riot', function() {
 });
 
 gulp.task('test', function() {
-    return gulp.src('tests/*')
-			.pipe(cucumber({
-				'steps': 'tests/step_definitions/*.js',
-				'format': 'pretty'
-        // ,'tags': '@admin'
-			}));
+  var tags = '';
+  var parameters;
+  if(argv.tags) {
+    parameters = argv.tags.split(' ')
+  } else if (argv.t) {
+    parameters = argv.t.split(' ')
+  }
+
+  if(parameters) {
+    for (var i = 0; i < parameters.length; i++) {
+      if (i > 0) {
+        tags += ','
+      }
+      tags += '@' + parameters[i]
+    }
+  }
+  
+  return gulp.src('tests/*')
+		.pipe(cucumber({
+			'steps': 'tests/step_definitions/*.js',
+			'format': 'pretty'
+      ,tags: tags
+		}));
 });
 
 gulp.task('dist', function() {
