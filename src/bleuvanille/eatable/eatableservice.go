@@ -91,25 +91,11 @@ func Remove(key string) error {
 
 // key GetParent returns the parent of a given eatable
 func GetParent(child *Eatable) (*Eatable, error) {
-	var result []Eatable
 
 	query := arangolite.NewQuery(` FOR e IN EDGES(%s, @id, 'outbound', [ { 'is': 'child' } ]) LIMIT 1 
 		For eatable in eatables FILTER eatable._id == e._to LIMIT 1 return eatable `, RelationshipCollectionName)
 	query.Bind("id", child.Id)
-
-	rawResult, err := config.DB().Run(query)
-	if err != nil {
-		return nil, err
-	}
-
-	marshallErr := json.Unmarshal(rawResult, &result)
-	if marshallErr != nil {
-		return nil, marshallErr
-	}
-	if len(result) > 0 {
-		return &result[0], nil
-	}
-	return nil, nil
+	return executeReadingQuery(query)
 }
 
 // FindByName returns the eatable object for a given name, if any
@@ -119,11 +105,17 @@ func FindByName(name string) (*Eatable, error) {
 
 // FindBy returns an eatable matching the given property value, or nil if not eatable matches
 func FindBy(name, value string) (*Eatable, error) {
-	var result []Eatable
 
 	query := arangolite.NewQuery(` FOR e IN %s FILTER e.@name == @value LIMIT 1 RETURN e `, CollectionName)
 	query.Bind("name", name)
 	query.Bind("value", value)
+
+	return executeReadingQuery(query)
+}
+
+// Executes a given query that is expected to return a single eatable
+func executeReadingQuery(query *arangolite.Query) (*Eatable, error) {
+	var result []Eatable
 
 	rawResult, err := config.DB().Run(query)
 	if err != nil {
