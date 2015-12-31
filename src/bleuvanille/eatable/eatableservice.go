@@ -38,27 +38,18 @@ func init() {
 // Save inserts an eatable into the database
 func Save(eatable *Eatable) (*Eatable, error) {
 	if eatable.Key == "" {
-		return create(eatable)
+		return insert(eatable)
 	} else {
 		return update(eatable)
 	}
 }
 
-// create inserts an eatable into the database
-func create(eatable *Eatable) (*Eatable, error) {
-	var query *arangolite.Query
-	query = arangolite.NewQuery(` INSERT { "name": @name, "status": "%s", "type": @type, "description": @description, "createdAt": "%s" } IN %s RETURN NEW`, STATUS_NEW, eatable.CreatedAt, CollectionName)
-	query.Bind("name", eatable.Name)
-	query.Bind("description", eatable.Description)
-	query.Bind("type", eatable.Type)
-	resultByte, err := config.DB().Run(query)
-	var result []Eatable
-	err = json.Unmarshal(resultByte, &result)
-	if err == nil {
-		updatedEatable := &result[0]
-		return updatedEatable, err
-	}
-	return nil, err
+// insert inserts an eatable into the database
+func insert(eatable *Eatable) (*Eatable, error) {
+
+	resultByte, err := config.DB().Send("INSERT DOCUMENT", "POST", "/_api/document?collection="+CollectionName, eatable)
+	err = json.Unmarshal(resultByte, eatable)
+	return eatable, err
 }
 
 // update an eatable into the database

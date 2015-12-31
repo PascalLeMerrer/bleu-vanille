@@ -9,7 +9,7 @@ import (
 // Date is a JSON serialisable time
 type Date struct{ time.Time }
 
-// Converts a json value to a Date
+// UnmarshalJSON converts a json value to a Date
 func (d *Date) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -21,4 +21,10 @@ func (d *Date) UnmarshalJSON(data []byte) error {
 	}
 	d.Time = t
 	return nil
+}
+
+// MarshalJSON Converts a Date json value
+func (d *Date) MarshalJSON() ([]byte, error) {
+	t := time.Time(d.Time).Format("2006-01-02 15:04:05.999999999 -0700 MST")
+	return json.Marshal(t)
 }
