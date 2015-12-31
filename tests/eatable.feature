@@ -182,14 +182,14 @@ Scenario: Get eatable with an unkown id
 Scenario: Disabling an eatable with admin user 
   Given I log as admin user
   And I set Cookie header to global variable cookie 
-  When I PATCH /admin/eatable/`eatableKey`/status with body
+  When I PATCH /admin/eatables/`eatableKey`/status with body
   """
   { "status": "disabled" }
   """  
   Then response code should be 200 
   And response body should be valid json 
   And response body path $.status should be disabled 
-  Given I PATCH /admin/eatable/`eatableKey`/status with body
+  Given I PATCH /admin/eatables/`eatableKey`/status with body
   """
   { "status": "active" }
   """ 
@@ -201,11 +201,11 @@ Scenario: Disabling an eatable with admin user
 Scenario: Deleting an eatable with admin user 
   Given I log as admin user
   And I set Cookie header to global variable cookie 
-  When I DELETE /admin/eatable/`eatableKey`
+  When I DELETE /admin/eatables/`eatableKey`
   Then response code should be 204 
   When I GET /eatables/`eatableKey`
   Then response code should be 404
-  When I DELETE /admin/eatable/`parentKey`
+  When I DELETE /admin/eatables/`parentKey`
   Then response code should be 204 
   When I GET /eatables/`parentKey`
   Then response code should be 404

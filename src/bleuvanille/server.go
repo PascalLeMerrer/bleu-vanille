@@ -145,9 +145,8 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
 
-	// cannot use /eatables/ in theses routes as it messes with echo's router
-	adminRoutes.Patch("/eatable/:key/status", eatable.SetStatus)
-	adminRoutes.Delete("/eatable/:key", eatable.Delete)
+	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
+	adminRoutes.Delete("/eatables/:key", eatable.Delete)
 }
 
 // Defines a custom error handler
