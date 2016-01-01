@@ -37,26 +37,16 @@ func init() {
 
 // Save inserts an eatable into the database
 func Save(eatable *Eatable) (*Eatable, error) {
+	var resultByte []byte
+	var err error
 	if eatable.Key == "" {
-		return insert(eatable)
+		resultByte, err = config.DB().Send("INSERT DOCUMENT", "POST", "/_api/document?collection="+CollectionName, eatable)
 	} else {
-		return update(eatable)
+		resultByte, err = config.DB().Send("UPDATE DOCUMENT", "PUT", "/_api/document/"+eatable.Id, eatable)
 	}
-}
-
-// insert inserts an eatable into the database
-func insert(eatable *Eatable) (*Eatable, error) {
-
-	resultByte, err := config.DB().Send("INSERT DOCUMENT", "POST", "/_api/document?collection="+CollectionName, eatable)
-	err = json.Unmarshal(resultByte, eatable)
-	return eatable, err
-}
-
-// update an eatable into the database
-func update(eatable *Eatable) (*Eatable, error) {
-
-	resultByte, err := config.DB().Send("UPDATE DOCUMENT", "PUT", "/_api/document/"+eatable.Id, eatable)
-	err = json.Unmarshal(resultByte, eatable)
+	if err == nil {
+		err = json.Unmarshal(resultByte, eatable)
+	}
 	return eatable, err
 }
 
