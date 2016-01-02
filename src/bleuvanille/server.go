@@ -119,16 +119,12 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Use(session.Middleware())
 
 	eatableRoutes.Post("", eatable.Create)
-	eatableRoutes.Get("/:id", eatable.Get)
-	eatableRoutes.Put("/:id", eatable.Update)
+	eatableRoutes.Get("/:key", eatable.Get)
+	eatableRoutes.Put("/:key", eatable.Update)
 
-	//Update the nutrient of an eatable object
-	eatableRoutes.Put("/:id/nutrient", eatable.SetNutrient)
-	//
-	//	//Update the new status of an eatable object
-	//	eatableRoutes.Patch("/:id/status/:newstatus", )
-	//
-	eatableRoutes.Put("/:id/parent/:newParentId", eatable.SetParent)
+	eatableRoutes.Put("/:key/nutrient", eatable.SetNutrient)
+
+	eatableRoutes.Put("/:key/parent/:parentKey", eatable.SetParent)
 }
 
 // special Routes require a valid user auth token but no sessionID
@@ -151,6 +147,9 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/users", user.GetAll)
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
+
+	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
+	adminRoutes.Delete("/eatables/:key", eatable.Delete)
 }
 
 func getVersion(context *echo.Context) error {

@@ -6,10 +6,12 @@ httbin.feature
 node_modules
 dist
 pkg
+dist
 /public/
 !src/public/
 src/bleuvanille/vendor/
-
+shutdown
+stop
 src/bleuvanille/bleuvanille
 
 npm-debug.log

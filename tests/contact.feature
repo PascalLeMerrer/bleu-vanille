@@ -65,7 +65,7 @@ Feature:
       Given I set bearer token
   		And I DELETE /admin/contacts?email=testemail@mail.org
   		Then response code should be 204
-      And I set bearer token
-      When I GET /admin/contacts
+      And I set Accept header to application/json
+      And I GET /admin/contacts
     	Then response code should be 200
       And response body should not contain testemail@mail.org

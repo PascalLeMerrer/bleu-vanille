@@ -30,13 +30,22 @@ var (
 	// DatabaseName is the name of the database used to store the service data
 	DatabaseName = getEnv("DatabaseName")
 
-	// DatabasePassword is the password of the Postgresql account to be used
+	// DatabaseRootPassword is the password of the ArangoDB root account
+	DatabaseRootPassword = getEnv("DatabaseRootPassword")
+
+	// DatabasePassword is the password of the ArangoDB account to be used
 	DatabasePassword = getEnv("DatabasePassword")
 
-	// DatabasePort is the port on which Postgresql listens to
+	// DatabaseProtocol must be http or https
+	DatabaseProtocol = getEnvWithDefault("DatabaseProtocol", "http")
+
+	// DatabaseHost is the name or IP of the ArangoDB server to be used
+	DatabaseHost = getEnvWithDefault("DatabaseHost", "localhost")
+
+	// DatabasePort is the port on which ArangoDB listens to
 	DatabasePort = getNumericEnv("DatabasePort")
 
-	// DatabaseUser is the name of the Postgresql account to be used
+	// DatabaseUser is the name of the ArangoDB account to be used
 	DatabaseUser = getEnv("DatabaseUser")
 
 	// HostName is the name of the server.
@@ -56,7 +65,7 @@ var (
 
 	// SMTPUser is the email address of the account used for authentication on the SMTP SMTPServer
 	SMTPUser = getEnv("SMTPUser")
-	
+
 	// ProductionMode indicates if the instance is running in production.
 	ProductionMode = getBooleanEnvWithDefault("ProductionMode", false)
 )
@@ -84,6 +93,16 @@ func getEnv(name string) string {
 	return value
 }
 
+func getEnvWithDefault(name string, defaultValue string) string {
+	value := os.Getenv(name)
+
+	if value != "" {
+		return value
+	}
+
+	return defaultValue
+}
+
 func getBooleanEnv(name string) bool {
 	value := os.Getenv(name)
 
@@ -91,7 +110,7 @@ func getBooleanEnv(name string) bool {
 		log.Printf("Please define the environment variable %v, then relaunch the server.\n", name)
 		return false
 	}
-	
+
 	result, err := strconv.ParseBool(value)
 	if err != nil {
 		log.Printf("The environment variable %v, must be a boolean. Please fix it, then relaunch the server.\n", name)
@@ -100,13 +119,13 @@ func getBooleanEnv(name string) bool {
 	return result
 }
 
-func getBooleanEnvWithDefault(name string, defaultvalue bool) bool {
+func getBooleanEnvWithDefault(name string, defaultValue bool) bool {
 	value := os.Getenv(name)
 
 	if value == "" {
-		return defaultvalue;
+		return defaultValue
 	}
-	
+
 	result, err := strconv.ParseBool(value)
 	if err != nil {
 		log.Printf("The environment variable %v, must be a boolean. Please fix it, then relaunch the server.\n", name)

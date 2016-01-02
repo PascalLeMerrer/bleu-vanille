@@ -4,82 +4,120 @@ package eatable
 
 import (
 	"bleuvanille/config"
-	"errors"
-	"fmt"
-
-	ara "github.com/diegogub/aranGO"
+	"bleuvanille/log"
+	"encoding/json"
+	"github.com/PascalLeMerrer/arangolite"
 )
 
-// Save inserts an eatable into the database
-func Save(eatable *Eatable) error {
-	errorMap := config.Context().Save(eatable)
-	if value, ok := errorMap["error"]; ok {
-		return errors.New(value)
+const GraphName = "eatable_graph"
+const CollectionName = "eatables"
+const RelationshipCollectionName = "eatable_relations"
+
+// init creates the eatable graph and collections if they do not already exist
+func init() {
+	config.DB().Run(&arangolite.CreateCollection{Name: CollectionName})
+	config.DB().Run(&arangolite.CreateCollection{Name: RelationshipCollectionName, Type: 3})
+
+	_, err := config.DB().Run(&arangolite.GetGraph{Name: GraphName})
+	if err != nil {
+		from := make([]string, 1)
+		from[0] = CollectionName
+		to := make([]string, 1)
+		to[0] = CollectionName
+
+		edgeDefinition := arangolite.EdgeDefinition{Collection: RelationshipCollectionName, From: from, To: to}
+		edgeDefinitions := make([]arangolite.EdgeDefinition, 1)
+		edgeDefinitions[0] = edgeDefinition
+		_, err := config.DB().Run(&arangolite.CreateGraph{Name: GraphName, EdgeDefinitions: edgeDefinitions})
+		if err != nil {
+			log.Error(nil, "Cannot create graph with name "+GraphName+" - "+err.Error())
+		}
 	}
-	return nil
 }
 
-func SaveParent(id, parentid string) error {
-	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
-	err := col.Relate("eatables/"+id, "eatables/"+parentid, map[string]interface{}{"is": "child"})
+// Save inserts an eatable into the database
+func Save(eatable *Eatable) (*Eatable, error) {
+	var resultByte []byte
+	var err error
+	if eatable.Key == "" {
+		resultByte, err = config.DB().Send("INSERT DOCUMENT", "POST", "/_api/document?collection="+CollectionName, eatable)
+	} else {
+		resultByte, err = config.DB().Send("UPDATE DOCUMENT", "PUT", "/_api/document/"+eatable.Id, eatable)
+	}
+	if err == nil {
+		err = json.Unmarshal(resultByte, eatable)
+	}
+	return eatable, err
+}
+
+// SaveParent adds a relationship between two eatables
+func SaveParent(key, parentkey string) error {
+	createEdgeQuery := arangolite.NewQuery(` INSERT {'_from': @id,'_to': @parentId, 'is': 'child'} IN %s `, RelationshipCollectionName)
+	createEdgeQuery.Bind("id", CollectionName+"/"+key)
+	createEdgeQuery.Bind("parentId", CollectionName+"/"+parentkey)
+	_, err := config.DB().Run(createEdgeQuery)
 	return err
 }
 
-// FindById returns the eatable object for a given id, if any
-func FindById(id string) (*Eatable, error) {
-	var result Eatable
+// FindByKey returns the eatable object for a given key, if any
+func FindByKey(key string) (*Eatable, error) {
+	return FindBy("_key", key)
+}
 
-	col := config.GetCollection(&result)
-	err := col.Get(id, &result)
-
+// Remove deletes the eatable object for a given key, if any
+// IT also removes relationships to or from this eatable
+func Remove(key string) error {
+	query := arangolite.NewQuery(`FOR e IN EDGES(%s, @id, 'any', [ { 'is': 'child' } ]) REMOVE e IN %s`, RelationshipCollectionName, RelationshipCollectionName)
+	query.Bind("id", CollectionName+"/"+key)
+	_, err := config.DB().Run(query)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	return &result, nil
+	query = arangolite.NewQuery(`REMOVE @key IN %s`, CollectionName)
+	query.Bind("key", key)
+	_, err = config.DB().Run(query)
+	return err
 }
 
-type Edge struct {
-	Id   string `json:"_id,omitempty"  `
-	From string `json:"_from"`
-	To   string `json:"_to"  `
-}
+// key GetParent returns the parent of a given eatable
+func GetParent(child *Eatable) (*Eatable, error) {
 
-type Edges struct {
-	EdgesArray []Edge `json:"edges,omitempty"`
-	Error      bool   `json:"error,omitempty"`
-}
-
-// GetParent returns the parent of a given eatable
-func GetParent(child *Eatable) (*Edge, error) {
-	var arrayofresult Edges
-
-	col := config.Db().Col(config.EDGENAME_EATABLE_PARENT)
-	err := col.Edges(child.Id, "out", &arrayofresult)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(arrayofresult.EdgesArray) > 0 {
-		return &arrayofresult.EdgesArray[0], nil
-	}
-
-	return nil, nil
+	query := arangolite.NewQuery(` FOR e IN EDGES(%s, @id, 'outbound', [ { 'is': 'child' } ]) LIMIT 1 
+		For eatable in eatables FILTER eatable._id == e._to LIMIT 1 return eatable `, RelationshipCollectionName)
+	query.Bind("id", child.Id)
+	return executeReadingQuery(query)
 }
 
 // FindByName returns the eatable object for a given name, if any
 func FindByName(name string) (*Eatable, error) {
-	var result Eatable
+	return FindBy("name", name)
+}
 
-	col := config.GetCollection(&result)
-	cursor, err := col.Example(map[string]interface{}{"name": name}, 0, 1)
+// FindBy returns an eatable matching the given property value, or nil if not eatable matches
+func FindBy(name, value string) (*Eatable, error) {
+
+	query := arangolite.NewQuery(` FOR e IN %s FILTER e.@name == @value LIMIT 1 RETURN e `, CollectionName)
+	query.Bind("name", name)
+	query.Bind("value", value)
+
+	return executeReadingQuery(query)
+}
+
+// Executes a given query that is expected to return a single eatable
+func executeReadingQuery(query *arangolite.Query) (*Eatable, error) {
+	var result []Eatable
+
+	rawResult, err := config.DB().Run(query)
 	if err != nil {
 		return nil, err
 	}
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		cursor.FetchOne(&result)
-		return &result, nil
+
+	marshallErr := json.Unmarshal(rawResult, &result)
+	if marshallErr != nil {
+		return nil, marshallErr
+	}
+	if len(result) > 0 {
+		return &result[0], nil
 	}
 	return nil, nil
 }
@@ -88,19 +126,23 @@ func FindByName(name string) (*Eatable, error) {
 // sort defines the sorting property name
 // order must be either ASC or DESC
 func FindAll(sort string, order string) ([]Eatable, error) {
-	queryString := "FOR e in eatables SORT c." + sort + " " + order + " RETURN c"
-	arangoQuery := ara.NewQuery(queryString)
-	cursor, err := config.Db().Execute(arangoQuery)
+	query := arangolite.NewQuery(` FOR e IN %s SORT @sort @order RETURN e `, CollectionName).Cache(true).BatchSize(500)
+	query.Bind("sort", sort)
+	query.Bind("order", order)
+	async, asyncErr := config.DB().RunAsync(query)
 
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
+	if asyncErr != nil {
+		return nil, asyncErr
 	}
-	result := make([]Eatable, len(cursor.Result))
-	err = cursor.FetchBatch(&result)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
+
+	eatables := []Eatable{}
+	decoder := json.NewDecoder(async.Buffer())
+
+	for async.HasMore() {
+		batch := []Eatable{}
+		decoder.Decode(&batch)
+		eatables = append(eatables, batch...)
 	}
-	return result, nil
+
+	return eatables, nil
 }
