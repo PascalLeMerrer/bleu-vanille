@@ -237,7 +237,7 @@ div.menu-link:focus {
     background: #FFFFFF;
     background-size: 100%;
     background-repeat: no-repeat;
-    height: 600px;
+    height: 320px;
     color: #aaa;
 }
 
@@ -301,6 +301,9 @@ div.menu-link:focus {
         width: 50%;
         height: 50%;
     }
+    
+    .ribbon {
+        height: 500px;
 
     .splash-head {
         font-size: 2.5rem;
@@ -314,6 +317,9 @@ div.menu-link:focus {
  * of the mobile and tablet styles.
  */
 @media (min-width: 78em) {
+    }    
+    .ribbon {
+        height: 600px;
     /* We increase the header font size even more */
     .splash-head {
         font-size: 3.0rem;
