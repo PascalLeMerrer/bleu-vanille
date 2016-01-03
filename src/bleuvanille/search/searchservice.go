@@ -13,12 +13,13 @@ import (
 
 const (
 	INDEX_NAME = "bleve.eatable"
+	FIELDNAME_ID = "_id"
 )
 
 var index bleve.Index
 
 //Index an eatable in the bleve index
-func Index(eatable *eatable.ExportableEatable) error {
+func Index(eatable *eatable.Eatable) error {
 	if eatable == nil {
 		return errors.New("Cannot index a nil eatable")	
 	}
@@ -43,7 +44,7 @@ func Index(eatable *eatable.ExportableEatable) error {
 }
 
 //Delete removes an eatable from the index. Use for test
-func Delete(eatable *eatable.ExportableEatable) error {
+func Delete(eatable *eatable.Eatable) error {
 	if eatable == nil {
 		return errors.New("Cannot delete a nil eatable")	
 	}
@@ -79,7 +80,7 @@ func SearchFromQueryString(querystring string) ([]string, error) {
 	q := bleve.NewQueryStringQuery(querystring)
 	req := bleve.NewSearchRequest(q)
 	//req.Highlight = bleve.NewHighlightWithStyle("ansi")
-	req.Fields = []string{"id"}
+	req.Fields = []string{FIELDNAME_ID}
 	
 	res, err := indexLocal.Search(req)
 	
@@ -90,7 +91,7 @@ func SearchFromQueryString(querystring string) ([]string, error) {
 	result := make([]string, res.Total)
 	
 	for indexHit, value := range res.Hits {
-		id := value.Fields["id"]
+		id := value.Fields[FIELDNAME_ID]
 		
 		if valueid, ok := id.(string);ok {
 			result[indexHit] = valueid
@@ -102,7 +103,7 @@ func SearchFromQueryString(querystring string) ([]string, error) {
 
 //SearchForEatable searches for an eatable in the current index given its name
 func SearchForEatable(name string) ([]string, error) {
-	qString := `` + name + `~2`
+	qString := `` + name + `~2^2` + " parent.name:" + name + "~2"
 	
 	return SearchFromQueryString(qString)	
 }
@@ -123,7 +124,7 @@ func getIndex() (bleve.Index, error) {
 //			mapping.TypeField="eatable"
 			
 			eatableMapping := bleve.NewDocumentMapping()
-			eatableMapping.Dynamic = true
+			eatableMapping.Dynamic = false
 			eatableMapping.DefaultAnalyzer = fr.AnalyzerName
 
 			//Field Id : only kept to retreive the object from database
@@ -131,30 +132,32 @@ func getIndex() (bleve.Index, error) {
 			idFieldMapping.Store = true
 			idFieldMapping.Index = false
 			idFieldMapping.Analyzer = keyword_analyzer.Name
-			eatableMapping.AddFieldMappingsAt("id", idFieldMapping)
+			eatableMapping.AddFieldMappingsAt(FIELDNAME_ID, idFieldMapping)
 
 			//Field name : name of the eatable. It is the main text source.
 			nameFieldMapping := bleve.NewTextFieldMapping()
 			nameFieldMapping.Index = true
 			nameFieldMapping.Store = false
 			nameFieldMapping.IncludeInAll = false
-			nameFieldMapping.Name = "Eatable.name"
-			eatableMapping.AddFieldMappingsAt("Eatable.name", nameFieldMapping)
-
-			//Field name : name of the parents of the eatable. To be able to find the eatable through its category
-			parentNameFieldMapping := bleve.NewTextFieldMapping()
-			parentNameFieldMapping.Index = true
-			parentNameFieldMapping.Store = false
-			parentNameFieldMapping.IncludeInAll = false
-			eatableMapping.AddFieldMappingsAt("parentname", parentNameFieldMapping)
+			nameFieldMapping.Name = "name"
+			eatableMapping.AddFieldMappingsAt("name", nameFieldMapping)
 
 			descriptionFieldMapping := bleve.NewTextFieldMapping()
 			descriptionFieldMapping.Index = true
 			descriptionFieldMapping.Store = false
 			descriptionFieldMapping.IncludeInAll = false
-			eatableMapping.AddFieldMappingsAt("Eatable.description", descriptionFieldMapping)
+			eatableMapping.AddFieldMappingsAt("description", descriptionFieldMapping)
 
-			mapping.DefaultField="Eatable.name"
+			//Field name : name of the parents of the eatable. To be able to find the eatable through its category
+			parent := bleve.NewDocumentMapping()
+			parentNameFieldMapping := bleve.NewTextFieldMapping()
+			parentNameFieldMapping.Index = true
+			parentNameFieldMapping.Store = false
+			parentNameFieldMapping.IncludeInAll = false
+			parent.AddFieldMappingsAt("name", parentNameFieldMapping)
+			eatableMapping.AddSubDocumentMapping("parent", parent)
+			
+			mapping.DefaultField="name"
 			mapping.AddDocumentMapping("Eatable", eatableMapping)
 			mapping.DefaultMapping = eatableMapping
 			indexRealForCreation, errForCreation := bleve.New(INDEX_NAME, mapping)

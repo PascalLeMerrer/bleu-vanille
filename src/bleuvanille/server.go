@@ -7,6 +7,7 @@ import (
 	"bleuvanille/contact"
 	"bleuvanille/eatable"
 	"bleuvanille/log"
+	"bleuvanille/search"
 	"bleuvanille/session"
 	"bleuvanille/user"
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
+
 
 const Version = "0.1.0"
 
@@ -125,6 +127,14 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Put("/:key/nutrient", eatable.SetNutrient)
 
 	eatableRoutes.Put("/:key/parent/:parentKey", eatable.SetParent)
+
+	//Search Section
+	searchRoutes := echoServer.Group("/search")
+	searchRoutes.Use(auth.JWTAuth())
+	searchRoutes.Use(session.Middleware())
+	searchRoutes.Get("/:name", search.Search)
+	searchRoutes.Get("/query/:query", search.SearchQueryString)
+	searchRoutes.Get("/index/:key", search.IndexFromKey)
 }
 
 // special Routes require a valid user auth token but no sessionID

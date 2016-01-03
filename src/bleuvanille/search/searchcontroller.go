@@ -1,6 +1,8 @@
 package search
 
 import (
+	"errors"
+	
 	"bleuvanille/eatable"
 	"bleuvanille/log"
 
@@ -24,7 +26,7 @@ func Search(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err)
 	}
 
-	result := convertEatableInExportable(context, eatables)
+	result := convertEatableKeyArrayInEatable(context, eatables)
 
 	return context.JSON(http.StatusOK, result)
 }
@@ -40,61 +42,61 @@ func SearchQueryString(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err)
 	}
 
-	result := convertEatableInExportable(context, eatables)
+	result := convertEatableKeyArrayInEatable(context, eatables)
 
 	return context.JSON(http.StatusOK, result)
 }
 
-func IndexFromId(context *echo.Context) error {
-	id := context.Param("id")
+func IndexFromKey(context *echo.Context) error {
+	key := context.Param("key")
 
-	exportableEatable, err := eatable.GetExportableEatable(id)
-
-	if exportableEatable.ParentId != "" {
-		parent, errParent := eatable.FindById(exportableEatable.ParentId)
-
-		if errParent != nil {
-			log.Error(context, "Impossible to read the parent of eatable  "+exportableEatable.Id+" : "+errParent.Error())
-		} else {
-			if parent != nil {
-				exportableEatable.ParentName = parent.Name
-			} else {
-				log.Error(context, "Impossible to read the parent of eatable  "+exportableEatable.Id)
-			}
-		}
-	}
+	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
 		log.Error(context, err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	errIndex := Index(exportableEatable)
+	if eatableVar == nil {
+		log.Error(context, "No eatable found for key  " + key)
+		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: " + key))
+	}
+	
+	parent, errParent := eatable.GetParent(eatableVar)
+
+	if errParent != nil {
+		log.Error(context, "Error while searching for the parent of  " + key + " : " +  errParent.Error())
+		return context.JSON(http.StatusInternalServerError, errParent.Error())
+	}
+
+	eatableVar.Parent = parent
+
+	errIndex := Index(eatableVar)
 
 	if errIndex != nil {
 		log.Error(context, errIndex.Error())
 		return context.JSON(http.StatusInternalServerError, errIndex.Error())
 	}
 
-	return context.JSON(http.StatusInternalServerError, exportableEatable)
+	return context.JSON(http.StatusInternalServerError, eatableVar)
 }
 
-//	echoServer.Get("/search/query/:query", search.SearchQueryString)
-//	echoServer.Get("/search/index/:id", search.IndexFromId)
-
-func convertEatableInExportable(context *echo.Context, eatables []string) []eatable.ExportableEatable {
-	result := make([]eatable.ExportableEatable, len(eatables))
+func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatable.Eatable {
+	result := make([]eatable.Eatable, len(eatables))
 
 	var indexminus = 0
 
-	for indexHit, id := range eatables {
-		exportableEatable, err := eatable.GetExportableEatable(id)
+	for indexHit, key := range eatables {
+		eatableVar, err := eatable.FindByKey(key)
 
 		if err != nil {
 			indexminus++
-			log.Error(context, "Error while retreiving the Eatable "+id+" from database : "+err.Error())
+			log.Error(context, "Error while retreiving the Eatable " + key + " from database : "+err.Error())
 		} else {
-			result[indexHit-indexminus] = *exportableEatable
+			parent, _ := eatable.GetParent(eatableVar)
+			eatableVar.Parent = parent
+			
+			result[indexHit-indexminus] = *eatableVar
 		}
 	}
 

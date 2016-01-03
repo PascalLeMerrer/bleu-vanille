@@ -2,25 +2,11 @@ package search
 
 import (
 	"testing"
-	
+
 	"bleuvanille/eatable"
-	"bleuvanille/log"
 
 	"github.com/stretchr/testify/assert"
-	//	 "github.com/blevesearch/bleve"
 )
-
-//func TestCreateFakeIndex(t *testing.T) {
-//	mapping := bleve.NewIndexMapping()
-//    index, err := bleve.New("example.bleve", mapping)
-//    if err != nil {
-//        return
-//    }
-//
-//    if index != nil {
-//    	return
-//    }
-//}
 
 func TestCreateIndex(t *testing.T) {
 	index, err := getIndex()
@@ -52,37 +38,57 @@ func TestBasicSearch(t *testing.T) {
 	eatable.Save(&eatable1)
 	eatable.Save(&eatable2)
 	eatable.Save(&eatable3)
-	eatable.SaveParent(eatable2.GetKey(), eatable1.GetKey())
+	eatable.SaveParent(eatable2.Key, eatable1.Key)
 
 	index, errCreationIndex := getIndex()
 
 	assert.NoError(t, errCreationIndex, "Error when creating the index")
 	assert.NotNil(t, index, "Error when creating the index")
 
-	ee1, errFetch1 := eatable.GetExportableEatable(eatable1.GetKey())
-	assert.NoError(t, errFetch1, "Error when fetching eatable1")
-	errIndex1 := Index(ee1)
+	parent1, errParent1 := eatable.GetParent(&eatable1)
+	eatable1.Parent = parent1
+	assert.NoError(t, errParent1, "Error when fetching eatable1")
+	errIndex1 := Index(&eatable1)
 	assert.NoError(t, errIndex1, "Error when indexing eatable1")
-	defer Delete(ee1)
+	defer Delete(&eatable1)
 
-	ee2, errFetch2 := eatable.GetExportableEatable(eatable2.GetKey())
-	log.Error(nil, ee2.ParentName)
-		
+	parent2, errParent2 := eatable.GetParent(&eatable2)
+	eatable2.Parent = parent2
 
-	assert.NoError(t, errFetch2, "Error when fetching eatable2")
-	errIndex2 := Index(ee2)
+	assert.NoError(t, errParent2, "Error when fetching eatable2")
+	errIndex2 := Index(&eatable2)
 	assert.NoError(t, errIndex2, "Error when indexing eatable2")
-//	defer Delete(ee2)
+	defer Delete(&eatable2)
 
-	ee3, errFetch3 := eatable.GetExportableEatable(eatable3.GetKey())
-	assert.NoError(t, errFetch3, "Error when fetching eatable3")
-	errIndex3 := Index(ee3)
+	parent3, errParent3 := eatable.GetParent(&eatable3)
+	eatable3.Parent = parent3
+	assert.NoError(t, errParent3, "Error when fetching eatable3")
+	errIndex3 := Index(&eatable3)
 	assert.NoError(t, errIndex3, "Error when indexing eatable3")
-	defer Delete(ee3)
+	defer Delete(&eatable3)
 
-	results, errSearch := SearchForEatable("Catestcsarotte")
-	assert.NoError(t, errSearch, "Error when searching for Catestcsarotte")
-	assert.True(t, len(results) == 1, "Error when searching for Catestcsarotte : %d results returned", len(results))
-	assert.True(t, results[0] == eatable2.Id, "Error when searching for Catestcsarotte : Id is not correct. Should be %s", eatable2.Id)
+	//Search for the main ingredient : find one
+	{
+		results, errSearch := SearchForEatable("Catestcsarotte")
+		assert.NoError(t, errSearch, "Error when searching for Catestcsarotte")
+		assert.True(t, len(results) == 1, "Error when searching for Catestcsarotte : %d results returned instead of 1", len(results))
 
+		if len(results) == 1 {
+			assert.True(t, results[0] == eatable2.Id, "Error when searching for Catestcsarotte : Id is not correct. Should be %s but is %s", eatable2.Id, results[0])
+		}
+	}
+
+	//Search for the parent ingredient : find two
+	{
+		results, errSearch := SearchForEatable("Légutestcsame")
+		assert.NoError(t, errSearch, "Error when searching for Légutestcsame")
+		assert.True(t, len(results) == 2, "Error when searching for Légutestcsame : %d results returned instead of 2", len(results))
+	}
+	
+	//Search for the parent ingredient without accent : find two
+	{
+		results, errSearch := SearchForEatable("Legutestcsame")
+		assert.NoError(t, errSearch, "Error when searching for Legutestcsame")
+		assert.True(t, len(results) == 2, "Error when searching for Legutestcsame : %d results returned instead of 2", len(results))
+	}
 }
