@@ -6,7 +6,7 @@ import (
 	"bleuvanille/config"
 	"bleuvanille/log"
 	"encoding/json"
-	"github.com/PascalLeMerrer/arangolite"
+	"github.com/solher/arangolite"
 )
 
 const GraphName = "eatable_graph"

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/PascalLeMerrer/arangolite"
+	"github.com/solher/arangolite"
 )
 
 var dbSession *arangolite.DB
