@@ -183,12 +183,11 @@ div.menu-link:focus {
 }
 
 .splash-head {
-    font-size: 2.0rem;
+    font-size: 3.0rem;
     font-weight: bold;
     color: var(--third-color-light);
     border: 3px solid var(--third-color-light);
     padding: 1em 1.6em;
-    font-weight: 100;
     border-radius: 5px;
     line-height: 1em;
 }
@@ -305,10 +304,6 @@ div.menu-link:focus {
     .ribbon {
         height: 500px;
 
-    .splash-head {
-        font-size: 2.5rem;
-    }
-
 }
 
 /*
@@ -320,9 +315,6 @@ div.menu-link:focus {
     }    
     .ribbon {
         height: 600px;
-    /* We increase the header font size even more */
-    .splash-head {
-        font-size: 3.0rem;
     }
 }
 
