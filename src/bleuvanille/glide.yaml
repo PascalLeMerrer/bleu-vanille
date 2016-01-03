@@ -1,23 +1,40 @@
 parent: null
 package: bleuvanille
 import:
-- package: github.com/labstack/gommon
-  subpackages:
-  - /color
-- package: github.com/speps/go-hashids
-- package: github.com/twinj/uuid
 - package: github.com/dgrijalva/jwt-go
-- package: github.com/diegogub/aranGO
 - package: github.com/diegogub/napping
 - package: github.com/solher/arangolite
+- package: github.com/stretchr/testify
+  subpackages:
+  - /assert
 - package: golang.org/x/crypto
   subpackages:
   - /bcrypt
-- package: github.com/bradfitz/http2
-- package: github.com/goodsign/monday
+- package: github.com/steveyen/gtreap
+- package: github.com/diegogub/aranGO
+- package: github.com/boltdb/bolt
+- package: github.com/speps/go-hashids
+- package: github.com/labstack/gommon
+  subpackages:
+  - /color
+- package: github.com/willf/bitset
 - package: github.com/labstack/echo
+- package: github.com/golang/protobuf
+  subpackages:
+  - /proto
+- package: github.com/mattn/go-colorable
+- package: github.com/blevesearch/go-porterstemmer
+- package: github.com/twinj/uuid
+- package: github.com/goodsign/monday
+- package: github.com/mattn/go-isatty
+- package: github.com/davecgh/go-spew
+  subpackages:
+  - /spew
+- package: github.com/pmezard/go-difflib
+  subpackages:
+  - /difflib
+- package: github.com/blevesearch/segment
 - package: golang.org/x/net
   subpackages:
   - /websocket
-- package: github.com/mattn/go-colorable
-- package: github.com/mattn/go-isatty
+- package: github.com/bradfitz/http2
