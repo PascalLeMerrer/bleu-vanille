@@ -225,7 +225,6 @@ div.menu-link:focus {
 
 .content-subhead {
     color: var(--secondary-color);
-    /*min-height: 3rem;*/
 }
 
 .content-subhead i {
@@ -285,17 +284,10 @@ div.menu-link:focus {
     .header {
         text-align: left;
     }
-        .header ul {
-            float: right;
-        }
+    .header ul {
+        float: right;
+    }
 
-    /* We increase the height of the splash-container */
-/*    .splash-container {
-        height: 500px;
-    }*/
-
-    /* We decrease the width of the .splash, since we have more width
-    to work with */
     .splash {
         width: 50%;
         height: 50%;
