@@ -81,6 +81,10 @@ func Remove(key string) error {
 
 // key GetParent returns the parent of a given eatable
 func GetParent(child *Eatable) (*Eatable, error) {
+	//check if child is not nil
+	if child == nil {
+		return nil, nil
+	}
 
 	query := arangolite.NewQuery(` FOR e IN EDGES(%s, @id, 'outbound', [ { 'is': 'child' } ]) LIMIT 1 
 		For eatable in eatables FILTER eatable._id == e._to LIMIT 1 return eatable `, RelationshipCollectionName)

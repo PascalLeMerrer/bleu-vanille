@@ -2,7 +2,7 @@ package search
 
 import (
 	"errors"
-	
+
 	"bleuvanille/eatable"
 	"bleuvanille/log"
 
@@ -11,6 +11,7 @@ import (
 	//	"io/ioutil"
 	"net/http"
 	//	"time"
+	"strings"
 
 	"github.com/labstack/echo"
 )
@@ -21,8 +22,11 @@ func Search(context *echo.Context) error {
 
 	eatables, err := SearchForEatable(name)
 
+	log.Error(context, "Error while searching for "+name)
+
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
+		log.Error(context, "Error while searching for "+name+" : "+err.Error())
 		return context.JSON(http.StatusInternalServerError, err)
 	}
 
@@ -47,25 +51,52 @@ func SearchQueryString(context *echo.Context) error {
 	return context.JSON(http.StatusOK, result)
 }
 
+func UnIndexFromKey(context *echo.Context) error {
+	key := context.Param("key")
+
+	eatableVar, err := eatable.FindByKey(key)
+
+	if err != nil {
+		log.Error(context, "Error while reading eatable from  " + key + " : "+err.Error())
+		log.Error(context, err.Error())
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	if eatableVar == nil {
+		log.Error(context, "No eatable found for key  "+key)
+		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: "+key))
+	}
+
+	errIndex := Delete(eatableVar)
+
+	if errIndex != nil {
+		log.Error(context, errIndex.Error())
+		return context.JSON(http.StatusInternalServerError, errIndex.Error())
+	}
+
+	return context.JSON(http.StatusNoContent, nil)
+}
+
 func IndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
 	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
+		log.Error(context, "Error while indexing for "+key+" : "+err.Error())
 		log.Error(context, err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	if eatableVar == nil {
-		log.Error(context, "No eatable found for key  " + key)
-		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: " + key))
+		log.Error(context, "No eatable found for key  "+key)
+		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: "+key))
 	}
-	
+
 	parent, errParent := eatable.GetParent(eatableVar)
 
 	if errParent != nil {
-		log.Error(context, "Error while searching for the parent of  " + key + " : " +  errParent.Error())
+		log.Error(context, "Error while searching for the parent of  "+key+" : "+errParent.Error())
 		return context.JSON(http.StatusInternalServerError, errParent.Error())
 	}
 
@@ -78,26 +109,44 @@ func IndexFromKey(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, errIndex.Error())
 	}
 
-	return context.JSON(http.StatusInternalServerError, eatableVar)
+	return context.JSON(http.StatusOK, eatableVar)
 }
+
 
 func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatable.Eatable {
 	result := make([]eatable.Eatable, len(eatables))
 
 	var indexminus = 0
 
-	for indexHit, key := range eatables {
-		eatableVar, err := eatable.FindByKey(key)
+	for indexHit, id := range eatables {
+		//extract the key from the id
+		parseId := strings.Split(id, "/")
 
-		if err != nil {
+		if len(parseId) != 2 {
 			indexminus++
-			log.Error(context, "Error while retreiving the Eatable " + key + " from database : "+err.Error())
-		} else {
-			parent, _ := eatable.GetParent(eatableVar)
-			eatableVar.Parent = parent
-			
-			result[indexHit-indexminus] = *eatableVar
+
+			log.Error(context, "Error while retreiving the Eatable "+id+" : it has an unvalid format.")
+			continue
 		}
+
+		eatableVar, err := eatable.FindByKey(parseId[1])
+
+		if err != nil || eatableVar == nil {
+			indexminus++
+
+			if err != nil {
+				log.Error(context, "Error while retreiving the Eatable "+id+" from database : "+err.Error())
+			} else {
+				log.Error(context, "Error while retreiving the Eatable "+id+" from database :  eatable unknown")
+			}
+
+			continue
+		}
+
+		parent, _ := eatable.GetParent(eatableVar)
+		eatableVar.Parent = parent
+
+		result[indexHit-indexminus] = *eatableVar
 	}
 
 	return result

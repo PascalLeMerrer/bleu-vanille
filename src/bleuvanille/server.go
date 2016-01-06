@@ -160,6 +160,9 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 
 	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
 	adminRoutes.Delete("/eatables/:key", eatable.Delete)
+	
+	adminRoutes.Delete("/unindex/:key", search.UnIndexFromKey)
+
 }
 
 func getVersion(context *echo.Context) error {

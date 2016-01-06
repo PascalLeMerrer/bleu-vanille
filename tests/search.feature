@@ -27,24 +27,19 @@ Scenario: Creating and searching for an eatable with authenticated user
     And response body should be valid json
     And   the JSON should be
     """
-    {
-        "name" : "pomme de terre nouvelle",
-        "type" : "ingredientrecette",
-        "status" : "new",
-        "description" : "La pomme de terre est un légume découvert aux amériques. Elle a sauvé la vie à des millions d Irlandais.",
-        "nutrient" : {
-            "carbohydrate" : 10,
-            "sugar" : 9,
-            "protein" : 11,
-            "lipid" : 12,
-            "fiber" : 1,
-            "alcohol" : 2
-        },
-        "parent": {
-            "name": "légume",
-            "status": "new",
-            "type": "ingredient"
-        }
-    }
+    [
+    	{
+        	"name" : "carotte"
+    	}
+    ]
     """
     
+Scenario: Deleting eatables created for the test
+  Given I log as admin user
+  And I set Cookie header to global variable cookie 
+  When I DELETE /admin/unindex/`eatableKey`
+  Then response code should be 204
+  Given I log as admin user
+  And I set Cookie header to global variable cookie 
+  When I DELETE /admin/eatables/`eatableKey`
+  Then response code should be 204
