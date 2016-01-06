@@ -171,16 +171,6 @@ func getIndex() (bleve.Index, error) {
 
 			index = indexRealForCreation
 			return indexRealForCreation, nil
-
-			//			mapping := bleve.NewIndexMapping()
-			//		    indexRealForCreation, err := bleve.New("example.bleve", mapping)
-			//		    if err != nil {
-			//		        return nil, err
-			//		    }
-			//
-			//		    index = indexRealForCreation
-			//
-			//		    return indexRealForCreation, nil
 		} else {
 			log.Debug(nil, "Openning of the existing search index")
 			if indexReal == nil {

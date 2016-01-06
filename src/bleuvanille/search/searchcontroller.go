@@ -51,6 +51,7 @@ func SearchQueryString(context *echo.Context) error {
 	return context.JSON(http.StatusOK, result)
 }
 
+//UnIndexFromKey unindex an eatable given its key
 func UnIndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
@@ -77,6 +78,7 @@ func UnIndexFromKey(context *echo.Context) error {
 	return context.JSON(http.StatusNoContent, nil)
 }
 
+//IndexFromKey index an eatable given its key
 func IndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
@@ -113,6 +115,7 @@ func IndexFromKey(context *echo.Context) error {
 }
 
 
+//convertEatableKeyArrayInEatable convert a list of the id to a list of real eatable struct.
 func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatable.Eatable {
 	result := make([]eatable.Eatable, len(eatables))
 
