@@ -23,7 +23,6 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-
 const Version = "0.1.0"
 
 // Render processes a template
@@ -78,7 +77,7 @@ func main() {
 
 	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
-	echoServer.Run(":" + strconv.Itoa(config.HostPort))
+	echoServer.Run("127.0.0.1:" + strconv.Itoa(config.HostPort))
 }
 
 // static pages
@@ -160,7 +159,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 
 	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
 	adminRoutes.Delete("/eatables/:key", eatable.Delete)
-	
+
 	adminRoutes.Delete("/unindex/:key", search.UnIndexFromKey)
 
 }
