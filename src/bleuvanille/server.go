@@ -87,6 +87,7 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 	echoServer.Static("/fonts/", "public/fonts")
 	echoServer.Static("/img/", "public/img")
 	echoServer.Static("/tags/", "public/tags")
+	echoServer.Static("/robots.txt", "public/robots.txt")
 }
 
 // public pages
