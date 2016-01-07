@@ -4,7 +4,6 @@ import:
 - package: github.com/diegogub/napping
 - package: github.com/solher/arangolite
 - package: github.com/stretchr/testify
-  version: 232e8563676cd15c3a36ba5e675ad4312ac4cb11
   subpackages:
   - /assert
 - package: golang.org/x/crypto
@@ -13,7 +12,6 @@ import:
 - package: github.com/steveyen/gtreap
 - package: github.com/diegogub/aranGO
 - package: github.com/boltdb/bolt
-  version: c2745b3c62985affcf08d0522135f4747e9b81f3
 - package: github.com/speps/go-hashids
 - package: github.com/labstack/gommon
   subpackages:
@@ -24,7 +22,6 @@ import:
   subpackages:
   - /proto
 - package: github.com/mattn/go-colorable
-  version: d67e0b7d1797975196499f79bcc322c08b9f218b
 - package: github.com/blevesearch/go-porterstemmer
 - package: github.com/twinj/uuid
 - package: github.com/goodsign/monday
@@ -37,7 +34,6 @@ import:
   - /difflib
 - package: github.com/blevesearch/segment
 - package: golang.org/x/net
-  version: 621fff363a1d9ad7fdd0bfa9d80a42881267deb4
   subpackages:
   - /websocket
 - package: github.com/bradfitz/http2
