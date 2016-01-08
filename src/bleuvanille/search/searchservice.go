@@ -68,7 +68,7 @@ func Delete(eatable *eatable.Eatable) error {
 	return nil
 }
 
-//SearchFromQueryString searches in the current index given an full query string
+//SearchFromQueryString searches in the current index given a full query string
 func SearchFromQueryString(querystring string) ([]string, error) {
 	indexLocal, errIndex := getIndex()
 
@@ -115,18 +115,15 @@ func getIndex() (bleve.Index, error) {
 
 		if errOpenIndex != nil || indexReal == nil {
 
-			//testcsa
 			log.Debug(nil, "Creation of the search index")
 
 			mapping := bleve.NewIndexMapping()
-			//			mapping.DefaultType="eatable"
-			//			mapping.TypeField="eatable"
 
 			eatableMapping := bleve.NewDocumentMapping()
 			eatableMapping.Dynamic = false
 			eatableMapping.DefaultAnalyzer = fr.AnalyzerName
 
-			//Field Id : only kept to retreive the object from database
+			//Field Id : only kept to retrieve the object from database
 			idFieldMapping := bleve.NewTextFieldMapping()
 			idFieldMapping.Store = true
 			idFieldMapping.Index = false

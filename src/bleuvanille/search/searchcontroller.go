@@ -6,11 +6,7 @@ import (
 	"bleuvanille/eatable"
 	"bleuvanille/log"
 
-	//	"encoding/json"
-	//	"errors"
-	//	"io/ioutil"
 	"net/http"
-	//	"time"
 	"strings"
 
 	"github.com/labstack/echo"
@@ -35,7 +31,7 @@ func Search(context *echo.Context) error {
 	return context.JSON(http.StatusOK, result)
 }
 
-// SearchQueryString searches eatable based a full bleve query : used for test
+// SearchQueryString searches eatables based on a full bleve query : used for test
 func SearchQueryString(context *echo.Context) error {
 	query := context.Param("query")
 
@@ -51,7 +47,7 @@ func SearchQueryString(context *echo.Context) error {
 	return context.JSON(http.StatusOK, result)
 }
 
-//UnIndexFromKey unindex an eatable given its key
+//UnIndexFromKey unindexes an eatable given its key
 func UnIndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
@@ -78,7 +74,7 @@ func UnIndexFromKey(context *echo.Context) error {
 	return context.JSON(http.StatusNoContent, nil)
 }
 
-//IndexFromKey index an eatable given its key
+//IndexFromKey indexes an eatable given its key
 func IndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
@@ -86,7 +82,6 @@ func IndexFromKey(context *echo.Context) error {
 
 	if err != nil {
 		log.Error(context, "Error while indexing for "+key+" : "+err.Error())
-		log.Error(context, err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -115,10 +110,11 @@ func IndexFromKey(context *echo.Context) error {
 }
 
 
-//convertEatableKeyArrayInEatable convert a list of the id to a list of real eatable struct.
+//convertEatableKeyArrayInEatable convert a list of ids to a list of real eatable struct.
 func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatable.Eatable {
 	result := make([]eatable.Eatable, len(eatables))
 
+	//Used to keep track of the real count of eatable inserted in the final result
 	var indexminus = 0
 
 	for indexHit, id := range eatables {
@@ -128,7 +124,7 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 		if len(parseId) != 2 {
 			indexminus++
 
-			log.Error(context, "Error while retreiving the Eatable "+id+" : it has an unvalid format.")
+			log.Error(context, "Error while retrieving the Eatable "+id+" : it has an unvalid format.")
 			continue
 		}
 
@@ -138,9 +134,9 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 			indexminus++
 
 			if err != nil {
-				log.Error(context, "Error while retreiving the Eatable "+id+" from database : "+err.Error())
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database : "+err.Error())
 			} else {
-				log.Error(context, "Error while retreiving the Eatable "+id+" from database :  eatable unknown")
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database :  eatable unknown")
 			}
 
 			continue

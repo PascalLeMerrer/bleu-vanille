@@ -18,14 +18,14 @@ func TestCreateIndex(t *testing.T) {
 func TestBasicSearch(t *testing.T) {
 
 	eatable1 := eatable.Eatable{
-		Name:        "Légutestcsame",
+		Name:        "Légume",
 		Description: "titi",
 		Type:        "Ingredient",
 	}
 
 	eatable2 := eatable.Eatable{
-		Name:        "Catestcsarotte",
-		Description: "testcsa2",
+		Name:        "Carotte",
+		Description: "Description2",
 		Type:        "Ingredient",
 	}
 
@@ -69,26 +69,33 @@ func TestBasicSearch(t *testing.T) {
 
 	//Search for the main ingredient : find one
 	{
-		results, errSearch := SearchForEatable("Catestcsarotte")
-		assert.NoError(t, errSearch, "Error when searching for Catestcsarotte")
-		assert.True(t, len(results) == 1, "Error when searching for Catestcsarotte : %d results returned instead of 1", len(results))
+		results, errSearch := SearchForEatable("Carotte")
+		assert.NoError(t, errSearch, "Error when searching for Carotte")
+		assert.True(t, len(results) == 1, "Error when searching for Carotte : %d results returned instead of 1", len(results))
 
 		if len(results) == 1 {
-			assert.True(t, results[0] == eatable2.Id, "Error when searching for Catestcsarotte : Id is not correct. Should be %s but is %s", eatable2.Id, results[0])
+			assert.True(t, results[0] == eatable2.Id, "Error when searching for Carotte : Id is not correct. Should be %s but is %s", eatable2.Id, results[0])
 		}
 	}
 
 	//Search for the parent ingredient : find two
 	{
-		results, errSearch := SearchForEatable("Légutestcsame")
-		assert.NoError(t, errSearch, "Error when searching for Légutestcsame")
-		assert.True(t, len(results) == 2, "Error when searching for Légutestcsame : %d results returned instead of 2", len(results))
+		results, errSearch := SearchForEatable("Légume")
+		assert.NoError(t, errSearch, "Error when searching for Légume")
+		assert.True(t, len(results) == 2, "Error when searching for Légume : %d results returned instead of 2", len(results))
 	}
 	
 	//Search for the parent ingredient without accent : find two
 	{
-		results, errSearch := SearchForEatable("Legutestcsame")
-		assert.NoError(t, errSearch, "Error when searching for Legutestcsame")
-		assert.True(t, len(results) == 2, "Error when searching for Legutestcsame : %d results returned instead of 2", len(results))
+		results, errSearch := SearchForEatable("Legume")
+		assert.NoError(t, errSearch, "Error when searching for Legume")
+		assert.True(t, len(results) == 2, "Error when searching for Legume : %d results returned instead of 2", len(results))
+	}
+	
+		//Search for carote with a spelling mistake : find two
+	{
+		results, errSearch := SearchForEatable("carote")
+		assert.NoError(t, errSearch, "Error when searching for carote")
+		assert.True(t, len(results) == 1, "Error when searching for carote : %d results returned instead of 1", len(results))
 	}
 }
