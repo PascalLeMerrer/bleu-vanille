@@ -161,7 +161,7 @@ div.menu-link:focus {
 
 .splash-container {
     background: var(--secondary-color-light);
-    z-index: -1;
+    z-index: 0;
     overflow: hidden;
     /* The following styles are required for the "scroll-over" effect */
     width: 100%;

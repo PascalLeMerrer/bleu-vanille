@@ -14,15 +14,13 @@ $(document).ready(function() {
 
 /* Adds scrolling to the first section when clicking on a given link */
 function addScroll(id) {
-  $(id).click(function(e) {
-    topMenu = $("#top-menu"),
-      topMenuHeight = topMenu.outerHeight();
-
-    var offsetTop = $('#menu').offset().top - topMenuHeight + 1;
-    $('html, body').stop().animate({
-      scrollTop: offsetTop
-    }, 600);
-    e.preventDefault();
+  $(id).click(function(e){
+      var topMenu = $("#top-menu"),
+          offsetTop = $('#menu').offset().top - topMenu.outerHeight() + 1;
+      $('html, body').stop().animate({
+        scrollTop: offsetTop
+      }, 400);
+      e.preventDefault();
   });
 }
 
@@ -44,6 +42,7 @@ function initScrollspy() {
         return item;
       }
     });
+
   // Bind click handler to menu items
   // so we can get a fancy scroll animation
   menuItems.click(function(e) {
