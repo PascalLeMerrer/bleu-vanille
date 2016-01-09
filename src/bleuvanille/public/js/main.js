@@ -1,7 +1,7 @@
 var contactEmail = "info" + "@" + "bleuvanille.fr"
 var startTime;
 
-/* Hide alerts on page loading */
+/* Hides alerts on page loading and init scrolling */
 $(document).ready(function() {
   $('#success-alert').hide();
   $('#error-alert').hide();
@@ -12,6 +12,7 @@ $(document).ready(function() {
   $('#contact').text(contactEmail);
 });
 
+/* Adds scrolling to the first section when clicking on a given link */
 function addScroll(id) {
   $(id).click(function(e) {
     topMenu = $("#top-menu"),
@@ -25,8 +26,8 @@ function addScroll(id) {
   });
 }
 
-/* -------------------------------------------------------------------------------------------*/
-/* Highlights the current menu item                                                           */
+/* Highlights the current menu item and add scrolling to the corresponding section
+ */
 
 function initScrollspy() {
 

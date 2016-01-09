@@ -73,8 +73,6 @@ label {
 }
 
 input[type] {
-    /*border: 2px solid #ddd;
-    box-shadow: none;*/
     font-size: 1.7rem;
     margin-top: 3rem;
     margin-bottom: 3rem;
@@ -180,7 +178,6 @@ div.menu-link:focus {
     position: absolute;
     top: 100px; left: 0; bottom: 0; right: 0;
     text-align: center;
-    /*text-transform: uppercase;*/
 }
 
 .splash-head {
@@ -214,7 +211,6 @@ div.menu-link:focus {
 
 .content-head {
     font-weight: 400;
-    /*text-transform: uppercase;*/
     padding-top: 2rem;
     margin: 2em 0 1em;
 }
@@ -276,18 +272,8 @@ div.menu-link:focus {
     body {
         font-size: 1.6rem;
     }
-    /* We want to give the content area some more padding */
     .content {
         padding: 1em;
-    }
-
-    /* We can align the menu header to the left, but float the
-    menu items to the right. */
-    .header {
-        text-align: left;
-    }
-    .header ul {
-        float: right;
     }
 
     .splash {
