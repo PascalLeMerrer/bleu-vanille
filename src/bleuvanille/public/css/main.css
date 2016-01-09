@@ -32,7 +32,7 @@
 
 
 body {
-    line-height: 1.7em;
+    line-height: 1.7rem;
     color: var(--default-text-color);
     font-size: 1.3rem;
 }
@@ -50,6 +50,7 @@ h6 {
 h1,
 h2,
 h3 {
+    line-height: 3rem;
     color: var(--primary-color);
 }
 
@@ -214,7 +215,6 @@ div.menu-link:focus {
 .content-head {
     font-weight: 400;
     /*text-transform: uppercase;*/
-    letter-spacing: 0.1em;
     padding-top: 2rem;
     margin: 2em 0 1em;
 }
@@ -224,6 +224,8 @@ div.menu-link:focus {
 }
 
 .content-subhead {
+    padding-top: 2rem;
+    margin-bottom: 0;
     color: var(--secondary-color);
 }
 
@@ -235,7 +237,7 @@ div.menu-link:focus {
     background: #FFFFFF;
     background-size: 100%;
     background-repeat: no-repeat;
-    height: 320px;
+    height: 200px;
     color: #aaa;
 }
 
