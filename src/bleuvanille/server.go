@@ -7,6 +7,7 @@ import (
 	"bleuvanille/contact"
 	"bleuvanille/eatable"
 	"bleuvanille/log"
+	"bleuvanille/search"
 	"bleuvanille/session"
 	"bleuvanille/user"
 	"fmt"
@@ -76,7 +77,7 @@ func main() {
 
 	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
-	echoServer.Run(":" + strconv.Itoa(config.HostPort))
+	echoServer.Run("127.0.0.1:" + strconv.Itoa(config.HostPort))
 }
 
 // static pages
@@ -86,6 +87,7 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 	echoServer.Static("/fonts/", "public/fonts")
 	echoServer.Static("/img/", "public/img")
 	echoServer.Static("/tags/", "public/tags")
+	echoServer.Static("/robots.txt", "public/robots.txt")
 }
 
 // public pages
@@ -125,6 +127,14 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Put("/:key/nutrient", eatable.SetNutrient)
 
 	eatableRoutes.Put("/:key/parent/:parentKey", eatable.SetParent)
+
+	//Search Section
+	searchRoutes := echoServer.Group("/search")
+	searchRoutes.Use(auth.JWTAuth())
+	searchRoutes.Use(session.Middleware())
+	searchRoutes.Get("/:name", search.Search)
+	searchRoutes.Get("/query/:query", search.SearchQueryString)
+	searchRoutes.Get("/index/:key", search.IndexFromKey)
 }
 
 // special Routes require a valid user auth token but no sessionID
@@ -150,6 +160,9 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 
 	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
 	adminRoutes.Delete("/eatables/:key", eatable.Delete)
+
+	adminRoutes.Delete("/unindex/:key", search.UnIndexFromKey)
+
 }
 
 func getVersion(context *echo.Context) error {

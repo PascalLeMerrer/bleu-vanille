@@ -38,6 +38,12 @@ gulp.task('html', function() {
     .pipe(gulp.dest('./public/html'));
 });
 
+gulp.task('publicroot', function() {
+  gulp.src('./src/bleuvanille/public/*', {overwrite: true})
+    .pipe(watch('./src/bleuvanille/public/*'))
+    .pipe(gulp.dest('./public/'));
+});
+
 gulp.task('riot', function() {
   gulp.src('./src/bleuvanille/public/tags/**/*.html', {overwrite: true})
     .pipe(watch('./src/bleuvanille/public/tags/**/*.html'))
@@ -98,4 +104,4 @@ gulp.task('dist', function() {
 /*
  * Build assets by default.
  */
-gulp.task('default', ['riot', 'html', 'styles', 'images', 'js', 'fonts']);
+gulp.task('default', ['riot', 'html', 'styles', 'images', 'js', 'fonts', 'publicroot']);
