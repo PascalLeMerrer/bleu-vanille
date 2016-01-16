@@ -23,7 +23,8 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-const Version = "0.1.0"
+// the id of the git commit
+var Sha1 string
 
 // Render processes a template
 // name is the file name, without its HTML extension
@@ -168,7 +169,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 func getVersion(context *echo.Context) error {
 	version := struct {
 		Version string `json:version`
-	}{"0.1.0"}
+	}{Sha1}
 	return context.JSON(200, version)
 }
 

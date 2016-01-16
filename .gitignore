@@ -4,6 +4,7 @@ daemon
 gulpfile.old.js
 httbin.feature
 node_modules
+deploy
 dist
 pkg
 dist
