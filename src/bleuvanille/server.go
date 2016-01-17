@@ -163,12 +163,11 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Delete("/eatables/:key", eatable.Delete)
 
 	adminRoutes.Delete("/unindex/:key", search.UnIndexFromKey)
-
 }
 
 func getVersion(context *echo.Context) error {
 	version := struct {
-		Version string `json:version`
+		Version string `json:"version"`
 	}{Sha1}
 	return context.JSON(200, version)
 }
