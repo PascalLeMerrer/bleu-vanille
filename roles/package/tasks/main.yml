@@ -29,7 +29,7 @@
   environment: { 'GO15VENDOREXPERIMENT':'1', 'GOPATH':'{{ tmp_directory }}' }
   command: >
     chdir="{{ tmp_directory }}/src/bleuvanille"
-    glide install
+    glide install --update-vendored
   tags: ['package']
 
 - name: Get the sha1 of the current git commit
