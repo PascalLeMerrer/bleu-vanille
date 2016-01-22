@@ -1,12 +1,13 @@
-package eatable
+package eatablepersistance
 
 // Ensures persistance of eatables in ArangoDB database
 
 import (
-	"bleuvanille/config"
-	"bleuvanille/log"
 	"encoding/json"
 	"github.com/solher/arangolite"
+
+	"bleuvanille/config"
+	"bleuvanille/log"
 )
 
 const GraphName = "eatable_graph"

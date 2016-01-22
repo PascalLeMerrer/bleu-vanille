@@ -100,7 +100,7 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
 	echoServer.Post("/users/sendResetLink", user.SendResetLink)
-	echoServer.Get("/users/resetForm", user.DisplayResetForm)
+	echoServer.Get("/users/resetForm", user.DisplayResetForm)	
 }
 
 // privates Routes require a valid user auth token and a sessionID
@@ -123,7 +123,8 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Post("", eatable.Create)
 	eatableRoutes.Get("/:key", eatable.Get)
 	eatableRoutes.Put("/:key", eatable.Update)
-
+	eatableRoutes.Patch("/:key", eatable.Patch)
+	
 	eatableRoutes.Put("/:key/nutrient", eatable.SetNutrient)
 
 	eatableRoutes.Put("/:key/parent/:parentKey", eatable.SetParent)
@@ -132,9 +133,12 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	searchRoutes := echoServer.Group("/search")
 	searchRoutes.Use(auth.JWTAuth())
 	searchRoutes.Use(session.Middleware())
+	searchRoutes.Get("/fetch/all", search.SearchAllEatable)
 	searchRoutes.Get("/:name", search.Search)
 	searchRoutes.Get("/query/:query", search.SearchQueryString)
+	searchRoutes.Get("/completion/:name", search.SearchCompletion)
 	searchRoutes.Get("/index/:key", search.IndexFromKey)
+
 }
 
 // special Routes require a valid user auth token but no sessionID

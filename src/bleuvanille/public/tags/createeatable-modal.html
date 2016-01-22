@@ -1,0 +1,291 @@
+<createeatable-modal>
+  <div if="{ showModal }" class="overlay" onclick="{ close }"></div>
+  <div if="{ showModal }" class="modal">
+    <header class="header">
+      <h3 class="heading">{ heading }</h3>
+      <button type="button" class="close" aria-label="Fermer" onclick="{ close }">
+          <span aria-hidden="true"><i class="fa fa-close fa-lg"></i></span>
+      </button>
+    </header>
+
+    <div class="body container">
+      	<label for="male">Nom</label>
+  		<input type="text" name="eatablename" value="{ eatable.name }"><br>
+		<label for="male">Description</label>
+  		<input type="text" name="eatabledescription" value="{ eatable.description }"><br>
+
+		<fieldset>
+        <legend>Nutriment pour 100 gr</legend>
+        <p>
+        		<label for="male">Glucide</label>
+  				<input type="text" pattern="^d{0-3}$" name="nutrientcarbohydrate" value="{ nutrient.carbohydrate }" size="6"> gr <br>
+				<label for="male">Protéine</label>
+  				<input type="text" name="nutrientprotein" value="{ nutrient.protein }" size="6"> gr <br>
+				<label for="male">Sucre</label>
+  				<input type="text" name="nutrientsugar" value="{ nutrient.sugar }" size="6"> gr <br>
+				<label for="male">Lipide</label>
+  				<input type="text" name="nutrientlipid" value="{ nutrient.lipid }" size="6"> gr <br>
+				<label for="male">Fibre</label>
+  				<input type="text" name="nutrientfiber" value="{ nutrient.fiber }" size="6"> gr <br>
+				<label for="male">Alcool</label>
+  				<input type="text" name="nutrientalcohol" value="{ nutrient.alcohol }" size="6"> gr <br>
+        </p>
+    	</fieldset>
+    </div>
+
+    <footer class="footer mod">
+      <div class="fr btn-container">
+      	<button class="btn danger-btn" type="button" onclick="{ create }">
+            Créer
+            <i if="{ isWaiting }" class="fa fa-spinner fa-pulse fa-lg"></i>
+        </button>
+        <button class="btn primary-btn" type="button" onclick="{ close }">
+            Annuler
+        </button>
+      </div>
+      <div class="clear"></div>
+    </footer>
+  </div>
+
+  <script>
+    var self = this
+    self.showModal = false
+    self.heading = null
+    self.eatable = {
+        "name" : "",
+        "type" : "ingredient",
+        "description" : ""
+    }
+    
+    self.nutrient = {
+            "carbohydrate" : 0,
+            "sugar" : 0,
+            "protein" : 0,
+            "lipid" : 0,
+            "fiber" : 0,
+            "alcohol" : 0
+    }
+    
+    self.buttons = null
+
+    self.opts.bus.on('openCreateEatableModal', function(params) {
+        self.showModal = true
+        self.heading = params.title
+        self.content = params.content
+        self.buttons = params.buttons
+        self.update()
+    }) 
+
+    
+    self.opts.bus.on('closeCreateEatableModal', function() {
+        console.log("closeModal event received")
+        self.close()
+    })
+
+    close() {
+        console.log("close Create Eatable Modal called")
+        self.showModal = false
+        self.update()
+    }
+    
+    create() {
+		var isok = true;
+    	self.eatable.name = self.eatablename.value;
+
+    	if (self.eatablename.value === "") {
+    		self.eatablename.className +=" errorformat";
+    		self.eatablename.title ="Vous devez spécifier un nom d'ingrédient";
+    		isok = false;    		
+    	}
+    	
+    	self.eatable.description = self.eatabledescription.value;
+		
+    	valueaux = self.getNutrientInput(self.nutrientcarbohydrate)
+    	
+    	if (valueaux == -1) {
+    		isok = false;
+    	} else {
+    		self.nutrient.carbohydrate = valueaux;
+    	}
+    	 
+    	valueaux = self.getNutrientInput(self.nutrientprotein)
+    	
+    	if (valueaux == -1) {
+    		isok = false;
+    	} else {
+    		self.nutrient.protein = valueaux;
+    	}
+    	
+    	valueaux = self.getNutrientInput(self.nutrientsugar)
+    	
+    	if (valueaux == -1) {
+    		isok = false;
+    	} else {
+    		self.nutrient.sugar = valueaux;
+    	}
+    	
+    	valueaux = self.getNutrientInput(self.nutrientlipid)
+    	
+    	if (valueaux == -1) {
+    		isok = false;
+    	} else {
+    		self.nutrient.lipid = valueaux;
+    	}
+    	
+    	valueaux = self.getNutrientInput(self.nutrientfiber)
+    	
+    	if (valueaux == -1) {
+    		isok = false;
+    	} else {
+    		self.nutrient.fiber = valueaux;
+    	}
+    	
+    	valueaux = self.getNutrientInput(self.nutrientalcohol)
+    	
+    	if (valueaux == -1) {
+    		isok = false;
+    	} else {
+    		self.nutrient.alcohol = valueaux;
+    	}
+    	
+    	if (isok) {
+	        superagent.post('/eatables')
+	        .set('Content-Type', 'application/json; charset=UTF-8')
+	        .send(self.eatable)
+	        .end(self.createCallback)
+	        
+	    	console.log("create Eatable Modal called ")
+    	}
+    }
+    
+    createCallback(err, response) {
+    	    if(response.ok) {
+    	      self.eatable = response.body
+	  	      self.opts.bus.trigger('setJustCreatedEatable', self.eatable)
+    	      superagent.put('/eatables/' + self.eatable._key + '/nutrient')
+    	        .set('Content-Type', 'application/json; charset=UTF-8')
+    	        .send(self.nutrient)
+    	        .end(self.createNutrientCallback)
+    	    } else {
+    	      self.opts.bus.trigger('displayError', "Error : " + response.code + " : " + response.body.error)
+    	      self.update()
+    	    }
+    }
+    
+    createNutrientCallback(err, response) {
+	    if(response.ok) {
+  	      self.opts.bus.trigger('displaySuccess', "L'ingrédient " + self.eatable.name + " a été créé avec succès (" + self.eatable._id +")")
+  	      self.close()
+ 	    } else {
+  	      self.opts.bus.trigger('displayError', "Error : " + response.code + " : " + response.body.error)
+	      self.update()
+	    }
+ 	}
+    
+    getNutrientInput(inputvalue) {
+    	if (!isNaN(inputvalue.value)) {
+    		var valueint = parseInt(inputvalue.value);
+    		
+    		if (valueint > 100) {
+    			inputvalue.className +=" errorformat";
+    			inputvalue.title ="Doit être un chiffre de 1 à 100";
+        		return -1    			
+    		} else {
+    			return valueint
+    		}
+    	} 
+    	
+   		self.nutrientcarbohydrate.className +=" errorformat";
+   		self.nutrientcarbohydrate.title ="Doit être un chiffre de 1 à 100";
+   		return -1
+    }
+  </script>
+  <style scoped>
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+    }
+
+    .overlay.dismissable {
+      cursor: pointer;
+    }
+
+    .modal {
+      position: absolute;
+      width: 95%;
+      max-width: 50.0rem;
+      font-size: 1.0rem;
+      top: 50%;
+      left: 50%;
+      transform: translate3d(-50%, -50%, 0);
+      background-color: white;
+      color: #252519;
+      z-index: 200;
+      border-radius: 0.5rem;
+    }
+
+    .header {
+      position: relative;
+      text-align: center;
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .heading {
+      padding: 1.0rem 2.0rem 1.0rem 2.0rem;
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .close {
+      position: absolute;
+      top: 0.5rem;
+      right: 1.0rem;
+      padding: 0;
+      font-size: 1.2rem;
+      border: 0;
+      background-color: transparent;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .body {
+      padding: 2.0rem;
+      font-size: 1.5rem;
+    }
+
+    .footer {
+      padding: 0 2.0rem 2.0rem 2.0rem;
+    }
+
+    .btn-container {
+      margin-left: 2rem;
+    }
+
+	.errorformat {
+		border: 1px solid #FF0000;
+	}
+	
+	label {
+	  display: inline-block;
+	  width: 140px;
+	  text-align: right;
+	}
+	
+	legend {
+    text-align: center
+}
+
+fieldset {
+    border: 1px solid #c0c0c0;
+    padding: 0.35em 0.625em 0.75em;
+    text-align: center;
+}​
+  </style>
+</createeatable-modal>

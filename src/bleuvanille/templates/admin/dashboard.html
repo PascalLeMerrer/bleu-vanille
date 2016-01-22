@@ -7,11 +7,13 @@
     </header>
     <div class="flex-container">
         <modal></modal>
+        <createeatable-modal></createeatable-modal>
         <admin-menu></admin-menu>
         <div id="main" role="main" class="flex-item-fluid pam">
             <alert></alert>
             <contact-list></contact-list>
             <user-list></user-list>
+            <eatable-search></eatable-search>
         </div>
     </div>
     <footer id="footer" role="contentinfo" class="line pam txtcenter">
@@ -21,12 +23,14 @@
     <script type="text/javascript" src="/js/riot.min.js"></script>
     <script type="text/javascript" src="/tags/alert.js"></script>
     <script type="text/javascript" src="/tags/editable-text.js"></script>
+    <script type="text/javascript" src="/tags/createeatable-modal.js"></script>
     <script type="text/javascript" src="/tags/logout.js"></script>
     <script type="text/javascript" src="/tags/admin-menu.js"></script>
     <script type="text/javascript" src="/tags/contact-list.js"></script>
     <script type="text/javascript" src="/tags/pagination.js"></script>
     <script type="text/javascript" src="/tags/user-list.js"></script>
     <script type="text/javascript" src="/tags/modal.js"></script>
+    <script type="text/javascript" src="/tags/eatable-search.js"></script>
     <script type="text/javascript">
       var bus = {};
       riot.observable(bus);
@@ -37,6 +41,7 @@
       riot.mount('logout', { bus: bus})
       riot.mount('modal', { bus: bus})
       riot.mount('alert', { bus: bus})
+      riot.mount('createeatable-modal', { bus: bus})
 
     </script>
 {{template "footer"}}
