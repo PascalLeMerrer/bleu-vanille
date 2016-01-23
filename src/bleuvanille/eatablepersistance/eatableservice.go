@@ -53,6 +53,14 @@ func Save(eatable *Eatable) (*Eatable, error) {
 
 // SaveParent adds a relationship between two eatables
 func SaveParent(key, parentkey string) error {
+	//Remove existing parent
+	query := arangolite.NewQuery(`FOR e IN EDGES(%s, @id, 'any', [ { 'is': 'child' } ]) REMOVE e IN %s`, RelationshipCollectionName, RelationshipCollectionName)
+	query.Bind("id", CollectionName+"/"+key)
+	_, errRemove := config.DB().Run(query)
+	if errRemove != nil {
+		return errRemove
+	}
+	
 	createEdgeQuery := arangolite.NewQuery(` INSERT {'_from': @id,'_to': @parentId, 'is': 'child'} IN %s `, RelationshipCollectionName)
 	createEdgeQuery.Bind("id", CollectionName+"/"+key)
 	createEdgeQuery.Bind("parentId", CollectionName+"/"+parentkey)

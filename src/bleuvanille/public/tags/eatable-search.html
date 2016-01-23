@@ -9,7 +9,9 @@
 		<a href="#null" onclick="{ searchIntern }">Trouver</i></a>
 	</div>
 	<div></div>
-	<div></div>
+	<div>
+		<a href="#null" onclick="{ indexAll }">Réindexer Tous</i></a>
+	</div>
 	<div>
 		<a href="#null" onclick="{ openModal }">Ajouter un élément</i></a>
 	</div>
@@ -48,7 +50,7 @@
 					property="foundEatable.parent.name" id="{ foundEatable._id }"
 					text="{ foundEatable.parent.name }" type="text"></editable-text>
 					</td>
-			<td class="action-column"></td>
+			<td class="action-column"><a href="" onclick="{ parent.deleteEatable }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
 		</tr>
 	</tbody>
 </table>
@@ -180,8 +182,11 @@
 	// Saves the new value of a given user property
 	saveParent(id, property, value, callback)
 	{
+		 var e = new Error('dummy');
+		  console.log(e.stack);
+		  
 		//Search for the parent from the value
-		superagent.get('/search/' + value).set('Content-Type',
+		superagent.get('/search/' + value + "?parent").set('Content-Type',
 					'application/json; charset=UTF-8').set('Accept',
 					'application/json').end(
 							function (err, response) {
@@ -189,22 +194,67 @@
 									foundParentEatables = response.body
 									
 									if (foundParentEatables != null && foundParentEatables.length > 0) {
-										superagent.put('/' + id + '/parent/' + foundParentEatables[1]._key).set('Content-Type',
+										superagent.put('/' + id + '/parent/' + foundParentEatables[0]._key).set('Content-Type',
 										'application/json; charset=UTF-8').set('Accept',
-										'application/json').end(callback);
+										'application/json').end(self.saveParentCallback);
+										self.opts.bus.trigger('displaySuccess', "Le Parent " + foundParentEatables[0].name + " va être sauvegardé.")
 									} else {
 										self.opts.bus.trigger('displayError', "Impossible de trouver le parent "
 												+ value)								
 									}
-									self.update()
 								} else {
 									self.opts.bus.trigger('displayError', "Impossible de trouver le parent "
 											+ value)
 								}				
+								self.update()
 							}
 					);
 	}
 	
+	//saveParentCallback says if the setting of the parent is ok
+	saveParentCallback(err, response) {
+        if (response.ok) {
+			self.opts.bus.trigger('displaySuccess', "Le Parent a été sauvegardé.")
+		} else {
+			self.opts.bus.trigger('displayError', "Le Parent n'a pas été sauvegardé : " + response.code)
+		}
+        self.update()
+    }
+	
+	indexAll() {
+	      var params = {
+	    	        "title": "Réindexer tous les ingrédients recettes",
+	    	        "content": "Êtes-vous certain de vouloir réindexer tous les ingrédients recettes ?",
+	    	        "buttons": [ { "action": function(e){
+	    	                            e.item.isWaiting = true
+	    	                            e.item.label = 'Réindexation'
+	    	                            superagent.get('/search/indexall')
+	    	                                      .set('Content-Type', 'application/json; charset=UTF-8')
+	    	                                      .end(self.indexAllCallBack)
+	    	                        },
+	    	                        "label": "Réindexer",
+	    	                        "isWaiting": false,
+	    	                        "isDangerous": true
+	    	                    },
+	    	                    { "action": function(){ this.close() },
+	    	                       "label": "Annuler",
+	    	                       "isPrimary": true
+	    	                    }]
+	    	      }
+	    	      self.opts.bus.trigger('openModal', params)
+	}
+	
+	indexAllCallBack(err, response) {
+	      self.opts.bus.trigger('closeModal')
+	      if (response.ok) {
+	        self.opts.bus.trigger('displaySuccess',
+	                "La réindexation a traité " + response.body + " ingrédients/recettes")
+	        self.update()
+	      } else {
+	        self.opts.bus.trigger('displayError',
+	            "La réindexation a échoué : " + err)
+	      }		
+	}
 	
 	openModal()
 	{
@@ -214,6 +264,54 @@
 
 		self.opts.bus.trigger('openCreateEatableModal', params)
 	}
+	
+    // delete the selected eatable
+    deleteEatable(event) {
+    	
+      self.selectedEatable = event.item.foundEatable;
+
+      console.log(self.selectedEatable)
+      
+      var params = {
+        "title": "Supprimer un ingrédient / recette",
+        "content": "Êtes-vous certain de vouloir détruire l'ingrédient recette " + self.selectedEatable.name + " ? Cette opération est irréversible.",
+        "buttons": [ { "action": function(e){
+                            e.item.isWaiting = true
+                            e.item.label = 'Suppression...'
+                            superagent.del('/admin/eatables/' + self.selectedEatable._key)
+                                      .set('Content-Type', 'application/json; charset=UTF-8')
+                                      .end(self.deleteCallback)
+                        },
+                        "label": "Supprimer",
+                        "isWaiting": false,
+                        "isDangerous": true
+                    },
+                    { "action": function(){ this.close() },
+                       "label": "Annuler",
+                       "isPrimary": true
+                    }]
+      }
+      self.opts.bus.trigger('openModal', params)
+    }
+    
+    // processes user removal response
+    deleteCallback(err, response) {
+      self.opts.bus.trigger('closeModal')
+      if (response.ok) {
+        self.selectedEatable.deleted = true
+        self.opts.bus.trigger('displaySuccess',
+                "La suppression de " + self.selectedEatable.name + " a réussie.")
+        self.update()
+        setTimeout(function() {
+          self.foundEatables.splice(self.foundEatables.indexOf(self.selectedEatable), 1)
+          self.update()
+        }, 1000)
+      } else {
+        self.opts.bus.trigger('displayError',
+            "La suppression de l'ingrédient/recette " + self.selectedEatable.name + " a échoué.")
+      }
+    }
+
 </script>
 
 <style>

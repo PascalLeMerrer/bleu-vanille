@@ -50,25 +50,25 @@
   <script>
     var self = this
     self.showModal = false
-    self.heading = null
-    self.eatable = {
-        "name" : "",
-        "type" : "ingredient",
-        "description" : ""
-    }
-    
-    self.nutrient = {
-            "carbohydrate" : 0,
-            "sugar" : 0,
-            "protein" : 0,
-            "lipid" : 0,
-            "fiber" : 0,
-            "alcohol" : 0
-    }
-    
+    self.heading = null    
     self.buttons = null
 
     self.opts.bus.on('openCreateEatableModal', function(params) {
+        self.eatable = {
+                "name" : "",
+                "type" : "ingredient",
+                "description" : ""
+        }
+            
+        self.nutrient = {
+                    "carbohydrate" : 0,
+                    "sugar" : 0,
+                    "protein" : 0,
+                    "lipid" : 0,
+                    "fiber" : 0,
+                    "alcohol" : 0
+        }
+
         self.showModal = true
         self.heading = params.title
         self.content = params.content

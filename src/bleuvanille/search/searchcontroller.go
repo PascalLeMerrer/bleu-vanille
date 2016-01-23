@@ -185,6 +185,17 @@ func IndexFromKey(context *echo.Context) error {
 	return context.JSON(http.StatusOK, eatableVar)
 }
 
+//IndexAll rebuild the index from the eatable content
+func IndexAll(context *echo.Context) error {
+	count, err := indexAll();	
+
+	if err != nil {
+		log.Error(context, err.Error())
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, count)
+}
 
 //convertEatableKeyArrayInEatable convert a list of ids to a list of real eatable struct.
 func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatablepersistance.Eatable {

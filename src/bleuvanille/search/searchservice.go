@@ -35,6 +35,15 @@ func Index(eatable *eatablepersistance.Eatable) error {
 		return errors.New("nil Index after getting for indexation")
 	}
 
+	//Load the parent 
+	parent, errParent := eatablepersistance.GetParent(eatable)
+	
+	if errParent != nil {
+		log.Error(nil, "Error while fetching the parent for " + eatable.Id + " : "+ errParent.Error())
+	} else {
+		eatable.Parent = parent
+	}
+	
 	errIndex := indexLocal.Index(eatable.Id, eatable)
 
 	if errIndex != nil {
@@ -42,6 +51,42 @@ func Index(eatable *eatablepersistance.Eatable) error {
 	}
 
 	return nil
+}
+
+//indexAll reset the index and indexes every Eatable from the database
+func indexAll() (int,error) {
+	indexLocal, err := getIndex()
+
+	if err != nil {
+		return 0,err
+	}
+
+	if indexLocal == nil {
+		return 0,errors.New("nil Index after getting for indexation")
+	}
+
+	//Reset the index
+	eatablesids, _,_ := SearchForAllEatable(0,0)
+	
+	for _, id := range eatablesids {
+		errDel := indexLocal.Delete(id)
+		
+		if errDel != nil {
+			log.Debug(nil, "Error while delete from index  " + id + " : " + errDel.Error())
+		}	
+	}
+
+	eatables, _ := eatablepersistance.FindAll("","")
+	
+	for _, eatable := range eatables {
+		errIndex := Index(&eatable)
+		
+		if errIndex != nil {
+			log.Debug(nil, "Error while index " + eatable.Id + " : " + errIndex.Error())
+		}	
+	}
+
+	return len(eatables), nil
 }
 
 //Delete removes an eatable from the index. Use for test
@@ -98,7 +143,7 @@ func SearchFromQueryString(querystring string,offset int, limit int) ([]string,i
 
 //SearchForEatable searches for an eatable in the current index given its name
 func SearchForEatable(name string,offset int, limit int) ([]string,int, error) {
-	qString := `` + name + `~2^2` + " parent.name:" + name + "~2"
+	qString := name + "^4 " +  name + "~2^2" + " parent.name:" + name + "~2"
 	q := bleve.NewQueryStringQuery(qString)
 
 	return search(q, offset, limit)
@@ -188,7 +233,7 @@ func createIndex() (bleve.Index, error) {
 	parent.AddFieldMappingsAt("name", parentNameFieldMapping)
 	eatableMapping.AddSubDocumentMapping("parent", parent)
 
-	mapping.DefaultField = "eatable.name"
+	mapping.DefaultField = "name"
 	mapping.AddDocumentMapping("Eatable", eatableMapping)
 	mapping.DefaultMapping = eatableMapping
 	indexRealForCreation, errForCreation := bleve.New(INDEX_NAME, mapping)

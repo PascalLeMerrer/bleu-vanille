@@ -138,7 +138,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	searchRoutes.Get("/query/:query", search.SearchQueryString)
 	searchRoutes.Get("/completion/:name", search.SearchCompletion)
 	searchRoutes.Get("/index/:key", search.IndexFromKey)
-
+	searchRoutes.Get("/indexall", search.IndexAll)
 }
 
 // special Routes require a valid user auth token but no sessionID

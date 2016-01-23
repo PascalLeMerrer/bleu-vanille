@@ -103,7 +103,7 @@ func Delete(context *echo.Context) error {
 	err := eatablepersistance.Remove(key)
 	if err == nil {
 		//Search Delete
-		err = search.DeleteFromId("eatable/" + key)
+		err = search.DeleteFromId("eatables/" + key)
 		
 		if err != nil {
 			log.Error(nil, "Error while desindexing the eatable "+ key +" : "+err.Error())
@@ -284,6 +284,20 @@ func SetParent(context *echo.Context) error {
 		log.Error(context, "Impossible to set parent: "+err.Error())
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Impossible to set parent with key " + parentKey + " on eatble with key " + key + " - " + err.Error()})
 	}
+
+	//Search Indexation
+	eatable, err := eatablepersistance.FindByKey(key)
+
+	if err != nil {
+		log.Error(context, err.Error())
+		return context.JSON(http.StatusInternalServerError, errorMessage{"Invalid key: " + key})
+	}
+
+	if eatable == nil {
+		return context.JSON(http.StatusNotFound, errorMessage{"No eatable found for key: " + key})
+	}
+
+	err = search.Index(eatable)
 
 	return context.JSON(http.StatusOK, "ok")
 }
