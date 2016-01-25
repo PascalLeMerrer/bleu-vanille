@@ -9,6 +9,7 @@
 - name: Get Git executable path
   command: which git
   register: result
+  tags: ['package']
 
 - name: Get stuff from git
   local_action: >
@@ -16,6 +17,7 @@
     dest="{{ tmp_directory }}" 
     update=yes
     version={{ reference }}
+    force=yes
     executable="{{ result.stdout }}"
   tags: ['package']
 
@@ -43,7 +45,7 @@
   set_fact: sha1={{ result.stdout }}
   tags: ['package','deploy', 'debug']
 
-- name: Build the Go application with the sha1 as version number
+- name: Build the Go application for target OS with the sha1 as version number
   environment: { 'GO15VENDOREXPERIMENT':1, 'GOPATH':'{{ tmp_directory }}', 'GOARCH':'386', 'GOOS':'linux' }
   command: >
     chdir="{{ tmp_directory }}"
