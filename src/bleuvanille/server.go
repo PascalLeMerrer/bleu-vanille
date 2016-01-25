@@ -134,11 +134,11 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	searchRoutes.Use(auth.JWTAuth())
 	searchRoutes.Use(session.Middleware())
 	searchRoutes.Get("/fetch/all", search.SearchAllEatable)
-	searchRoutes.Get("/:name", search.Search)
 	searchRoutes.Get("/query/:query", search.SearchQueryString)
 	searchRoutes.Get("/completion/:name", search.SearchCompletion)
 	searchRoutes.Get("/index/:key", search.IndexFromKey)
 	searchRoutes.Get("/indexall", search.IndexAll)
+	searchRoutes.Get("/main/:name", search.Search)
 }
 
 // special Routes require a valid user auth token but no sessionID

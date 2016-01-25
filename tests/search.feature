@@ -19,7 +19,7 @@ Scenario: Creating and searching for an eatable with authenticated user
     And response body path $._key should be \d+
     And I store the value of body path $._key as eatableKey in global scope
     Given I set Cookie header to global variable cookie 
-    When I GET /search/Carotte
+    When I GET /search/main/Carotte
     Then response code should be 200
     And response body should be valid json
     And   the JSON should be
@@ -229,7 +229,7 @@ Scenario: Searching from the eatable name or parent name
     Then  response code should be 200 
     And   response body should be valid json
     Given I set Cookie header to global variable cookie 
-    When I GET /search/Viande
+    When I GET /search/main/Viande
     Then response code should be 200
     And response body should be valid json
 	And response header X-TOTAL-COUNT should be 3

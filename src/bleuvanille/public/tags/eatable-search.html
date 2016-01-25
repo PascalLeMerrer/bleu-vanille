@@ -147,7 +147,7 @@
 					'Content-Type', 'application/json; charset=UTF-8').set(
 					'Accept', 'application/json').end(self.searchCallback)
 		} else {
-			superagent.get('/search/' + criteriaValue).set('Content-Type',
+			superagent.get('/search/main/' + criteriaValue).set('Content-Type',
 					'application/json; charset=UTF-8').set('Accept',
 					'application/json').end(self.searchCallback)
 		}
