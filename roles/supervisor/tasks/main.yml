@@ -4,20 +4,18 @@
   apt: >
     name=supervisor
     state=latest
-  tags: ['supervisor']
 
 - name: Create logs directory
   file: >
     state=directory
     path="{{ logs_dir }}"
-  tags: ['supervisor']
 
 - name: Copy the supervisord config
   copy: >
     src=supervisord.conf
     dest="{{ supervisor_config_dir }}"
-  tags: ['supervisor', 'deploy']
+  tags: ['deploy']
 
 - name: Reload supervisor configuration
   command: supervisorctl reload
-  tags: ['supervisor', 'deploy']
+  tags: ['deploy']

@@ -1,7 +1,14 @@
+
 if [ "$#" -ne 0 ]; then
 	echo "deploying Bleu Vanille branch/tag/commit $1" 
-	ansible-playbook -i hosts -e reference=$1 playbook.yml
+	ref=$1
 else
 	echo "deploying Bleu Vanille branch master" 
-	ansible-playbook -i hosts playbook.yml
+	ref="master"
 fi
+ansible-playbook -i hosts -e reference=$ref --tags "checkout" playbook.yml
+
+cd "./deploy/"
+./node_modules/.bin/cucumber.js
+
+ansible-playbook -i hosts --tags "package,supervisor,deploy" playbook.yml
