@@ -10,7 +10,7 @@ Feature:
 
     Scenario: Registering a contact
       Given I set body to email=testemail@mail.org
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
   		When I POST to /contacts
   		Then response code should be 201
       And response body should be valid json
@@ -19,13 +19,13 @@ Feature:
 
     Scenario: Registering the same contact twice should returns a Conflict HTTP Error
       Given I set body to email=testemail@mail.org
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
   		When I POST to /contacts
   		Then response code should be 409
 
     Scenario: Authenticate as an admin
       When I set body to email=admin@bleuvanille.com;password=xeCuf8CHapreNe=
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 200
       And response body should be valid json
@@ -35,7 +35,7 @@ Feature:
 
     Scenario: As an admin, Verify contact is registered
       When I set bearer token
-      And I set Content-Type header to application/json; charset=UTF-8
+      And I set Content-Type header to application/json;charset=UTF-8
       And I set Accept header to application/json
       And I GET /admin/contacts
       Then response code should be 200
@@ -43,7 +43,7 @@ Feature:
 
     Scenario: As an admin, Get all contacts
       When I set bearer token
-      And I set Content-Type header to application/json; charset=UTF-8
+      And I set Content-Type header to application/json;charset=UTF-8
       And I set Accept header to application/json
       And I GET /admin/contacts
       Then response code should be 200
