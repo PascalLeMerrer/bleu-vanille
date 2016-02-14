@@ -29,16 +29,15 @@
     chdir="{{ tmp_directory }}/src/bleuvanille"
     glide install --update-vendored
 
+- name: Fix link to step definitions
+  file: >
+    src='{{ tmp_directory }}/../node_modules/bitter-apple/bitter-apple-gherkin.js'
+    path='{{ tmp_directory }}/features/step_definitions/bitter-apple-gherkin.js'
+    state=link
 
 - name: Build the Go application for tests
   environment: { 'GO15VENDOREXPERIMENT':1, 'GOPATH':'{{ tmp_directory }}' }
   command: >
     chdir="{{ tmp_directory }}"
     go build src/bleuvanille/server.go
-
-- name: Create a symbolic link towards node packages directory
-  file: >
-    path='{{ node_modules_directory }}'
-    src='{{ tmp_directory }}'
-    state=link
 

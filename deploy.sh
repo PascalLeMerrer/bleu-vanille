@@ -1,3 +1,5 @@
+#!/bin/bash
+$SECONDS=0
 
 if [ "$#" -ne 0 ]; then
 	echo "deploying Bleu Vanille branch/tag/commit $1" 
@@ -9,6 +11,23 @@ fi
 ansible-playbook -i hosts -e reference=$ref --tags "checkout" playbook.yml
 
 cd "./deploy/"
-./node_modules/.bin/cucumber.js
 
+./server &
+processId=$!
+
+../node_modules/.bin/cucumber.js
+
+if [ "$?" -ne 0 ]; then
+	echo "FATAL. Test execution failed. Deployment canceled."
+	kill -9 $processId
+	exit $?
+fi
+
+kill -9 $processId
+
+
+
+cd ..
 ansible-playbook -i hosts --tags "package,supervisor,deploy" playbook.yml
+
+echo "Release deployed in $SECONDS seconds"
