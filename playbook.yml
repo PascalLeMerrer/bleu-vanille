@@ -5,8 +5,8 @@
      tmp_directory: "{{ playbook_dir }}/deploy"
 
   roles:
-    - role: package
- 
+    - { role: checkout, tags: ['checkout'] }
+    - { role: package, tags: ['package'] }
 
 - hosts: production
   
@@ -16,5 +16,5 @@
      tmp_directory: "{{ playbook_dir }}/deploy"
   
   roles:
-    - role: supervisor
-    - role: deploy
+    - { role: supervisor, tags: ['supervisor'] }
+    - { role: deploy, tags: ['deploy'] }

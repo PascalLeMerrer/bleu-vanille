@@ -1,76 +1,39 @@
 ##########  App packaging ##########
 
-# - name: Delete the previous build
-#   file: >
-#     path="{{ tmp_directory }}" 
-#     state=absent
-#   tags: ['package']
-
-- name: Get Git executable path
-  command: which git
-  register: result
-
-- name: Get stuff from git
-  local_action: >
-    git repo=git@bitbucket.org:plemerrer/bleuvanille.git 
-    dest="{{ tmp_directory }}" 
-    update=yes
-    version={{ reference }}
-    executable="{{ result.stdout }}"
-  tags: ['package']
-
-- name: Prepare the static assets (JS, CSS, images, fonts...)
-  command: >
-    chdir="{{ tmp_directory }}"
-    gulp dist
-  tags: ['package']
-
-- name: Download dependancies
-  environment: { 'GO15VENDOREXPERIMENT':'1', 'GOPATH':'{{ tmp_directory }}' }
-  command: >
-    chdir="{{ tmp_directory }}/src/bleuvanille"
-    glide install --update-vendored
-  tags: ['package']
-
 - name: Get the sha1 of the current git commit
   command: >
     chdir="{{ tmp_directory }}"
     git rev-parse HEAD
   register: result
-  tags: ['package','deploy', 'debug']
+  tags: ['deploy']
 
 - name: Set the sha1 variable
   set_fact: sha1={{ result.stdout }}
-  tags: ['package','deploy', 'debug']
+  tags: ['deploy']
 
-- name: Build the Go application with the sha1 as version number
+- name: Build the Go application for target OS with the sha1 as version number
   environment: { 'GO15VENDOREXPERIMENT':1, 'GOPATH':'{{ tmp_directory }}', 'GOARCH':'386', 'GOOS':'linux' }
   command: >
     chdir="{{ tmp_directory }}"
     go build -ldflags "-X main.Sha1={{ sha1 }}" src/bleuvanille/server.go
-  tags: ['package']
 
 - name: Rename the executable
   command: mv {{ tmp_directory }}/server {{ tmp_directory }}/bleuvanille  
-  tags: ['package']
 
 - name: Copy the executable to dist
   copy: >
     src="{{ tmp_directory }}/bleuvanille"
     dest="{{ tmp_directory }}/dist"
-  tags: ['package']
 
 - name: Copy the HTML templates to dist
   copy: >
     src="{{ playbook_dir }}/src/bleuvanille/templates"
     dest="{{ tmp_directory }}/dist/src/bleuvanille"
-  tags: ['package']
 
 - name: Create archive
   command: >
     chdir="{{ tmp_directory }}/dist"
     tar -zcf {{ tmp_directory }}/bleuvanille-{{ sha1 }}.tar.gz .
-  tags: ['package']
 
-- debug: msg="Built package for commit {{ sha1 }} in deploy directory"
-  tags: ['package']
+- name: Packaging is finished.
+  debug: msg="Built package for commit {{ sha1 }} in deploy directory"

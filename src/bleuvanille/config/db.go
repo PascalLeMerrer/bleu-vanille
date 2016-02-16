@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/solher/arangolite"
 )
 
@@ -14,7 +15,7 @@ func DB() *arangolite.DB {
 	}
 
 	dbSession = arangolite.New().
-		LoggerOptions(true, true, true).
+		LoggerOptions(Debug, Debug, Debug).
 		Connect(DatabaseProtocol+"://"+DatabaseHost+":"+fmt.Sprint(DatabasePort),
 		"_system",
 		"root",

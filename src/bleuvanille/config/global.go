@@ -68,6 +68,9 @@ var (
 
 	// ProductionMode indicates if the instance is running in production.
 	ProductionMode = getBooleanEnvWithDefault("ProductionMode", false)
+
+	// Debug mode displays useful information during dev
+	Debug = getBooleanEnvWithDefault("Debug", false)
 )
 
 func getNumericEnv(name string) int {
