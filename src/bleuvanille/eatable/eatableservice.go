@@ -1,4 +1,4 @@
-package eatablepersistance
+package eatable
 
 // Ensures persistance of eatables in ArangoDB database
 

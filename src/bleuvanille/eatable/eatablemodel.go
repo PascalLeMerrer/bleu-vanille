@@ -1,4 +1,4 @@
-package eatablepersistance
+package eatable
 
 import (
 	"bleuvanille/date"

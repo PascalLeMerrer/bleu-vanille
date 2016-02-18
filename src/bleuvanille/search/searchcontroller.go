@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 	
-	"bleuvanille/eatablepersistance"
+	"bleuvanille/eatable"
 	"bleuvanille/log"
 
 	"net/http"
@@ -12,6 +12,8 @@ import (
 
 	"github.com/labstack/echo"
 )
+
+var globalSearchService SearchService
 
 // Search searches eatable based on their name
 func Search(context *echo.Context) error {
@@ -26,7 +28,7 @@ func Search(context *echo.Context) error {
 		limitParam = 0
 	}
 	
-	eatables,totalCount, err := SearchForEatable(name, offsetParam, limitParam)
+	eatables,totalCount, err := globalSearchService.SearchForEatable(name, offsetParam, limitParam)
 
 	log.Error(context, "Error while searching for "+name)
 
@@ -55,7 +57,7 @@ func SearchCompletion(context *echo.Context) error {
 		limitParam = 0
 	}
 	
-	eatables,totalCount, err := SearchPrefix(name, offsetParam, limitParam)
+	eatables,totalCount, err := globalSearchService.SearchPrefix(name, offsetParam, limitParam)
 
 	log.Error(context, "Error while searching for "+name)
 
@@ -85,7 +87,7 @@ func SearchQueryString(context *echo.Context) error {
 		limitParam = 0
 	}
 
-	eatables, totalCount, err := SearchFromQueryString(query, offsetParam, limitParam)
+	eatables, totalCount, err := globalSearchService.SearchFromQueryString(query, offsetParam, limitParam)
 
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
@@ -110,7 +112,7 @@ func SearchAllEatable(context *echo.Context) error {
 		offsetParam = 0
 	}
 
-	eatables, totalCount, err := SearchForAllEatable(offsetParam, limitParam)
+	eatables, totalCount, err := globalSearchService.SearchForAllEatable(offsetParam, limitParam)
 
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
@@ -127,7 +129,7 @@ func SearchAllEatable(context *echo.Context) error {
 func UnIndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
-	eatableVar, err := eatablepersistance.FindByKey(key)
+	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
 		log.Error(context, "Error while reading eatable from  " + key + " : "+err.Error())
@@ -140,7 +142,7 @@ func UnIndexFromKey(context *echo.Context) error {
 		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: "+key))
 	}
 
-	errIndex := Delete(eatableVar)
+	errIndex := globalSearchService.Delete(eatableVar)
 
 	if errIndex != nil {
 		log.Error(context, errIndex.Error())
@@ -154,7 +156,7 @@ func UnIndexFromKey(context *echo.Context) error {
 func IndexFromKey(context *echo.Context) error {
 	key := context.Param("key")
 
-	eatableVar, err := eatablepersistance.FindByKey(key)
+	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
 		log.Error(context, "Error while indexing for "+key+" : "+err.Error())
@@ -166,7 +168,7 @@ func IndexFromKey(context *echo.Context) error {
 		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: "+key))
 	}
 
-	parent, errParent := eatablepersistance.GetParent(eatableVar)
+	parent, errParent := eatable.GetParent(eatableVar)
 
 	if errParent != nil {
 		log.Error(context, "Error while searching for the parent of  "+key+" : "+errParent.Error())
@@ -175,7 +177,7 @@ func IndexFromKey(context *echo.Context) error {
 
 	eatableVar.Parent = parent
 
-	errIndex := Index(eatableVar)
+	errIndex := globalSearchService.Index(eatableVar)
 
 	if errIndex != nil {
 		log.Error(context, errIndex.Error())
@@ -187,7 +189,7 @@ func IndexFromKey(context *echo.Context) error {
 
 //IndexAll rebuild the index from the eatable content
 func IndexAll(context *echo.Context) error {
-	count, err := indexAll();	
+	count, err := globalSearchService.indexAll();	
 
 	if err != nil {
 		log.Error(context, err.Error())
@@ -198,8 +200,8 @@ func IndexAll(context *echo.Context) error {
 }
 
 //convertEatableKeyArrayInEatable convert a list of ids to a list of real eatable struct.
-func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatablepersistance.Eatable {
-	result := make([]eatablepersistance.Eatable, 0, len(eatables))
+func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatable.Eatable {
+	result := make([]eatable.Eatable, 0, len(eatables))
 
 	for _, id := range eatables {
 		//extract the key from the id
@@ -210,7 +212,7 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 			continue
 		}
 
-		eatableVar, err := eatablepersistance.FindByKey(parseId[1])
+		eatableVar, err := eatable.FindByKey(parseId[1])
 
 		if err != nil || eatableVar == nil {
 			if err != nil {
@@ -222,7 +224,7 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 			continue
 		}
 
-		parent, _ := eatablepersistance.GetParent(eatableVar)
+		parent, _ := eatable.GetParent(eatableVar)
 		eatableVar.Parent = parent
 		result = append(result, *eatableVar)
 	}

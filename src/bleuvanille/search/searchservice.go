@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"bleuvanille/eatablepersistance"
+	"bleuvanille/eatable"
 	"bleuvanille/log"
  
 	"github.com/blevesearch/bleve"
@@ -19,9 +19,12 @@ const (
 
 var index bleve.Index
 
+type SearchService struct {
+}
+
 //Index an eatable in the bleve index
-func Index(eatable *eatablepersistance.Eatable) error {
-	if eatable == nil {
+func (search *SearchService) Index(eatableVal *eatable.Eatable) error {
+	if eatableVal == nil {
 		return errors.New("Cannot index a nil eatable")
 	}
 
@@ -36,15 +39,15 @@ func Index(eatable *eatablepersistance.Eatable) error {
 	}
 
 	//Load the parent 
-	parent, errParent := eatablepersistance.GetParent(eatable)
+	parent, errParent := eatable.GetParent(eatableVal)
 	
 	if errParent != nil {
-		log.Error(nil, "Error while fetching the parent for " + eatable.Id + " : "+ errParent.Error())
+		log.Error(nil, "Error while fetching the parent for " + eatableVal.Id + " : "+ errParent.Error())
 	} else {
-		eatable.Parent = parent
+		eatableVal.Parent = parent
 	}
 	
-	errIndex := indexLocal.Index(eatable.Id, eatable)
+	errIndex := indexLocal.Index(eatableVal.Id, eatableVal)
 
 	if errIndex != nil {
 		return errIndex
@@ -54,7 +57,7 @@ func Index(eatable *eatablepersistance.Eatable) error {
 }
 
 //indexAll reset the index and indexes every Eatable from the database
-func indexAll() (int,error) {
+func (search *SearchService) indexAll() (int,error) {
 	indexLocal, err := getIndex()
 
 	if err != nil {
@@ -66,7 +69,7 @@ func indexAll() (int,error) {
 	}
 
 	//Reset the index
-	eatablesids, _,_ := SearchForAllEatable(0,0)
+	eatablesids, _,_ := search.SearchForAllEatable(0,0)
 	
 	for _, id := range eatablesids {
 		errDel := indexLocal.Delete(id)
@@ -76,10 +79,10 @@ func indexAll() (int,error) {
 		}	
 	}
 
-	eatables, _ := eatablepersistance.FindAll("","")
+	eatables, _ := eatable.FindAll("","")
 	
 	for _, eatable := range eatables {
-		errIndex := Index(&eatable)
+		errIndex := search.Index(&eatable)
 		
 		if errIndex != nil {
 			log.Debug(nil, "Error while index " + eatable.Id + " : " + errIndex.Error())
@@ -90,7 +93,7 @@ func indexAll() (int,error) {
 }
 
 //Delete removes an eatable from the index. Use for test
-func Delete(eatable *eatablepersistance.Eatable) error {
+func (search *SearchService) Delete(eatable *eatable.Eatable) error {
 	if eatable == nil {
 		return errors.New("Cannot delete a nil eatable")
 	}
@@ -115,7 +118,7 @@ func Delete(eatable *eatablepersistance.Eatable) error {
 }
 
 //DeleteFromKey removes a eatable of the index from its id
-func DeleteFromId(id string) error {
+func (search *SearchService) DeleteFromId(id string) error {
 	indexLocal, err := getIndex()
 
 	if err != nil {
@@ -136,13 +139,13 @@ func DeleteFromId(id string) error {
 }
 
 //SearchFromQueryString searches in the current index given a full query string
-func SearchFromQueryString(querystring string,offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchFromQueryString(querystring string,offset int, limit int) ([]string,int, error) {
 	q := bleve.NewQueryStringQuery(querystring)
 	return search(q, offset, limit)
 }
 
 //SearchForEatable searches for an eatable in the current index given its name
-func SearchForEatable(name string,offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchForEatable(name string,offset int, limit int) ([]string,int, error) {
 	qString := name + "^4 " +  name + "~2^2" + " parent.name:" + name + "~2"
 	q := bleve.NewQueryStringQuery(qString)
 
@@ -150,12 +153,12 @@ func SearchForEatable(name string,offset int, limit int) ([]string,int, error) {
 }
 
 //SearchForAllEatable returns all eatable contains in the index
-func SearchForAllEatable(offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchForAllEatable(offset int, limit int) ([]string,int, error) {
 	q := bleve.NewMatchAllQuery()
 	return search(q, offset, limit)
 }
 
-func SearchPrefix(name string,offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchPrefix(name string,offset int, limit int) ([]string,int, error) {
 	qString := `` + name
 	q := bleve.NewPrefixQuery(qString)
 	//q.FieldVal = "FieldVal"
