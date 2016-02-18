@@ -182,11 +182,8 @@
 	// Saves the new value of a given user property
 	saveParent(id, property, value, callback)
 	{
-		 var e = new Error('dummy');
-		  console.log(e.stack);
-		  
 		//Search for the parent from the value
-		superagent.get('/search/' + value + "?parent").set('Content-Type',
+		superagent.get('/search/main/' + value + "?parent").set('Content-Type',
 					'application/json; charset=UTF-8').set('Accept',
 					'application/json').end(
 							function (err, response) {
