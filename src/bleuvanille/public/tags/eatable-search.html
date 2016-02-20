@@ -130,18 +130,17 @@
 
     searchIntern(event) {
         self.triggerTimeOutVar = null
-        var criteriaValue = self.searchcriteria.value
-        self.criteriaValue = criteriaValue
-
-        if (criteriaValue.startsWith("querystring")) {
-            superagent.get('/search/query/' + criteriaValue.substring(12)).set(
-                'Content-Type', 'application/json; charset=UTF-8').set(
-                'Accept', 'application/json').end(self.searchCallback)
+        self.criteriaValue = self.searchcriteria.value
+        var criteriaValue
+        if (self.criteriaValue.startsWith("querystring")) {
+            criteriaValue = self.criteriaValue.substring(12)
         } else {
-            superagent.get('/search/main/' + criteriaValue).set('Content-Type',
+            criteriaValue = self.criteriaValue
+        }
+
+        superagent.get('/search/main/' + criteriaValue).set('Content-Type',
                 'application/json; charset=UTF-8').set('Accept',
                 'application/json').end(self.searchCallback)
-        }
     }
 
     // processes search response
