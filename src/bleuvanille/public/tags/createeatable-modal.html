@@ -4,42 +4,40 @@
     <header class="header">
       <h3 class="heading">{ heading }</h3>
       <button type="button" class="close" aria-label="Fermer" onclick="{ close }">
-          <span aria-hidden="true"><i class="fa fa-close fa-lg"></i></span>
+      <span aria-hidden="true"><i class="fa fa-close fa-lg"></i></span>
       </button>
     </header>
-
     <div class="body container">
       <label for="eatableName">Nom</label>
-      <input type="text" id="eatableName" name="eatablename" value="{ eatable.name }"><br>
+      <input type="text" id="eatableName" value="{ eatable.name }"><br>
       <label for="eatableDescription">Description</label>
-      <input type="text" id="eatableDescription" name="eatabledescription" value="{ eatable.description }"><br>
+      <input type="text" id="eatableDescription" value="{ eatable.description }"><br>
       <fieldset>
-        <legend>Nutriment pour 100 gr</legend>
+        <legend>Nutriments pour 100 gr</legend>
         <p>
           <label for="nutrientCarbohydrate">Glucide</label>
-          <input type="text" id="nutrientCarbohydrate" name="nutrientCarbohydrate" value="{ nutrient.carbohydrate }" size="6" pattern="^d{0-3}$" > gr <br>
+          <input type="text" id="nutrientCarbohydrate" class="{ errorFormat: invalidCarbohydrate}" size="6" > gr <br>
           <label for="nutrientProtein">Protéine</label>
-          <input type="text" id="nutrientProtein" name="nutrientProtein" value="{ nutrient.protein }" size="6"> gr <br>
+          <input type="text" id="nutrientProtein" class="{ errorFormat: invalidProtein}" size="6"> gr <br>
           <label for="nutrientSugar">Sucre</label>
-          <input type="text" id="nutrientSugar" name="nutrientSugar" value="{ nutrient.sugar }" size="6"> gr <br>
+          <input type="text" id="nutrientSugar" class="{ errorFormat: invalidSugar}" size="6"> gr <br>
           <label for="nutrientLipid">Lipide</label>
-          <input type="text" id="nutrientLipid" name="nutrientLipid" value="{ nutrient.lipid }" size="6"> gr <br>
+          <input type="text" id="nutrientLipid" class="{ errorFormat: invalidLipid}" size="6"> gr <br>
           <label for="nutrientFiber">Fibre</label>
-          <input type="text" id="nutrientFiber" name="nutrientFiber" value="{ nutrient.fiber }" size="6"> gr <br>
+          <input type="text" id="nutrientFiber" class="{ errorFormat: invalidFiber}" size="6"> gr <br>
           <label for="nutrientAlcohol">Alcool</label>
-          <input type="text" id="nutrientAlcohol" name="nutrientAlcohol" value="{ nutrient.alcohol }" size="6"> gr <br>
+          <input type="text" id="nutrientAlcohol" class="{ errorFormat: invalidAlcohol}" size="6"> gr <br>
         </p>
       </fieldset>
     </div>
-
     <footer class="footer mod">
       <div class="fr btn-container">
-      	<button class="btn primary-btn" type="button" onclick="{ create }">
-            Créer
-            <i if="{ isWaiting }" class="fa fa-spinner fa-pulse fa-lg"></i>
-        </button>
         <button class="btn danger-btn" type="button" onclick="{ close }">
-            Annuler
+        Annuler
+        </button>
+        <button class="btn primary-btn" type="button" onclick="{ create }">
+        Créer
+        <i if="{ isWaiting }" class="fa fa-spinner fa-pulse fa-lg"></i>
         </button>
       </div>
       <div class="clear"></div>
@@ -51,6 +49,17 @@
     self.showModal = false
     self.heading = null    
     self.buttons = null
+
+
+    self.invalidName = false
+    self.invalidCarbohydrate = false
+    self.invalidProtein = false
+    self.invalidSugar = false
+    self.invalidLipid = false
+    self.invalidFiber = false
+    self.invalidAlcohol = false
+
+
 
     self.opts.bus.on('openCreateEatableModal', function(params) {
         self.eatable = {
@@ -86,71 +95,35 @@
     }
     
     create() {
-		var isok = true;
-    	self.eatable.name = self.eatablename.value;
+        self.invalidName = (self.eatableName.value.length === 0)
+        if (self.invalidName) {
+          self.eatableName.title = "Vous devez spécifier un nom d'ingrédient"
+        } else {
+    	    self.eatable.name = self.eatableName.value;
+        }
+      	
+      	self.eatable.description = self.eatableDescription.value;
+  		
+      	self.invalidCarbohydrate = self.copyNutrientInput(self.nutrientCarbohydrate, 'carbohydrate')    	 
+      	self.invalidProtein      = self.copyNutrientInput(self.nutrientProtein, 'protein')    	
+      	self.invalidSugar        = self.copyNutrientInput(self.nutrientSugar, 'sugar')    	
+      	self.invalidLipid        = self.copyNutrientInput(self.nutrientLipid, 'lipid')    	
+      	self.invalidFiber        = self.copyNutrientInput(self.nutrientFiber, 'fiber')    	
+      	self.invalidAlcohol      = self.copyNutrientInput(self.nutrientAlcohol, 'alcohol') 
+        self.update()
 
-    	if (self.eatablename.value === "") {
-    		self.eatablename.className +=" errorformat";
-    		self.eatablename.title ="Vous devez spécifier un nom d'ingrédient";
-    		isok = false;    		
-    	}
-    	
-    	self.eatable.description = self.eatabledescription.value;
-		
-    	valueaux = self.getNutrientInput(self.nutrientcarbohydrate)
-    	
-    	if (valueaux == -1) {
-    		isok = false;
-    	} else {
-    		self.nutrient.carbohydrate = valueaux;
-    	}
-    	 
-    	valueaux = self.getNutrientInput(self.nutrientprotein)
-    	
-    	if (valueaux == -1) {
-    		isok = false;
-    	} else {
-    		self.nutrient.protein = valueaux;
-    	}
-    	
-    	valueaux = self.getNutrientInput(self.nutrientsugar)
-    	
-    	if (valueaux == -1) {
-    		isok = false;
-    	} else {
-    		self.nutrient.sugar = valueaux;
-    	}
-    	
-    	valueaux = self.getNutrientInput(self.nutrientlipid)
-    	
-    	if (valueaux == -1) {
-    		isok = false;
-    	} else {
-    		self.nutrient.lipid = valueaux;
-    	}
-    	
-    	valueaux = self.getNutrientInput(self.nutrientfiber)
-    	
-    	if (valueaux == -1) {
-    		isok = false;
-    	} else {
-    		self.nutrient.fiber = valueaux;
-    	}
-    	
-    	valueaux = self.getNutrientInput(self.nutrientalcohol)
-    	
-    	if (valueaux == -1) {
-    		isok = false;
-    	} else {
-    		self.nutrient.alcohol = valueaux;
-    	}
-    	
-    	if (isok) {
-	        superagent.post('/eatables')
-	        .set('Content-Type', 'application/json; charset=UTF-8')
-	        .send(self.eatable)
-	        .end(self.createCallback)
-    	}
+        if ( !self.invalidName
+          && !self.invalidCarbohydrate
+          && !self.invalidProtein
+          && !self.invalidSugar
+          && !self.invalidLipid
+          && !self.invalidFiber
+          && !self.invalidAlcohol) {
+            superagent.post('/eatables')
+            .set('Content-Type', 'application/json; charset=UTF-8')
+            .send(self.eatable)
+            .end(self.createCallback)
+        }
     }
     
     createCallback(err, response) {
@@ -162,37 +135,34 @@
     	        .send(self.nutrient)
     	        .end(self.createNutrientCallback)
     	    } else {
-    	      self.opts.bus.trigger('displayError', "Error : " + response.code + " : " + response.body.error)
+    	      self.opts.bus.trigger('displayError', "Erreur : " + response.code + " : " + response.body.error)
     	      self.update()
     	    }
     }
     
     createNutrientCallback(err, response) {
 	    if(response.ok) {
-  	      self.opts.bus.trigger('displaySuccess', "L'ingrédient " + self.eatable.name + " a été créé avec succès (" + self.eatable._id +")")
+  	      self.opts.bus.trigger('displaySuccess', "L'ingrédient " + self.eatable.name + " a été créé.")
   	      self.close()
  	    } else {
-  	      self.opts.bus.trigger('displayError', "Error : " + response.code + " : " + response.body.error)
+  	      self.opts.bus.trigger('displayError', "Erreur : " + response.code + " : " + response.body.error)
 	      self.update()
 	    }
  	}
     
-    getNutrientInput(inputvalue) {
-    	if (!isNaN(inputvalue.value)) {
-    		var valueint = parseInt(inputvalue.value);
-    		
-    		if (valueint > 100) {
-    			inputvalue.className +=" errorformat";
-    			inputvalue.title ="Doit être un chiffre de 1 à 100";
-        		return -1    			
-    		} else {
-    			return valueint
-    		}
-    	} 
-    	
-   		self.nutrientcarbohydrate.className +=" errorformat";
-   		self.nutrientcarbohydrate.title ="Doit être un chiffre de 1 à 100";
-   		return -1
+    /**
+     * Checks if a nutrient input field contains a numeric value between 1 and 100
+     * If so, copies its value in the given property
+     * @return false when there is no error, true when the value is incorrect
+     */
+    copyNutrientInput(inputField, propertyName) {
+      var intValue = parseInt(inputField.value);
+      if (isNaN(intValue) || intValue < 1 || intValue > 100) {
+          inputField.title = "Doit être un chiffre de 1 à 100";
+          return true
+  		}
+  	  self.nutrient[propertyName] = intValue
+      return false
     }
   </script>
   <style scoped>
@@ -263,7 +233,7 @@
       margin-left: 2rem;
     }
 
-	.errorformat {
+	.errorFormat {
 		border: 1px solid #FF0000;
 	}
 	
