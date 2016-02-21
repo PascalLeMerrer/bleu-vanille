@@ -173,7 +173,7 @@
     // Saves the new value of a given user property
     searchParent(id, property, value, callback) {
         //Search the parent for the value
-        var searchParentCallback = curry(self.saveParent, self, id, value)
+        var searchParentCallback = self.curry(self.saveParent, self, id, value)
 
         superagent.get('/search/main/' + value + "?parent").set('Content-Type',
             'application/json; charset=UTF-8').set('Accept',
