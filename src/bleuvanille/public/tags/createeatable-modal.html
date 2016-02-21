@@ -9,28 +9,27 @@
     </header>
 
     <div class="body container">
-      	<label for="male">Nom</label>
-  		<input type="text" name="eatablename" value="{ eatable.name }"><br>
-		<label for="male">Description</label>
-  		<input type="text" name="eatabledescription" value="{ eatable.description }"><br>
-
-		<fieldset>
+      <label for="eatableName">Nom</label>
+      <input type="text" id="eatableName" name="eatablename" value="{ eatable.name }"><br>
+      <label for="eatableDescription">Description</label>
+      <input type="text" id="eatableDescription" name="eatabledescription" value="{ eatable.description }"><br>
+      <fieldset>
         <legend>Nutriment pour 100 gr</legend>
         <p>
-        		<label for="male">Glucide</label>
-  				<input type="text" pattern="^d{0-3}$" name="nutrientcarbohydrate" value="{ nutrient.carbohydrate }" size="6"> gr <br>
-				<label for="male">Protéine</label>
-  				<input type="text" name="nutrientprotein" value="{ nutrient.protein }" size="6"> gr <br>
-				<label for="male">Sucre</label>
-  				<input type="text" name="nutrientsugar" value="{ nutrient.sugar }" size="6"> gr <br>
-				<label for="male">Lipide</label>
-  				<input type="text" name="nutrientlipid" value="{ nutrient.lipid }" size="6"> gr <br>
-				<label for="male">Fibre</label>
-  				<input type="text" name="nutrientfiber" value="{ nutrient.fiber }" size="6"> gr <br>
-				<label for="male">Alcool</label>
-  				<input type="text" name="nutrientalcohol" value="{ nutrient.alcohol }" size="6"> gr <br>
+          <label for="nutrientCarbohydrate">Glucide</label>
+          <input type="text" id="nutrientCarbohydrate" name="nutrientCarbohydrate" value="{ nutrient.carbohydrate }" size="6" pattern="^d{0-3}$" > gr <br>
+          <label for="nutrientProtein">Protéine</label>
+          <input type="text" id="nutrientProtein" name="nutrientProtein" value="{ nutrient.protein }" size="6"> gr <br>
+          <label for="nutrientSugar">Sucre</label>
+          <input type="text" id="nutrientSugar" name="nutrientSugar" value="{ nutrient.sugar }" size="6"> gr <br>
+          <label for="nutrientLipid">Lipide</label>
+          <input type="text" id="nutrientLipid" name="nutrientLipid" value="{ nutrient.lipid }" size="6"> gr <br>
+          <label for="nutrientFiber">Fibre</label>
+          <input type="text" id="nutrientFiber" name="nutrientFiber" value="{ nutrient.fiber }" size="6"> gr <br>
+          <label for="nutrientAlcohol">Alcool</label>
+          <input type="text" id="nutrientAlcohol" name="nutrientAlcohol" value="{ nutrient.alcohol }" size="6"> gr <br>
         </p>
-    	</fieldset>
+      </fieldset>
     </div>
 
     <footer class="footer mod">
