@@ -39,12 +39,10 @@
     }) 
 
     self.opts.bus.on('closeModal', function() {
-        console.log("closeModal event received")
         self.close()
     })
 
     close() {
-        console.log("close called")
         self.showModal = false
         self.update()
     }
