@@ -32,6 +32,33 @@
     <script type="text/javascript" src="/tags/modal.js"></script>
     <script type="text/javascript" src="/tags/eatable-search.js"></script>
     <script type="text/javascript">
+
+      /**
+       * presets some parameter(s) value(s) for a given function
+       * @param fn the function to be curried
+       * @param scope the scope of the function to be curried
+       * @see http://stackoverflow.com/questions/5176313/javascript-curry
+       */
+      var curryMixin = {
+          curry(fn, scope) {
+              scope = scope || window;
+              var args = [];
+              for (var i = 2, len = arguments.length; i < len; ++i) {
+                  args.push(arguments[i]);
+              }
+              return function() {
+                  var args2 = [];
+                  for (var i = 0; i < arguments.length; i++) {
+                      args.push(arguments[i]);
+                  }
+                  var argstotal = args.concat(args2);
+                  return fn.apply(scope, argstotal);
+              };
+          }
+      } 
+
+      riot.mixin('curryMixin', curryMixin)
+
       var bus = {};
       riot.observable(bus);
       bus.on('disconnected', function() {
