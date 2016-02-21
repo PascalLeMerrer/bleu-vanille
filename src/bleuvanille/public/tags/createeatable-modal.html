@@ -78,12 +78,10 @@
 
     
     self.opts.bus.on('closeCreateEatableModal', function() {
-        console.log("closeModal event received")
         self.close()
     })
 
     close() {
-        console.log("close Create Eatable Modal called")
         self.showModal = false
         self.update()
     }
@@ -153,8 +151,6 @@
 	        .set('Content-Type', 'application/json; charset=UTF-8')
 	        .send(self.eatable)
 	        .end(self.createCallback)
-	        
-	    	console.log("create Eatable Modal called ")
     	}
     }
     
