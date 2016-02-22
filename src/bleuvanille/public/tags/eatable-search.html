@@ -173,7 +173,7 @@
     // Saves the new value of a given user property
     searchParent(id, property, value, callback) {
         //Search the parent for the value
-        var searchParentCallback = curry(self.saveParent, self, id, value)
+        var searchParentCallback = self.curry(self.saveParent, self, id, value)
 
         superagent.get('/search/main/' + value + "?parent").set('Content-Type',
             'application/json; charset=UTF-8').set('Accept',
@@ -185,10 +185,11 @@
             foundParentEatables = response.body
 
             if (foundParentEatables != null && foundParentEatables.length > 0) {
+                var searchParentFinalCallback = self.curry(self.saveParentFinalCallback, self, foundParentEatables[0].name)
+
                 superagent.put('/' + id + '/parent/' + foundParentEatables[0]._key).set('Content-Type',
                     'application/json; charset=UTF-8').set('Accept',
-                    'application/json').end(self.saveParentCallback);
-                self.opts.bus.trigger('displaySuccess', "Le Parent " + foundParentEatables[0].name + " va être sauvegardé.")
+                    'application/json').end(self.searchParentFinalCallback);
             } else {
                 self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
             }
@@ -199,11 +200,11 @@
     }
 
     //saveParentCallback says if the parent was successfully set.
-    saveParentCallback(err, response) {
+    saveParentFinalCallback(err, response, parentName) {
         if (response.ok) {
-            self.opts.bus.trigger('displaySuccess', "Le Parent a été sauvegardé.")
+            self.opts.bus.trigger('displaySuccess', "Le Parent " + parentName + " a été sauvegardé.")
         } else {
-            self.opts.bus.trigger('displayError', "Le Parent n'a pas été sauvegardé : " + response.code)
+            self.opts.bus.trigger('displayError', "Le Parent " + parentName + " n'a pas été sauvegardé : " + response.code)
         }
         self.update()
     }
