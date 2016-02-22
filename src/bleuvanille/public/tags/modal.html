@@ -48,6 +48,14 @@
         self.update()
     }
 
+    open(params) {
+        self.showModal = true
+        self.heading = params.title
+        self.content = params.content
+        self.buttons = params.buttons
+        self.update()
+    }
+
     close() {
         self.showModal = false
         self.update()

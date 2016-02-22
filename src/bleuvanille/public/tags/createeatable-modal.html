@@ -1,5 +1,5 @@
 <createeatable-modal>
-  <modal name="modal">
+  <modal name="modal" bus="{ bus }">
         <label for="eatableName">Nom</label>
         <input type="text" id="eatableName" value="{ eatable.name }" class="{ error-format: parent.invalidName}"><br>
         <label for="eatableDescription">Description</label>
@@ -46,7 +46,6 @@
     }
 
     self.opts.bus.on('openCreateEatableModal', function(params) {
-
         self.tags.modal.eatableName.value=""
         self.tags.modal.eatableDescription.value=""
         self.tags.modal.nutrientCarbohydrate.value=0
@@ -55,7 +54,6 @@
         self.tags.modal.nutrientLipid.value=0
         self.tags.modal.nutrientFiber.value=0
         self.tags.modal.nutrientAlcohol.value=0
-
         params.buttons = [ { action: function(e){
                                                 e.item.isWaiting = true
                                                 e.item.label = 'Création...'
