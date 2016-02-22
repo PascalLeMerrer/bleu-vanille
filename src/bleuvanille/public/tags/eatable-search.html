@@ -46,7 +46,7 @@
             <td><editable-text bus="{ self.opts.bus }" callback="{ save }"
                     property="name" id="{ foundEatable._id }"
                     text="{ foundEatable.name }" type="text"></editable-text></td>
-            <td><editable-text bus="{ self.opts.bus }" callback="{ searchParent }"
+            <td><editable-text bus="{ self.opts.bus }" callback="{ saveParent }"
                     property="foundEatable.parent.name" id="{ foundEatable._id }"
                     text="{ foundEatable.parent.name }" type="text"></editable-text>
                     </td>
@@ -76,7 +76,6 @@
 
     //Mounted events
     self.on('mount', function() {
-        self.load()
     });
 
     this.opts.bus.on('setJustCreatedEatable', function(neweatable) {
@@ -171,16 +170,20 @@
 
 
     // Saves the new value of a given user property
-    searchParent(id, property, value, callback) {
+    saveParent(id, property, value, callback) {
+    	if (!value) {
+    		return;
+    	}
+    	
         //Search the parent for the value
-        var searchParentCallback = self.curry(self.saveParent, self, id, value)
+        var searchParentCallback = self.curry(self.saveParentCallback, self, id, value)
 
         superagent.get('/search/main/' + value + "?parent").set('Content-Type',
             'application/json; charset=UTF-8').set('Accept',
             'application/json').end(searchParentCallback);
     }
 
-    saveParent(id, value, err, response) {
+    saveParentCallback(id, value, err, response) {
         if (response.ok) {
             foundParentEatables = response.body
 
@@ -189,7 +192,7 @@
 
                 superagent.put('/' + id + '/parent/' + foundParentEatables[0]._key).set('Content-Type',
                     'application/json; charset=UTF-8').set('Accept',
-                    'application/json').end(self.searchParentFinalCallback);
+                    'application/json').end(searchParentFinalCallback);
             } else {
                 self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
             }
@@ -200,7 +203,7 @@
     }
 
     //saveParentCallback says if the parent was successfully set.
-    saveParentFinalCallback(err, response, parentName) {
+    saveParentFinalCallback(parentName, err, response) {
         if (response.ok) {
             self.opts.bus.trigger('displaySuccess', "Le Parent " + parentName + " a été sauvegardé.")
         } else {
