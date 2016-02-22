@@ -35,12 +35,6 @@
         </tr>
     </thead>
     <tbody>
-        <tr if={neweatable } class="justcreated">
-            <td>Création</td>
-            <td>{ neweatable.name }</td>
-            <td></td>
-            <td class="action-column"></td>
-        </tr>
         <tr each={foundEatable, index in foundEatables} >
             <td>{ index + 1 }</td>
             <td><editable-text bus="{ self.opts.bus }" callback="{ save }"
@@ -76,11 +70,6 @@
 
     //Mounted events
     self.on('mount', function() {
-    });
-
-    this.opts.bus.on('setJustCreatedEatable', function(neweatable) {
-        self.neweatable = neweatable
-        self.update()
     });
 
     //Functions
@@ -329,7 +318,7 @@
     }
 
     .justcreated {
-        background-color: #EE9999;
+        background-color: var(--primary-color);
     }
 </style>
 </eatable-search>
