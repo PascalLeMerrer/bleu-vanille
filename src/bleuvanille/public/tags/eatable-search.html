@@ -276,9 +276,7 @@
 
         // delete the selected eatable
         deleteEatable(event) {
-
             self.selectedEatable = event.item.eatable;
-
             var params = {
                 "title": "Supprimer un comestible",
                 "content": "Êtes-vous certain de vouloir détruire le comestible " + self.selectedEatable.name + " ? Cette opération est irréversible.",
