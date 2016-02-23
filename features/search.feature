@@ -26,9 +26,9 @@ Scenario: Creating and searching for an eatable with authenticated user
     And   the JSON should be
     """
     [
-    	{
-        	"name" : "carotte"
-    	}
+        {
+            "name" : "carotte"
+        }
     ]
     """
 

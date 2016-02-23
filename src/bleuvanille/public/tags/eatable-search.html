@@ -1,5 +1,4 @@
 <eatable-search>
-
     <div class="grid-2-4">
         <div class="grid-2 navbar">
             <div>
@@ -214,7 +213,9 @@
                     self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
                 }
             } else {
-                self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
+                self.foundEatables = []
+                self.notfound = true
+                self.opts.bus.trigger('displayError', "La recherche de " + self.searchText + " a échouée.")
             }
         }
 
