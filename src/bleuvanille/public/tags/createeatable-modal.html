@@ -45,6 +45,16 @@
     }
 
     self.opts.bus.on('openCreateEatableModal', function(params) {
+
+        self.tags.modal.eatableName.value=""
+        self.tags.modal.eatableDescription.value=""
+        self.tags.modal.nutrientCarbohydrate.value=0
+        self.tags.modal.nutrientProtein.value=0
+        self.tags.modal.nutrientSugar.value=0
+        self.tags.modal.nutrientLipid.value=0
+        self.tags.modal.nutrientFiber.value=0
+        self.tags.modal.nutrientAlcohol.value=0
+
         params.buttons = [ { action: function(e){
                                                 e.item.isWaiting = true
                                                 e.item.label = 'Création...'
