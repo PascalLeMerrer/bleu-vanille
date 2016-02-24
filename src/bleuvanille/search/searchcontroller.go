@@ -3,7 +3,7 @@ package search
 import (
 	"errors"
 	"strconv"
-	
+
 	"bleuvanille/eatable"
 	"bleuvanille/log"
 
@@ -27,8 +27,8 @@ func Search(context *echo.Context) error {
 	if limitErr != nil {
 		limitParam = 0
 	}
-	
-	eatables,totalCount, err := globalSearchService.SearchForEatable(name, offsetParam, limitParam)
+
+	eatables, totalCount, err := globalSearchService.SearchForEatable(name, offsetParam, limitParam)
 
 	log.Error(context, "Error while searching for "+name)
 
@@ -56,8 +56,8 @@ func SearchCompletion(context *echo.Context) error {
 	if limitErr != nil {
 		limitParam = 0
 	}
-	
-	eatables,totalCount, err := globalSearchService.SearchPrefix(name, offsetParam, limitParam)
+
+	eatables, totalCount, err := globalSearchService.SearchPrefix(name, offsetParam, limitParam)
 
 	log.Error(context, "Error while searching for "+name)
 
@@ -72,7 +72,6 @@ func SearchCompletion(context *echo.Context) error {
 	context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
 	return context.JSON(http.StatusOK, result)
 }
-
 
 // SearchQueryString searches eatables based on a full bleve query : used for test
 func SearchQueryString(context *echo.Context) error {
@@ -132,7 +131,7 @@ func UnIndexFromKey(context *echo.Context) error {
 	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
-		log.Error(context, "Error while reading eatable from  " + key + " : "+err.Error())
+		log.Error(context, "Error while reading eatable from  "+key+" : "+err.Error())
 		log.Error(context, err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -189,7 +188,7 @@ func IndexFromKey(context *echo.Context) error {
 
 //IndexAll rebuild the index from the eatable content
 func IndexAll(context *echo.Context) error {
-	count, err := globalSearchService.indexAll();	
+	count, err := globalSearchService.indexAll()
 
 	if err != nil {
 		log.Error(context, err.Error())
@@ -208,7 +207,7 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 		parseId := strings.Split(id, "/")
 
 		if len(parseId) != 2 {
-			log.Error(context, "Error while retrieving the Eatable \"" + id +"\" : it has an unvalid format.")
+			log.Error(context, "Error while retrieving the Eatable \""+id+"\" : it has an unvalid format.")
 			continue
 		}
 

@@ -18,7 +18,7 @@
       self.on('mount', function() {
         tags = riot.mount(self.selected, { bus: self.opts.bus})
       })
-      
+
       display(event) {
         self.selected = event.target.id
         for (var i = tags.length - 1; i >= 0; i--) {

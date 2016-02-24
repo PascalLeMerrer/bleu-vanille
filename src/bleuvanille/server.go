@@ -23,7 +23,8 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-const Version = "0.1.0"
+// the id of the git commit
+var Sha1 string
 
 //Injection in the eatable controller of the search service to be able to perform search operation within the Eatable package.
 var eatableController eatable.EatableController
@@ -177,8 +178,8 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 
 func getVersion(context *echo.Context) error {
 	version := struct {
-		Version string `json:version`
-	}{"0.1.0"}
+		Version string `json:"version"`
+	}{Sha1}
 	return context.JSON(200, version)
 }
 
