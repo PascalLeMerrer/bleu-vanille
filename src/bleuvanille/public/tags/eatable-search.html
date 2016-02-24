@@ -13,7 +13,7 @@
             <a href="#null" onclick="{ indexAll }">Réindexer Tous</i></a>
         </div>
         <div>
-            <a href="#null" onclick="{ openModal }">Ajouter un élément</i></a>
+            <a href="#null" onclick="{ openModal }">Ajouter un comestible</i></a>
         </div>
     </div>
 
@@ -81,13 +81,13 @@
         //Functions
         getTitle() {
             if (self.notfound) {
-                return "Cette recherche ne correspond à aucun élément";
+                return "Cette recherche ne correspond à aucun comestible";
             }
             if (self.criteriaValue !== null) {
-                return "Recherche \"" + self.criteriaValue + "\" : " + self.totalCount + " élément" + (self.totalCount > 1 ? 's' : '') + " trouvé" + (self.totalCount > 1 ? 's' : '')
+                return "Recherche \"" + self.criteriaValue + "\" : " + self.totalCount + " comestible" + (self.totalCount > 1 ? 's' : '') + " trouvé" + (self.totalCount > 1 ? 's' : '')
             }
 
-            return self.totalCount + " élément" + (self.totalCount > 1 ? 's' : '') + " indexé" + (self.totalCount > 1 ? 's' : '');
+            return self.totalCount + " comestible" + (self.totalCount > 1 ? 's' : '') + " indexé" + (self.totalCount > 1 ? 's' : '');
         }
 
         load(offset, limit) {
@@ -205,8 +205,8 @@
 
         indexAll() {
             var params = {
-                "title": "Réindexer tous les ingrédients recettes",
-                "content": "Êtes-vous certain de vouloir réindexer tous les ingrédients recettes ?",
+                "title": "Réindexer tous les comestibles",
+                "content": "Êtes-vous certain de vouloir réindexer tous les comestibles ?",
                 "buttons": [{
                     "action": function(e) {
                         e.item.isWaiting = true
@@ -233,7 +233,7 @@
             self.opts.bus.trigger('closeModal')
             if (response.ok) {
                 self.opts.bus.trigger('displaySuccess',
-                    "La réindexation a traité " + response.body + " ingrédients/recettes")
+                    "La réindexation a traité " + response.body + " comestibles.")
                 self.update()
             } else {
                 self.opts.bus.trigger('displayError',
@@ -243,7 +243,7 @@
 
         openModal() {
             var params = {
-                "title": "Ajouter un ingrédient"
+                "title": "Ajouter un comestible"
             };
 
             self.opts.bus.trigger('openCreateEatableModal', params)
@@ -255,8 +255,8 @@
             self.selectedEatable = event.item.foundEatable;
 
             var params = {
-                "title": "Supprimer un ingrédient / recette",
-                "content": "Êtes-vous certain de vouloir détruire l'ingrédient recette " + self.selectedEatable.name + " ? Cette opération est irréversible.",
+                "title": "Supprimer un comestible",
+                "content": "Êtes-vous certain de vouloir détruire le comestible " + self.selectedEatable.name + " ? Cette opération est irréversible.",
                 "buttons": [{
                     "action": function(e) {
                         e.item.isWaiting = true

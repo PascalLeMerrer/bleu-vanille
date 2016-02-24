@@ -65,7 +65,7 @@
     create() {
         self.invalidName = (self.tags.modal.eatableName.value.length === 0)
         if (self.invalidName) {
-          self.tags.modal.eatableName.title = "Vous devez spécifier un nom d'ingrédient"
+          self.tags.modal.eatableName.title = "Vous devez spécifier un nom pour ce comestible."
         } else {
           self.eatable.name = self.tags.modal.eatableName.value;
         }
@@ -118,7 +118,7 @@
 
     createNutrientCallback(err, response) {
         if(response.ok) {
-            self.opts.bus.trigger('displaySuccess', "L'ingrédient " + self.eatable.name + " a été créé.")
+            self.opts.bus.trigger('displaySuccess', "Le comestible " + self.eatable.name + " a été créé.")
             self.tags.modal.close()
         } else {
             self.opts.bus.trigger('displayError', "Erreur : " + response.code + " : " + response.body.error)
