@@ -1,0 +1,20 @@
+- hosts: dev
+  connection: local
+  
+  vars:
+     tmp_directory: "{{ playbook_dir }}/deploy"
+
+  roles:
+    - { role: checkout, tags: ['checkout'] }
+    - { role: package, tags: ['package'] }
+
+- hosts: production
+  
+  remote_user: root
+  
+  vars:
+     tmp_directory: "{{ playbook_dir }}/deploy"
+  
+  roles:
+    - { role: supervisor, tags: ['supervisor'] }
+    - { role: deploy, tags: ['deploy'] }

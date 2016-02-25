@@ -73,12 +73,14 @@ func CreateDefault() {
 		log.Println("Admin account created with default password. You should change it.")
 		return
 	}
-	log.Println("Admin account found.")
+	if config.Debug {
+		log.Println("Admin account found.")
+	}
 
 	//Create the test user if we are not in production
 	if !config.ProductionMode {
 		existingTestUser, err := LoadByEmail(config.TestUserEmail)
-		
+
 		if err != nil {
 			log.Println(err)
 		}
@@ -92,7 +94,7 @@ func CreateDefault() {
 			if err != nil {
 				log.Fatalf("Cannot create user with email %v. Error: %v", config.TestUserEmail, err.Error())
 			}
-			log.Println("Test account created with default password. You should change it.")
+			log.Println("Test account created with default password.")
 			return
 		}
 		log.Println("Test account found.")
@@ -479,7 +481,7 @@ func DisplayResetForm(context *echo.Context) error {
 	return context.Render(http.StatusOK, "passwordreset", data)
 }
 
-// Get Returns the profile of a given user
+// Profile Returns the profile of a given user
 // If it's the current one,or if if it's an admin that requires it,
 // the returned profile is richer than if it a normal user that asks
 func Profile(context *echo.Context) error {

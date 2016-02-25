@@ -4,7 +4,7 @@ Feature:
 
   Scenario: Sign up (creating a basic account) should succeed
     Given I set body to email=admin_test1@mail.org;password=PASSWORD;firstname=JOHN;lastname=DOE
-    And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+    And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
     When I POST to /users
     Then response code should be 201
     And response body path $.id should be \w
@@ -13,7 +13,7 @@ Feature:
 
   Scenario: I cannot not perform admin task with a non admin account
     Given I set body to email=admin_test1@mail.org;password=PASSWORD
-    And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+    And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
     When I POST to /users/login
     Then response code should be 200
     And response header Authorization should exist
@@ -25,7 +25,7 @@ Feature:
 
   Scenario: Authenticate as an admin
     Given I set body to email=admin@bleuvanille.com;password=xeCuf8CHapreNe=
-    And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+    And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
     When I POST to /users/login
     Then response code should be 200
     And response body should be valid json
@@ -36,7 +36,7 @@ Feature:
 
   Scenario: As an admin, Get all users
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I GET /admin/users
     Then response code should be 200
@@ -52,7 +52,7 @@ Feature:
 
   Scenario: As an admin, get a limited subset of user list
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I GET /admin/users?offset=1&limit=2
     Then response code should be 200
@@ -74,7 +74,7 @@ Feature:
 
   Scenario: As an admin, search for users with a given email
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I GET /admin/users?email=admin_test1@mail.org
     Then response code should be 200
@@ -93,7 +93,7 @@ Feature:
 
   Scenario: check rights on account used for admin tests
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     When I GET /users/`userId`
     Then response code should be 200
     And response body path $.isAdmin should be false
@@ -101,7 +101,7 @@ Feature:
 
   Scenario: modifying email on account should not modify rights
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     When I PATCH /users/`userId` with body
     """
     {
@@ -121,7 +121,7 @@ Feature:
 
   Scenario: modifying rights on account used for admin tests
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     When I PATCH /users/`userId` with body
     """
     {
@@ -146,6 +146,6 @@ Feature:
 
   Scenario: Cleanup test data - delete account used for admin test
     Given I set bearer token
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     When I DELETE /admin/users/`userId`
     Then response code should be 204

@@ -1,0 +1,39 @@
+##########  App packaging ##########
+
+- name: Get the sha1 of the current git commit
+  command: >
+    chdir="{{ tmp_directory }}"
+    git rev-parse HEAD
+  register: result
+  tags: ['deploy']
+
+- name: Set the sha1 variable
+  set_fact: sha1={{ result.stdout }}
+  tags: ['deploy']
+
+- name: Build the Go application for target OS with the sha1 as version number
+  environment: { 'GO15VENDOREXPERIMENT':1, 'GOPATH':'{{ tmp_directory }}', 'GOARCH':'386', 'GOOS':'linux' }
+  command: >
+    chdir="{{ tmp_directory }}"
+    go build -ldflags "-X main.Sha1={{ sha1 }}" src/bleuvanille/server.go
+
+- name: Rename the executable
+  command: mv {{ tmp_directory }}/server {{ tmp_directory }}/bleuvanille  
+
+- name: Copy the executable to dist
+  copy: >
+    src="{{ tmp_directory }}/bleuvanille"
+    dest="{{ tmp_directory }}/dist"
+
+- name: Copy the HTML templates to dist
+  copy: >
+    src="{{ playbook_dir }}/src/bleuvanille/templates"
+    dest="{{ tmp_directory }}/dist/src/bleuvanille"
+
+- name: Create archive
+  command: >
+    chdir="{{ tmp_directory }}/dist"
+    tar -zcf {{ tmp_directory }}/bleuvanille-{{ sha1 }}.tar.gz .
+
+- name: Packaging is finished.
+  debug: msg="Built package for commit {{ sha1 }} in deploy directory"

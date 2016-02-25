@@ -5,7 +5,7 @@ Feature:
 Scenario: Creating and searching for an eatable with authenticated user 
     Given I log as test user 
     And I set Cookie header to global variable cookie 
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I POST to /eatables with body 
     """

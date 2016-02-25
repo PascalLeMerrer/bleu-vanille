@@ -1,0 +1,21 @@
+##########  Supervisor installation and configuration ##########
+
+- name: Install supervisor when required
+  apt: >
+    name=supervisor
+    state=latest
+
+- name: Create logs directory
+  file: >
+    state=directory
+    path="{{ logs_dir }}"
+
+- name: Copy the supervisord config
+  copy: >
+    src=supervisord.conf
+    dest="{{ supervisor_config_dir }}"
+  tags: ['deploy']
+
+- name: Reload supervisor configuration
+  command: supervisorctl reload
+  tags: ['deploy']

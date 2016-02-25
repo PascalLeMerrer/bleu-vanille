@@ -44,8 +44,8 @@ type Template struct {
 func main() {
 
 	//Initialisation of the dependencies injection
-	eatableController.Search = &searchService;
-		
+	eatableController.Search = &searchService
+
 	config.DatabaseInit()
 	user.CreateDefault()
 
@@ -108,7 +108,7 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 	echoServer.Post("/users", user.Create)
 	echoServer.Post("/users/login", user.Login)
 	echoServer.Post("/users/sendResetLink", user.SendResetLink)
-	echoServer.Get("/users/resetForm", user.DisplayResetForm)	
+	echoServer.Get("/users/resetForm", user.DisplayResetForm)
 }
 
 // privates Routes require a valid user auth token and a sessionID
@@ -123,7 +123,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes.Put("/password", user.ChangePassword)
 	userRoutes.Get("/:userID", user.Profile)
 	userRoutes.Patch("/:userID", user.Patch)
-	
+
 	eatableRoutes := echoServer.Group("/eatables")
 	eatableRoutes.Use(auth.JWTAuth())
 	eatableRoutes.Use(session.Middleware())
@@ -132,7 +132,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Get("/:key", eatableController.Get)
 	eatableRoutes.Put("/:key", eatableController.Update)
 	eatableRoutes.Patch("/:key", eatableController.Patch)
-	
+
 	eatableRoutes.Put("/:key/nutrient", eatableController.SetNutrient)
 
 	eatableRoutes.Put("/:key/parent/:parentKey", eatableController.SetParent)

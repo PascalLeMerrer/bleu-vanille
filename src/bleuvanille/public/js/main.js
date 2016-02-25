@@ -1,7 +1,7 @@
 var contactEmail = "info" + "@" + "bleuvanille.fr"
 var startTime;
 
-/* Hide alerts on page loading */
+/* Hides alerts on page loading and init scrolling */
 $(document).ready(function() {
   $('#success-alert').hide();
   $('#error-alert').hide();
@@ -12,21 +12,20 @@ $(document).ready(function() {
   $('#contact').text(contactEmail);
 });
 
+/* Adds scrolling to the first section when clicking on a given link */
 function addScroll(id) {
-  $(id).click(function(e) {
-    topMenu = $("#top-menu"),
-      topMenuHeight = topMenu.outerHeight();
-
-    var offsetTop = $('#menu').offset().top - topMenuHeight + 1;
-    $('html, body').stop().animate({
-      scrollTop: offsetTop
-    }, 600);
-    e.preventDefault();
+  $(id).click(function(e){
+      var topMenu = $("#top-menu"),
+          offsetTop = $('#menu').offset().top - topMenu.outerHeight() + 1;
+      $('html, body').stop().animate({
+        scrollTop: offsetTop
+      }, 400);
+      e.preventDefault();
   });
 }
 
-/* -------------------------------------------------------------------------------------------*/
-/* Highlights the current menu item                                                           */
+/* Highlights the current menu item and add scrolling to the corresponding section
+ */
 
 function initScrollspy() {
 
@@ -43,6 +42,7 @@ function initScrollspy() {
         return item;
       }
     });
+
   // Bind click handler to menu items
   // so we can get a fancy scroll animation
   menuItems.click(function(e) {

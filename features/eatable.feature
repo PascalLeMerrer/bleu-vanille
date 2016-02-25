@@ -3,9 +3,9 @@ Feature:
     As a admin of the website, I want to manage my eatables
 
 Scenario: Creating an eatable without user should fail 
-    When I set Content-Type header to application/json; charset=UTF-8
+    When I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
-    And I POST to /eatables  with body 
+    And I POST to /eatables with body 
     """
     {
         "name" : "pomme de terre",
@@ -18,7 +18,7 @@ Scenario: Creating an eatable without user should fail
 Scenario: Creating an eatable with authenticated user 
     Given I log as test user 
     And I set Cookie header to global variable cookie 
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I POST to /eatables with body 
     """
@@ -43,7 +43,7 @@ Scenario: Creating an eatable with authenticated user
 Scenario: Creating an eatable with authenticated user 
     Given I log as test user 
     And I set Cookie header to global variable cookie 
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I POST to /eatables with body 
     """
@@ -64,7 +64,7 @@ Scenario: Creating an eatable with authenticated user
 
 Scenario: Modifying an eatable with user with a wrong type
     Given I set Cookie header to global variable cookie 
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
     When I PUT /eatables/`eatableKey` with body 
     """
@@ -81,7 +81,7 @@ Scenario: Modifying an eatable with user with a wrong type
 
 Scenario: Modifying an eatable with user 
     Given I set Cookie header to global variable cookie
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json 
     When I PUT /eatables/`eatableKey` with body 
     """
@@ -105,7 +105,7 @@ Scenario: Modifying an eatable with user
         
 Scenario: Setting the nutrient of an eatable with admin user 
     Given I set Cookie header to global variable cookie
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json 
     When I PUT /eatables/`eatableKey`/nutrient with body
     """
@@ -123,7 +123,7 @@ Scenario: Setting the nutrient of an eatable with admin user
 Scenario: Changing the parent of an eatable with admin user from its id 
 
     Given I set Cookie header to global variable cookie
-    And I set Content-Type header to application/json; charset=UTF-8
+    And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json 
     When I POST to /eatables with body 
     """
@@ -141,7 +141,7 @@ Scenario: Changing the parent of an eatable with admin user from its id
 
 Scenario: Get the full eatable data 
     Given I set Cookie header to global variable cookie
-    And   I set Content-Type header to application/json; charset=UTF-8
+    And   I set Content-Type header to application/json;charset=UTF-8
     And   I set Accept header to application/json 
     When  I GET /eatables/`eatableKey`
     Then  response code should be 200 

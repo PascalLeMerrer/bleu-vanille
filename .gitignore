@@ -4,6 +4,7 @@ daemon
 gulpfile.old.js
 httbin.feature
 node_modules
+deploy
 dist
 pkg
 dist
@@ -19,4 +20,9 @@ npm-debug.log
 .profile_local
 .project
 nohup.out
+
 bleveindex.eatable/
+codegen
+env.sh
+src/bleuvanille/glide.lock
+tmp/

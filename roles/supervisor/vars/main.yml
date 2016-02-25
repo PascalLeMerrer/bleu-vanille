@@ -1,0 +1,2 @@
+logs_dir: /var/log/supervisor
+supervisor_config_dir: /etc/

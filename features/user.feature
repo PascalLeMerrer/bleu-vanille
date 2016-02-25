@@ -4,7 +4,7 @@ Feature:
 
     Scenario: Sign up (creating an account)
       Given I set body to email=user_test1@mail.org;password=mypassword;firstname=John;lastname=Doe
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
   		When I POST to /users
   		Then response code should be 201
       And response body should be valid json
@@ -15,13 +15,13 @@ Feature:
 
     Scenario: Sign up with already registered email should result in conflict
       Given I set body to email=user_test1@mail.org;password=PASSWORD;firstname=JOHN;lastname=DOE
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users
       Then response code should be 409
 
     Scenario: Sign in (login)
       Given I set body to email=user_test1@mail.org;password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 200
       And response body should be valid json
@@ -29,7 +29,7 @@ Feature:
 
     Scenario: After I signed in, I should be able to get my profile
       Given I set body to email=user_test1@mail.org;password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I POST to /users/login
       And I store the value of header Authorization as access token
       And I set bearer token
@@ -40,7 +40,7 @@ Feature:
 
     Scenario: After I signed in, the cookie should maintain my authentication
       Given I set body to email=user_test1@mail.org;password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I POST to /users/login
       And I store the value of response header Set-Cookie as authToken in scenario scope
       And I set Cookie header to scenario variable authToken
@@ -50,13 +50,13 @@ Feature:
 
     Scenario: Sign in with without email should fail
       Given I set body to password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 400
 
     Scenario: Sign in with wrong email should fail
       Given I set body to email=fake@mail.org;password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 401
       And response header Set-Cookie should not exist
@@ -65,7 +65,7 @@ Feature:
 
     Scenario: Sign in with wrong password should fail
       Given I set body to email=user_test1@mail.org;password=BAD_PASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 401
       And response header Set-Cookie should not exist
@@ -74,7 +74,7 @@ Feature:
 
     Scenario: Delete account with wrong password should fail
       Given I set body to email=user_test1@mail.org;password=BAD_PASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/delete
       Then response code should be 401
       And response header Set-Cookie should not exist
@@ -83,11 +83,11 @@ Feature:
 
     Scenario: Delete account
       Given I set body to email=user_test1@mail.org;password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I POST to /users/login
       And I store the value of header Authorization as access token
       And I set bearer token
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I set body to password=mypassword
       When I POST to /users/delete
       Then response code should be 204
@@ -97,7 +97,7 @@ Feature:
 
     Scenario: Sign in with deleted account credentials should fail
       Given I set body to email=user_test1@mail.org;password=mypassword
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 401
       And response header Set-Cookie should not exist
@@ -106,14 +106,14 @@ Feature:
 
     Scenario: Create an account for password change
       Given I set body to email=user_test2@mail.org;password=OLDPASSWORD;firstname=John;lastname=Doe
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
   		And I POST to /users
   		Then response code should be 201
       And I store the value of body path $.id as userId in global scope
 
     Scenario: Sign in with initial password
       Given I set body to email=user_test2@mail.org;password=OLDPASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 200
       And response header Set-Cookie should exist
@@ -122,14 +122,14 @@ Feature:
 
     Scenario: Change password
       Given I set body to email=user_test2@mail.org;password=OLDPASSWORD;newPassword=NEWPASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I set bearer token
   		And I PUT /users/password
       Then response code should be 200
 
     Scenario: Sign in with new password (login)
       Given I set body to email=user_test2@mail.org;password=NEWPASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       When I POST to /users/login
       Then response code should be 200
       And response body should be valid json
@@ -139,7 +139,7 @@ Feature:
 
     Scenario: I should not be allowed to delete my account with a wrong password
       Given I set body to password=BADPASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I set bearer token
       When I POST to /users/delete
       Then response code should be 401
@@ -147,7 +147,7 @@ Feature:
 
     Scenario: modifying my profile
       Given I set bearer token
-      And I set Content-Type header to application/json; charset=UTF-8
+      And I set Content-Type header to application/json;charset=UTF-8
       When I PATCH /users/`userId` with body
       """
       {
@@ -167,7 +167,7 @@ Feature:
 
     Scenario: Delete the account used for password change
       Given I set body to password=NEWPASSWORD
-      And I set Content-Type header to application/x-www-form-urlencoded; charset=UTF-8
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I set bearer token
       When I POST to /users/delete
       Then response code should be 204
