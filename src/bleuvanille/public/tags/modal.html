@@ -31,15 +31,14 @@
     self.content = null
     self.buttons = null
 
-    if(self.opts.preventdefault === undefined) {
+    if(self.opts.bus !== undefined) {
       self.opts.bus.on('openModal', function(params) {
           self.open(params)
       })
+      self.opts.bus.on('closeModal', function() {
+          self.close()
+      })
     }
-
-    self.opts.bus.on('closeModal', function() {
-        self.close()
-    })
 
     open(params) {
         self.showModal = true

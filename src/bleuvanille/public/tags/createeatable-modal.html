@@ -1,7 +1,7 @@
 <createeatable-modal>
-  <modal name="modal" bus="{ bus }" preventdefault="true">
+  <modal name="modal">
         <label for="eatableName">Nom</label>
-        <input type="text" id="eatableName" value="{ eatable.name }"><br>
+        <input type="text" id="eatableName" value="{ eatable.name }" class="{ error-format: parent.invalidName}"><br>
         <label for="eatableDescription">Description</label>
         <input type="textarea" id="eatableDescription" value="{ eatable.description }"><br>
         <fieldset>
@@ -21,7 +21,8 @@
             <input type="text" id="nutrientAlcohol" class="{ error-format: parent.invalidAlcohol}" size="6"> gr <br>
           </p>
         </fieldset>
-  </modal>
+        <alert name="innerAlert"></alert>
+    </modal>
 
   <script>
     var self = this
@@ -102,6 +103,7 @@
             .send(self.eatable)
             .end(self.createCallback)
         } else {
+            self.tags.modal.tags.innerAlert.displayError("Au moins une des valeurs saisies est incorrecte.")
             self.cancel()
         }
     }
@@ -121,7 +123,13 @@
               .send(self.nutrient)
               .end(self.createNutrientCallback)
           } else {
-            self.opts.bus.trigger('displayError', "Erreur : " + response.code + " : " + response.body.error)
+            var message ;
+            if (response.status == 409) {
+              message = "Un comestible portant ce nom existe déjà."
+            } else {
+              message = response.body.error
+            }
+            self.tags.modal.tags.innerAlert.displayError("Erreur : " + message)
             self.cancel()
           }
     }
@@ -131,7 +139,7 @@
             self.opts.bus.trigger('displaySuccess', "Le comestible " + self.eatable.name + " a été créé.")
             self.tags.modal.close()
         } else {
-            self.opts.bus.trigger('displayError', "Erreur : " + response.code + " : " + response.body.error)
+            self.tags.modal.tags.innerAlert.displayError("Erreur : " + response.body.error)
             self.cancel()
         }
     }

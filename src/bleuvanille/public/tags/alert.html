@@ -6,24 +6,34 @@
     </a>
   </div>
   <script>
-    self = this
+    var self = this
     self.type = ""
     self.message = ""
     self.alerts = []
 
-    this.opts.bus.on('displayError', function(message) {
+    if(self.opts.bus !== undefined) {
+        self.opts.bus.on('displayError', function(message) {
+          self.displayError(message)
+        })
+        self.opts.bus.on('displaySuccess', function(message) {
+            self.displaySuccess(message)
+        })
+    }
+
+    displayError(message) {
       var alertDescriptor = { message: message, type: "error" }
       self.add(alertDescriptor)
-    })
+    }
 
-    /* Displays a sucess message taht is automatically dismissed after a few seconds */
-    this.opts.bus.on('displaySuccess', function(message) {
+
+    /* Displays a success message that is automatically dismissed after a few seconds */
+    displaySuccess(message) {
       var alertDescriptor = { message: message, type: "success" }
       setTimeout( function() {
           self.hide(alertDescriptor)
         }, 5000)
       self.add(alertDescriptor)
-    })
+    }
 
     /* adds an alert to the list of displayed ones */
     add(alertDescriptor) {
