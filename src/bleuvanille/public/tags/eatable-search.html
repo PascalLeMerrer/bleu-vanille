@@ -189,7 +189,6 @@
             } else {
                 self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
             }
-            self.update()
         }
 
         //saveParentCallback says if the parent was successfully set.
@@ -199,7 +198,6 @@
             } else {
                 self.opts.bus.trigger('displayError', "Le Parent " + parentName + " n'a pas été sauvegardé : " + response.code)
             }
-            self.update()
         }
 
         indexAll() {
