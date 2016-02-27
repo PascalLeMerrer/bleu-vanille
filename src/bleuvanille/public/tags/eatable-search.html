@@ -179,10 +179,10 @@
                 foundParentEatables = response.body
 
                 if (foundParentEatables != null && foundParentEatables.length > 0) {
-                    var saveParentCallback = self.curry(self.saveParentFinalCallback, self, foundParentEatables[0].name)
+                    var callback = self.curry(self.saveParentCallback, self, foundParentEatables[0].name)
                     superagent.put('/' + id + '/parent/' + foundParentEatables[0]._key).set('Content-Type',
                         'application/json; charset=UTF-8').set('Accept',
-                        'application/json').end(saveParentCallback);
+                        'application/json').end(callback);
                 } else {
                     self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
                 }
@@ -192,7 +192,7 @@
         }
 
         //saveParentCallback says if the parent was successfully set.
-        saveParentCallback(err, response) {
+        saveParentCallback(parentName, err, response) {
             if (response.ok) {
                 self.opts.bus.trigger('displaySuccess', "Le Parent " + parentName + " a été sauvegardé.")
             } else {
