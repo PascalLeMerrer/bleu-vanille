@@ -16,7 +16,7 @@
       var bus = {};
       riot.observable(bus);
       bus.on('logged', function() {
-        window.location = 'admin/dashboard'
+        window.location = 'dashboard'
       })
       riot.mount('login-form', {bus: bus})
       riot.mount('alert', {bus: bus})
