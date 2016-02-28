@@ -117,7 +117,7 @@
     createCallback(err, response) {
           if(response.ok) {
             self.eatable = response.body
-            self.opts.bus.trigger('setJustCreatedEatable', self.eatable)
+            self.opts.bus.trigger('eatableCreated', self.eatable)
             superagent.put('/eatables/' + self.eatable._key + '/nutrient')
               .set('Content-Type', 'application/json; charset=UTF-8')
               .send(self.nutrient)

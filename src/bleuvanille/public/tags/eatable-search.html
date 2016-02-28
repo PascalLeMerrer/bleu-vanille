@@ -34,14 +34,14 @@
             </tr>
         </thead>
         <tbody>
-            <tr each={foundEatable, index in foundEatables} >
+            <tr each={eatable, index in eatables} class="{ highlighted: eatable.created, not-highlighted: !eatable.created } ">
                 <td>{ index + 1 }</td>
                 <td><editable-text bus="{ self.opts.bus }" callback="{ save }"
-                        property="name" id="{ foundEatable._id }"
-                        text="{ foundEatable.name }" type="text"></editable-text></td>
+                        property="name" id="{ eatable._id }"
+                        text="{ eatable.name }" type="text"></editable-text></td>
                 <td><editable-text bus="{ self.opts.bus }" callback="{ searchAndSaveParent }"
-                        property="foundEatable.parent.name" id="{ foundEatable._id }"
-                        text="{ foundEatable.parent.name }" type="text"></editable-text>
+                        property="eatable.parent.name" id="{ eatable._id }"
+                        text="{ eatable.parent.name }" type="text"></editable-text>
                         </td>
                 <td class="action-column"><a href="" onclick="{ parent.deleteEatable }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
             </tr>
@@ -57,7 +57,7 @@
 
 
         self.criteriaValue = null
-        self.foundEatables = null
+        self.eatables = null
         self.totalCount = 0
         self.notfound = false
         self.triggerTimeOutVar = null
@@ -72,9 +72,18 @@
             self.load()
         });
 
-        self.opts.bus.on('setJustCreatedEatable', function(neweatable) {
-            self.neweatable = neweatable
+        self.opts.bus.on('eatableCreated', function(eatable) {
+            self.eatables.push(eatable)
             self.update()
+            // highlight the newly created item
+            window.setTimeout(function(){
+                eatable.created = true
+                self.update()
+            }, 100)
+            window.setTimeout(function(){
+                eatable.created = false
+                self.update()
+            }, 1500)
         });
 
         //Functions
@@ -143,13 +152,13 @@
         // processes search response
         searchCallback(err, response) {
             if (response.ok) {
-                self.foundEatables = response.body
+                self.eatables = response.body
                 self.notfound = false
                 self.totalCount = response.headers['x-total-count']
                 self.pager.maxPage = Math.ceil(self.totalCount / self.pager.itemPerPage)
                 self.update()
             } else {
-                self.foundEatables = []
+                self.eatables = []
                 self.notfound = true
                 self.opts.bus.trigger('displayError', "La recherche de " + self.searchText + " a échouée.")
             }
@@ -249,7 +258,7 @@
         // delete the selected eatable
         deleteEatable(event) {
 
-            self.selectedEatable = event.item.foundEatable;
+            self.selectedEatable = event.item.eatable;
 
             var params = {
                 "title": "Supprimer un comestible",
@@ -285,7 +294,7 @@
                     "La suppression de " + self.selectedEatable.name + " a réussie.")
                 self.update()
                 setTimeout(function() {
-                    self.foundEatables.splice(self.foundEatables.indexOf(self.selectedEatable), 1)
+                    self.eatables.splice(self.eatables.indexOf(self.selectedEatable), 1)
                     self.update()
                 }, 1000)
             } else {
