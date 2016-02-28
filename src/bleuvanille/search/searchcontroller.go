@@ -15,6 +15,11 @@ import (
 
 var globalSearchService SearchService
 
+type EatableCompletion struct {
+	Id          string    `json:"_id,omitempty"`
+	Name        string    `json:"name,omitempty"`
+}
+
 // Search searches eatable based on their name
 func Search(context *echo.Context) error {
 	name := context.Param("name")
@@ -67,7 +72,7 @@ func SearchCompletion(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err)
 	}
 
-	result := convertEatableKeyArrayInEatable(context, eatables)
+	result := convertEatableKeyArrayInEatableCompletion(context, eatables)
 
 	context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
 	return context.JSON(http.StatusOK, result)
@@ -226,6 +231,42 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 		parent, _ := eatable.GetParent(eatableVar)
 		eatableVar.Parent = parent
 		result = append(result, *eatableVar)
+	}
+
+	return result
+}
+
+//convertEatableKeyArrayInEatableCompletion convert a list of ids to a list of eatable struct that contains only the id and the name to accelerate the completion.
+func convertEatableKeyArrayInEatableCompletion(context *echo.Context, eatables []string) []EatableCompletion {
+	result := make([]EatableCompletion, 0, len(eatables))
+
+	for _, id := range eatables {
+		//extract the key from the id
+		parseId := strings.Split(id, "/")
+
+		if len(parseId) != 2 {
+			log.Error(context, "Error while retrieving the Eatable \""+id+"\" : it has an unvalid format.")
+			continue
+		}
+
+		eatableVar, err := eatable.FindByKey(parseId[1])
+		
+		
+		if err != nil || eatableVar == nil {
+			if err != nil {
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database : "+err.Error())
+			} else {
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database :  eatable unknown")
+			}
+
+			continue
+		}
+
+		eatableCompletion := EatableCompletion {
+			Id:eatableVar.Id, 
+			Name:eatableVar.Name}
+		
+		result = append(result, eatableCompletion)
 	}
 
 	return result

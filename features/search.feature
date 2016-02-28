@@ -2,6 +2,7 @@
 Feature:
 	As an user of the website, I want to search for eatables
 
+@completion @search
 Scenario: Creating and searching for an eatable with authenticated user
     Given I log as test user
     And I set Cookie header to global variable cookie
@@ -31,6 +32,41 @@ Scenario: Creating and searching for an eatable with authenticated user
     ]
     """
 
+@completion
+Scenario: Search with Completion for an eatable with authenticated user
+    Given I log as test user
+    And I set Cookie header to global variable cookie
+    And I set Content-Type header to application/json;charset=UTF-8
+    And I set Accept header to application/json
+    When I GET /search/completion/c
+    Then response code should be 200
+    And response body should be valid json
+    And   the JSON should be
+    """
+    [
+        {
+            "name" : "carotte"
+        }
+    ]
+    """
+    And response body should not contain createdAt
+    And response body should not contain status
+    Given I set Cookie header to global variable cookie
+    When I GET /search/completion/car
+    Then response code should be 200
+    And response body should be valid json
+    And   the JSON should be
+    """
+    [
+        {
+            "name" : "carotte"
+        }
+    ]
+    """
+    And response body should not contain createdAt
+    And response body should not contain status
+
+@search @completion
 Scenario: Deleting eatables created for the test
   Given I log as admin user
   And I set Cookie header to global variable cookie
