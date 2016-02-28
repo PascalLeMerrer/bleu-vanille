@@ -41,7 +41,8 @@
                         text="{ eatable.name }" type="text"></editable-text></td>
                 <td><editable-text bus="{ self.opts.bus }" callback="{ searchAndSaveParent }"
                         property="eatable.parent.name" id="{ eatable._id }"
-                        text="{ eatable.parent.name }" type="text"></editable-text>
+                        text="{ eatable.parent.name }" type="text"
+                        mode="contains"></editable-text>
                         </td>
                 <td class="action-column"><a href="" onclick="{ parent.deleteEatable }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
             </tr>
@@ -55,7 +56,6 @@
 
         self.mixin('curryMixin')
 
-
         self.criteriaValue = null
         self.eatables = null
         self.totalCount = 0
@@ -66,6 +66,7 @@
             itemPerPage: 10,
             currentPage: 1
         }
+
 
         //Mounted events
         self.on('mount', function() {
@@ -115,8 +116,6 @@
 
         // search eatable matching the criteria
         search(event) {
-            // We disable the created eatable when doing the next search
-            self.neweatable = null
 
             var criteriaValue = self.searchcriteria.value
 

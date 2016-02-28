@@ -1,19 +1,79 @@
 <editable-text>
-    <input name="input" class="editable" type="{ opts.type || text }" value={ opts.text } onkeyup={ submit } onblur={ invokeCallback }>
+    <input name="input" class="editable" type="{ opts.type || text }" value={ opts.text } onkeyup={ processKey } onblur={ invokeCallback }>
+    <ul show={ filtered.length }>
+        <li each={ c, i in filtered } onclick="{ parent.selected }" class="{ active: parent.active==i}">{ c }</li>
+    </ul>
+
     <script>
-        var self=this;
+        var self = this;
         var initialValue = self.opts.text;
         var value
+        self.min = opts.min || 2
+        self.filtered  = []
+        self.active = -1
+        self.mode = opts.mode || 'start'
 
-        // validates the form when enter is pressed
-        submit(e) {
-            if (e.keyCode == 13) {
-            	console.log(e.keyCode)
+        self.choices = ['Viande', 'Fruits', 'Légumes']
+
+        processKey(keyboardEvent) {
+
+            if(self.choices !== undefined) {
+                self.autoComplete(keyboardEvent)
+            }
+            else if(keyboardEvent.which == 13) { // enter
+                // validates the form
                 self.invokeCallback()
             }
         }
 
-        // invoke the continer's callback to save the new input value
+        autoComplete(keyboardEvent) {
+            if(keyboardEvent.target.value.length < self.min) {
+                self.filtered = []
+                self.active = -1
+                return
+            }
+
+            self.filtered = self.choices.filter(function(choice) {
+                return choice.match(self.checkRegexp(keyboardEvent))
+            })
+
+            if(keyboardEvent.which == 40 && self.filtered.length) { // down
+                self.active = Math.min(self.active+1, self.filtered.length-1)
+                return
+            }
+
+            if(keyboardEvent.which == 38 && self.filtered.length) { // up
+                self.active = Math.max(self.active-1, 0)
+                return
+            }
+
+            if(keyboardEvent.which == 13) { // enter
+                self.filtered.length && self.select(self.filtered[self.active])
+                self.invokeCallback()
+            }
+
+            if(keyboardEvent.which == 27) { // escape
+                self.select('')
+            }
+        }
+
+        checkRegexp(event) {
+            return self.mode == 'start' ?  RegExp('^' + event.target.value, 'i') : RegExp(event.target.value, 'i')
+        }
+
+        selected(choice) {
+            console.log(choice.item.c)
+            self.select(choice.item.c)
+        }
+
+        select(text) {
+            self.input.value = text
+            self.active = -1
+            self.filtered = []
+            self.trigger('selected', text)
+        }
+
+        // invoke the caller's callback to save the new input value
         invokeCallback() {
             value = self.input.value
             if( value != initialValue) {
@@ -31,9 +91,28 @@
         }
 
     </script>
-    <style>
+    <style scoped>
         input.editable {
             width: 100%;
         }
+
+        ul {
+            list-style: none;
+            border: 1px solid lightgrey;
+            width: 10em;
+            margin-top: 0;
+            padding-left: 0;
+        }
+
+        li {
+            cursor: pointer;
+            padding-left: 1em;
+        }
+
+        li:hover, li.active {
+            background: #f2f2ff;
+        }
+
+
     </style>
 </editable-text>
