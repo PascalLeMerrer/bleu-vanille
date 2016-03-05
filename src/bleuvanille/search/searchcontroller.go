@@ -35,8 +35,6 @@ func Search(context *echo.Context) error {
 
 	eatables, totalCount, err := globalSearchService.SearchForEatable(name, offsetParam, limitParam)
 
-	log.Error(context, "Error while searching for "+name)
-
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
 		log.Error(context, "Error while searching for "+name+" : "+err.Error())
@@ -63,8 +61,6 @@ func SearchCompletion(context *echo.Context) error {
 	}
 
 	eatables, totalCount, err := globalSearchService.SearchPrefix(name, offsetParam, limitParam)
-
-	log.Error(context, "Error while searching for "+name)
 
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
