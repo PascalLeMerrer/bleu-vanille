@@ -37,7 +37,7 @@ func Search(context *echo.Context) error {
 
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
-		log.Error(context, "Error while searching for "+name+" : "+err.Error())
+		log.Error(context, fmt.Sprintf("Error while searching for %s: %v", name, err))
 		return context.JSON(http.StatusInternalServerError, err)
 	}
 
@@ -64,7 +64,7 @@ func SearchCompletion(context *echo.Context) error {
 
 	// Verify if the result is correctly retrieved from search
 	if err != nil {
-		log.Error(context, "Error while searching for "+name+" : "+err.Error())
+		log.Error(context, fmt.Sprintf("Error while searching for %s: %v", name, err))
 		return context.JSON(http.StatusInternalServerError, err)
 	}
 
@@ -247,8 +247,6 @@ func convertEatableKeyArrayInEatableCompletion(context *echo.Context, eatables [
 
 		eatableVar, err := eatable.FindByKey(parseId[1])
 
-		
-		
 		if err != nil || eatableVar == nil {
 			if err != nil {
 				log.Error(context, "Error while retrieving the Eatable "+id+" from database: "+err.Error())
