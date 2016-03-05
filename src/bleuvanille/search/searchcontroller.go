@@ -16,8 +16,8 @@ import (
 var globalSearchService SearchService
 
 type EatableCompletion struct {
-	Id          string    `json:"_id,omitempty"`
-	Name        string    `json:"name,omitempty"`
+	Id   string `json:"_id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // Search searches eatable based on their name
@@ -136,7 +136,7 @@ func UnIndexFromKey(context *echo.Context) error {
 	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
-		log.Error(context, "Error while reading eatable from  "+key+" : "+err.Error())
+		log.Error(context, "Error while reading eatable from "+key+": "+err.Error())
 		log.Error(context, err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -163,19 +163,19 @@ func IndexFromKey(context *echo.Context) error {
 	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
-		log.Error(context, "Error while indexing for "+key+" : "+err.Error())
+		log.Error(context, "Error while indexing for "+key+": "+err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	if eatableVar == nil {
-		log.Error(context, "No eatable found for key  "+key)
+		log.Error(context, "No eatable found for key "+key)
 		return context.JSON(http.StatusNotFound, errors.New("No eatable found for key: "+key))
 	}
 
 	parent, errParent := eatable.GetParent(eatableVar)
 
 	if errParent != nil {
-		log.Error(context, "Error while searching for the parent of  "+key+" : "+errParent.Error())
+		log.Error(context, "Error while searching for the parent of  "+key+": "+errParent.Error())
 		return context.JSON(http.StatusInternalServerError, errParent.Error())
 	}
 
@@ -212,7 +212,7 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 		parseId := strings.Split(id, "/")
 
 		if len(parseId) != 2 {
-			log.Error(context, "Error while retrieving the Eatable \""+id+"\" : it has an unvalid format.")
+			log.Error(context, "Error while retrieving the Eatable \""+id+"\": it has an invalid format.")
 			continue
 		}
 
@@ -220,9 +220,9 @@ func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) [
 
 		if err != nil || eatableVar == nil {
 			if err != nil {
-				log.Error(context, "Error while retrieving the Eatable "+id+" from database : "+err.Error())
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database: "+err.Error())
 			} else {
-				log.Error(context, "Error while retrieving the Eatable "+id+" from database :  eatable unknown")
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database:  eatable unknown")
 			}
 
 			continue
@@ -245,27 +245,28 @@ func convertEatableKeyArrayInEatableCompletion(context *echo.Context, eatables [
 		parseId := strings.Split(id, "/")
 
 		if len(parseId) != 2 {
-			log.Error(context, "Error while retrieving the Eatable \""+id+"\" : it has an unvalid format.")
+			log.Error(context, "Error while retrieving the Eatable \""+id+"\": it has an invalid format.")
 			continue
 		}
 
 		eatableVar, err := eatable.FindByKey(parseId[1])
+
 		
 		
 		if err != nil || eatableVar == nil {
 			if err != nil {
-				log.Error(context, "Error while retrieving the Eatable "+id+" from database : "+err.Error())
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database: "+err.Error())
 			} else {
-				log.Error(context, "Error while retrieving the Eatable "+id+" from database :  eatable unknown")
+				log.Error(context, "Error while retrieving the Eatable "+id+" from database: unknown eatable")
 			}
 
 			continue
 		}
 
-		eatableCompletion := EatableCompletion {
-			Id:eatableVar.Id, 
-			Name:eatableVar.Name}
-		
+		eatableCompletion := EatableCompletion{
+			Id:   eatableVar.Id,
+			Name: eatableVar.Name}
+
 		result = append(result, eatableCompletion)
 	}
 

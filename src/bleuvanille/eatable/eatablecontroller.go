@@ -3,13 +3,14 @@ package eatable
 import (
 	"bleuvanille/date"
 	"bleuvanille/log"
-		
+
 	"encoding/json"
-	"github.com/labstack/echo"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"errors"
+
+	"github.com/labstack/echo"
 )
 
 type errorMessage struct {
@@ -52,7 +53,7 @@ func (controller *EatableController) Get(context *echo.Context) error {
 }
 
 // Create creates a new eatable
-func (controller *EatableController)  Create(context *echo.Context) error {
+func (controller *EatableController) Create(context *echo.Context) error {
 
 	body := context.Request().Body
 	bodyBytes, err := ioutil.ReadAll(body)
@@ -95,27 +96,27 @@ func (controller *EatableController)  Create(context *echo.Context) error {
 	err = controller.Search.Index(&eatable)
 
 	if err != nil {
-		log.Error(nil, "Error while updating the index for the eatable "+ eatable.Id +" : "+err.Error())
+		log.Error(nil, "Error while updating the index for the eatable "+eatable.Id+" : "+err.Error())
 	}
-	
+
 	return context.JSON(http.StatusCreated, updatedEatable)
 }
 
 // Delete removes an existing eatable from the database
 // Mainly intended for removing test data
 // For real eatables you should prefer turning their status to disabled
-func (controller *EatableController)  Delete(context *echo.Context) error {
+func (controller *EatableController) Delete(context *echo.Context) error {
 	key := context.Param("key")
-		
+
 	err := Remove(key)
 	if err == nil {
 		//Search Delete
 		err = controller.Search.DeleteFromId("eatables/" + key)
-		
+
 		if err != nil {
-			log.Error(nil, "Error while desindexing the eatable "+ key +" : "+err.Error())
+			log.Error(nil, "Error while desindexing the eatable "+key+" : "+err.Error())
 		}
-			
+
 		return context.String(http.StatusNoContent, "")
 	} else {
 		return context.JSON(http.StatusForbidden, errorMessage{"Cannot remove eatable with key " + key})
@@ -143,12 +144,12 @@ func (controller *EatableController) Update(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Eatable update error"})
 		log.Printf("Error: cannot update eatable: %v\n", err)
 	}
-	
+
 	//Search Indexation
 	err = controller.Search.Index(eatable)
 
 	if err != nil {
-		log.Error(nil, "Error while updating the index for the eatable "+ eatable.Id +" : "+err.Error())
+		log.Error(nil, "Error while updating the index for the eatable "+eatable.Id+" : "+err.Error())
 	}
 
 	return context.JSON(http.StatusOK, updatedEatable)
@@ -156,7 +157,7 @@ func (controller *EatableController) Update(context *echo.Context) error {
 
 // Patch modifies the user account for a given ID
 // This is an admin feature, not supposed to be used by normal users
-func (controller *EatableController)  Patch(context *echo.Context) error {
+func (controller *EatableController) Patch(context *echo.Context) error {
 	key := context.Param("key")
 
 	eatable, err := FindByKey(key)
@@ -182,15 +183,15 @@ func (controller *EatableController)  Patch(context *echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, errorMessage{"Eatable update error"})
 		log.Printf("Error: cannot update eatable: %v\n", err)
 	}
-	
+
 	//Search Indexation
 	err = controller.Search.Index(eatable)
 
 	if err != nil {
-		log.Error(nil, "Error while updating the index for the eatable "+ eatable.Id +" : "+err.Error())
+		log.Error(nil, "Error while updating the index for the eatable "+eatable.Id+" : "+err.Error())
 	}
 
-	return context.JSON(http.StatusOK, updatedEatable)	
+	return context.JSON(http.StatusOK, updatedEatable)
 }
 
 // SetStatus sets or modifies the nutrient information of a given eatable

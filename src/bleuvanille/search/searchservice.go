@@ -6,7 +6,7 @@ import (
 
 	"bleuvanille/eatable"
 	"bleuvanille/log"
- 
+
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzers/keyword_analyzer"
 	"github.com/blevesearch/bleve/analysis/language/fr"
@@ -38,15 +38,15 @@ func (search *SearchService) Index(eatableVal *eatable.Eatable) error {
 		return errors.New("nil Index after getting for indexation")
 	}
 
-	//Load the parent 
+	//Load the parent
 	parent, errParent := eatable.GetParent(eatableVal)
-	
+
 	if errParent != nil {
-		log.Error(nil, "Error while fetching the parent for " + eatableVal.Id + " : "+ errParent.Error())
+		log.Error(nil, "Error while fetching the parent for "+eatableVal.Id+" : "+errParent.Error())
 	} else {
 		eatableVal.Parent = parent
 	}
-	
+
 	errIndex := indexLocal.Index(eatableVal.Id, eatableVal)
 
 	if errIndex != nil {
@@ -57,36 +57,36 @@ func (search *SearchService) Index(eatableVal *eatable.Eatable) error {
 }
 
 //indexAll reset the index and indexes every Eatable from the database
-func (search *SearchService) indexAll() (int,error) {
+func (search *SearchService) indexAll() (int, error) {
 	indexLocal, err := getIndex()
 
 	if err != nil {
-		return 0,err
+		return 0, err
 	}
 
 	if indexLocal == nil {
-		return 0,errors.New("nil Index after getting for indexation")
+		return 0, errors.New("nil Index after getting for indexation")
 	}
 
 	//Reset the index
-	eatablesids, _,_ := search.SearchForAllEatable(0,0)
-	
+	eatablesids, _, _ := search.SearchForAllEatable(0, 0)
+
 	for _, id := range eatablesids {
 		errDel := indexLocal.Delete(id)
-		
+
 		if errDel != nil {
-			log.Debug(nil, "Error while delete from index  " + id + " : " + errDel.Error())
-		}	
+			log.Debug(nil, "Error while delete from index  "+id+" : "+errDel.Error())
+		}
 	}
 
-	eatables, _ := eatable.FindAll("","")
-	
+	eatables, _ := eatable.FindAll("", "")
+
 	for _, eatable := range eatables {
 		errIndex := search.Index(&eatable)
-		
+
 		if errIndex != nil {
-			log.Debug(nil, "Error while index " + eatable.Id + " : " + errIndex.Error())
-		}	
+			log.Debug(nil, "Error while index "+eatable.Id+" : "+errIndex.Error())
+		}
 	}
 
 	return len(eatables), nil
@@ -139,26 +139,26 @@ func (search *SearchService) DeleteFromId(id string) error {
 }
 
 //SearchFromQueryString searches in the current index given a full query string
-func (searchVal *SearchService) SearchFromQueryString(querystring string,offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchFromQueryString(querystring string, offset int, limit int) ([]string, int, error) {
 	q := bleve.NewQueryStringQuery(querystring)
 	return search(q, offset, limit)
 }
 
 //SearchForEatable searches for an eatable in the current index given its name
-func (searchVal *SearchService) SearchForEatable(name string,offset int, limit int) ([]string,int, error) {
-	qString := name + "^4 " +  name + "~2^2" + " parent.name:" + name + "~2"
+func (searchVal *SearchService) SearchForEatable(name string, offset int, limit int) ([]string, int, error) {
+	qString := name + "^4 " + name + "~2^2" + " parent.name:" + name + "~2"
 	q := bleve.NewQueryStringQuery(qString)
 
 	return search(q, offset, limit)
 }
 
 //SearchForAllEatable returns all eatable contains in the index
-func (searchVal *SearchService) SearchForAllEatable(offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchForAllEatable(offset int, limit int) ([]string, int, error) {
 	q := bleve.NewMatchAllQuery()
 	return search(q, offset, limit)
 }
 
-func (searchVal *SearchService) SearchPrefix(name string,offset int, limit int) ([]string,int, error) {
+func (searchVal *SearchService) SearchPrefix(name string, offset int, limit int) ([]string, int, error) {
 	qString := `` + name
 	q := bleve.NewPrefixQuery(qString)
 	//q.FieldVal = "FieldVal"
@@ -253,30 +253,30 @@ func createIndex() (bleve.Index, error) {
 	return indexRealForCreation, nil
 }
 
-func search(q bleve.Query, offset int, limit int) ([]string,int, error) {
+func search(q bleve.Query, offset int, limit int) ([]string, int, error) {
 	indexLocal, errIndex := getIndex()
 
 	if errIndex != nil {
-		return nil,0, errIndex
+		return nil, 0, errIndex
 	}
 
 	req := bleve.NewSearchRequest(q)
 	req.Fields = []string{FIELDNAME_ID}
-	req.From = offset;
-	
+	req.From = offset
+
 	if limit > 0 {
-		req.Size = limit;	
+		req.Size = limit
 	}
-	
+
 	res, err := indexLocal.Search(req)
 
 	if err != nil {
 		log.Fatal(err)
-		return nil,0,err
+		return nil, 0, err
 	}
 
 	returnedCount := int(res.Total)
-	
+
 	if returnedCount > req.Size {
 		returnedCount = req.Size
 	}

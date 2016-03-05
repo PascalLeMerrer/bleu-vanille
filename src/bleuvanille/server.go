@@ -43,7 +43,7 @@ type Template struct {
 
 func main() {
 
-	//Initialisation of the dependencies injection
+	// dependencies injection
 	eatableController.Search = &searchService
 
 	config.DatabaseInit()
