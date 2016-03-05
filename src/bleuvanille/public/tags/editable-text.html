@@ -1,23 +1,22 @@
 <editable-text>
     <input name="input" class="editable" type="{ opts.type || text }" value={ opts.text } onkeyup={ processKey } onblur={ invokeCallback }>
-    <ul show={ filtered.length }>
-        <li each={ c, i in filtered } onclick="{ parent.selected }" class="{ active: parent.active==i}">{ c }</li>
-    </ul>
-
+    <div class="completion">
+        <ul show={ choices.length }>
+            <li each={ c, i in choices } onclick="{ parent.selected }" class="{ active: parent.active==i}">{ c }</li>
+        </ul>
+    </div>
     <script>
         var self = this;
         var initialValue = self.opts.text;
         var value
         self.min = opts.min || 2
-        self.filtered  = []
+        self.choices  = []
         self.active = -1
         self.mode = opts.mode || 'start'
 
-        self.choices = ['Viande', 'Fruits', 'Légumes']
-
         processKey(keyboardEvent) {
 
-            if(self.choices !== undefined) {
+            if(self.opts.loadchoices !== undefined) {
                 self.autoComplete(keyboardEvent)
             }
             else if(keyboardEvent.which == 13) { // enter
@@ -28,48 +27,51 @@
 
         autoComplete(keyboardEvent) {
             if(keyboardEvent.target.value.length < self.min) {
-                self.filtered = []
+                self.choices = []
                 self.active = -1
                 return
             }
 
-            self.filtered = self.choices.filter(function(choice) {
-                return choice.match(self.checkRegexp(keyboardEvent))
-            })
-
-            if(keyboardEvent.which == 40 && self.filtered.length) { // down
-                self.active = Math.min(self.active+1, self.filtered.length-1)
+            if(keyboardEvent.which == 40 && self.choices.length) { // down
+                self.active = Math.min(self.active+1, self.choices.length-1)
                 return
             }
 
-            if(keyboardEvent.which == 38 && self.filtered.length) { // up
+            if(keyboardEvent.which == 38 && self.choices.length) { // up
                 self.active = Math.max(self.active-1, 0)
                 return
             }
 
             if(keyboardEvent.which == 13) { // enter
-                self.filtered.length && self.select(self.filtered[self.active])
+                self.choices.length && self.select(self.choices[self.active])
                 self.invokeCallback()
+                return
             }
 
             if(keyboardEvent.which == 27) { // escape
                 self.select('')
+                return
             }
+
+            // require the list of items to display in automcpletion list
+            self.opts.loadchoices(self.setChoices, self.input.value)
         }
 
-        checkRegexp(event) {
-            return self.mode == 'start' ?  RegExp('^' + event.target.value, 'i') : RegExp(event.target.value, 'i')
+        /* sets the list of values for autocompletion */
+        setChoices(values) {
+            self.choices = values
         }
 
-        selected(choice) {
-            console.log(choice.item.c)
-            self.select(choice.item.c)
+        /* use an item of the autcompletion list as the selected value */
+        selected(event) {
+            self.select(event.item.c)
         }
 
+        /* selects a value */
         select(text) {
             self.input.value = text
             self.active = -1
-            self.filtered = []
+            self.choices = []
             self.trigger('selected', text)
         }
 
@@ -96,21 +98,26 @@
             width: 100%;
         }
 
+        div.completion {
+            position: relative;
+        }
+
+
         ul {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 200;
             list-style: none;
-            border: 1px solid lightgrey;
             width: 10em;
             margin-top: 0;
             padding-left: 0;
+            z-index: 200;
         }
 
         li {
             cursor: pointer;
             padding-left: 1em;
-        }
-
-        li:hover, li.active {
-            background: #f2f2ff;
         }
 
 

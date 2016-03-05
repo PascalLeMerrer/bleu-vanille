@@ -11,10 +11,10 @@
         </div>
         <div class="grid-4">
             <div>
-                <input name="searchcriteria" onkeyup="{ search }" value="{ criteriaValue }">
+                <input name="searchcriteria" onkeyup="{ triggerSearch }" value="{ criteriaValue }">
             </div>
             <div class="navbar link">
-                <a href="#null" onclick="{ searchIntern }">Chercher</i></a>
+                <a href="#null" onclick="{ search }">Chercher</i></a>
             </div>
             <div class="navbar link">
                 <a href="#null" onclick="{ indexAll }">Reconstruire l'index</i></a>
@@ -42,7 +42,7 @@
                 <td><editable-text bus="{ self.opts.bus }" callback="{ searchAndSaveParent }"
                         property="eatable.parent.name" id="{ eatable._id }"
                         text="{ eatable.parent.name }" type="text"
-                        mode="contains"></editable-text>
+                        loadchoices="{ parent.loadChoices }"></editable-text>
                         </td>
                 <td class="action-column"><a href="" onclick="{ parent.deleteEatable }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
             </tr>
@@ -113,8 +113,8 @@
                     'Accept', 'application/json').end(self.searchCallback)
         }
 
-        // search eatable matching the criteria
-        search(event) {
+        // triggers a search when the user is typing
+        triggerSearch(event) {
 
             var criteriaValue = self.searchcriteria.value
 
@@ -132,7 +132,27 @@
             }
         }
 
-        searchIntern(event) {
+        /* loads list of autocompletion values for the given root text */
+        loadChoices(setChoicesCallback, root) {
+            var getChoicesCallback = self.curry(self.getChoicesCallback, self, setChoicesCallback)
+            superagent
+                .get('/search/completion/' + root +'?limit=10')
+                .set('Content-Type', 'application/json; charset=UTF-8').set(
+                    'Accept', 'application/json').end(getChoicesCallback)
+
+        }
+
+        /* set the list of autcompletion choices */
+        getChoicesCallback(setChoicesCallback, err, response) {
+            if (response !== undefined && response.ok) {
+                console.log(response.body)
+                //setChoicesCallback(response.body)
+                setChoicesCallback(['Poulet', 'Viande'])
+            }
+        }
+
+        // search the eatables matching the criteria
+        search(event) {
             self.triggerTimeOutVar = null
             self.criteriaValue = self.searchcriteria.value
             var criteriaValue
