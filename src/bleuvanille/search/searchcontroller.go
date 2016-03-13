@@ -54,7 +54,7 @@ func UnIndexFromKey(context *echo.Context) error {
 	eatableVar, err := eatable.FindByKey(key)
 
 	if err != nil {
-		log.Error(context, "Error while reading eatable from  " + key + " : "+err.Error())
+		log.Error(context, "Error while reading eatable from  "+key+" : "+err.Error())
 		log.Error(context, err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -108,7 +108,6 @@ func IndexFromKey(context *echo.Context) error {
 
 	return context.JSON(http.StatusOK, eatableVar)
 }
-
 
 //convertEatableKeyArrayInEatable convert a list of ids to a list of real eatable struct.
 func convertEatableKeyArrayInEatable(context *echo.Context, eatables []string) []eatable.Eatable {

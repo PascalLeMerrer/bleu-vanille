@@ -51,6 +51,11 @@ gulp.task('riot', function() {
     .pipe(gulp.dest('./public/tags'));
 });
 
+/**
+ * A test subset may be launched by passing a 'tags' argument to gulp
+ * ex: gulp test --tags="admin,users"
+ * will launch scenario tagged with @admin and @users
+ */
 gulp.task('test', function() {
   var tags = '';
   var parameters;
@@ -68,7 +73,7 @@ gulp.task('test', function() {
       tags += '@' + parameters[i]
     }
   }
-  
+
   return gulp.src('tests/*')
 		.pipe(cucumber({
 			'steps': 'tests/step_definitions/*.js',
