@@ -12,7 +12,6 @@ var db *ara.Database
 
 const (
 	COLNAME_SESSIONS string = "sessions"
-	COLNAME_CONTACTS string = "contacts"
 	COLNAME_ETABLES  string = "eatables"
 
 	EDGENAME_EATABLE_PARENT string = "eatable_parent"
@@ -61,19 +60,6 @@ func DatabaseInit() {
 
 // Create Table contacts if not exists
 func createTables() {
-	if !db.ColExist(COLNAME_CONTACTS) {
-		log.Info(nil, "Database : Create the collection "+COLNAME_CONTACTS)
-
-		// CollectionOptions has much more options, here we just define name , sync
-		contacts := ara.NewCollectionOptions(COLNAME_CONTACTS, false)
-		err := db.CreateCollection(contacts)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		db.Col(COLNAME_CONTACTS).CreateHash(true, "email")
-	}
 
 	if !db.ColExist(COLNAME_SESSIONS) {
 		log.Info(nil, "Database: Creating the collection "+COLNAME_SESSIONS)

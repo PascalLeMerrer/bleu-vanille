@@ -1,1 +1,1 @@
-{"exclusions":[".git", "bin", "node_modules", "pkg", "public", "9fans.net", "code.google.com", "github.com", "golang.org", "tests"]}
+{"exclusions":[".git","bin","node_modules","pkg","public","tests","vendor","dist","features","doc","roles","tmp","bleveindex.eatable","deploy"]}

@@ -14,14 +14,14 @@ func TestDuplicateEmail(t *testing.T) {
 	contact2 := Contact{Email: email}
 	err = Save(&contact2)
 	assert.Error(t, err, "Saving contact with duplicate email address failed")
-	result := Delete(email)
-	assert.Nil(t, result, "Deleting non existant email should return nil")
+	err = Remove(email)
+	assert.Nil(t, err, "Deleting non existant email should not return an error")
 }
 
 func TestDeleteUnknownEmail(t *testing.T) {
 	var email = "contactDeleteTest@unknown.com"
-	result := Delete(email)
-	assert.Nil(t, result, "Deleting non existant email should return nil")
+	err := Remove(email)
+	assert.Nil(t, err, "Deleting non existant email should not return an error")
 }
 
 func TestSearchByEmail(t *testing.T) {
@@ -29,13 +29,13 @@ func TestSearchByEmail(t *testing.T) {
 	created := Contact{Email: email}
 
 	//Delete if any
-	Delete(email)
+	Remove(email)
 
 	//Save the new contact
 	Save(&created)
 
 	//Search it afterwards
-	c, err := LoadByEmail(email)
+	c, err := FindByEmail(email)
 
 	assert.NoError(t, err, "Load By Email error.")
 	assert.NotEqual(t, c, nil, "User is not found by email")
@@ -43,11 +43,11 @@ func TestSearchByEmail(t *testing.T) {
 	assert.Equal(t, email, c.Email, "Wrong email.")
 
 	//purge the database with the test contact
-	Delete(email)
+	Remove(email)
 }
 
 func TestGetAll(t *testing.T) {
-	contacts, err := LoadAll()
+	contacts, count, err := FindAll("email", "ASC", 0, 0)
 	assert.NoError(t, err, "Error when loading contacts")
 
 	initialCount := len(contacts)
@@ -60,8 +60,9 @@ func TestGetAll(t *testing.T) {
 	Save(&contact1)
 	Save(&contact2)
 
-	contacts, err = LoadAll()
-	assert.Equal(t, len(contacts), initialCount+2, "Contacts not added in %v\n", contacts)
+	contacts, count, err = FindAll("email", "ASC", 0, 0)
+	assert.Equal(t, len(contacts), count, "Inconsistant data returned\n")
+	assert.Equal(t, count, initialCount+2, "Contacts not added in %v\n", contacts)
 
 	email1Found := false
 	email2Found := false
@@ -84,10 +85,10 @@ func TestGetAll(t *testing.T) {
 
 	assert.NoError(t, err, "Error when loading contacts")
 
-	Delete(email1)
-	Delete(email2)
+	Remove(email1)
+	Remove(email2)
 
-	contacts, err = LoadAll()
+	contacts, count, err = FindAll("email", "ASC", 0, 0)
 
 	assert.Equal(t, len(contacts), initialCount, "Contacts not deleted from %v\n", contacts)
 	assert.NoError(t, err, "Contact deletion failed.")

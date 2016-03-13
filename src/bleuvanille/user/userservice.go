@@ -16,7 +16,7 @@ const CollectionName = "users"
 // init creates the users collections if it do not already exist
 func init() {
 	config.DB().Run(&arangolite.CreateCollection{Name: CollectionName})
-	//TODO create a hash on email field
+	//TODO create a hash on email and id field
 }
 
 // Save inserts a user into the database

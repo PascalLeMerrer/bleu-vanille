@@ -158,7 +158,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/users", user.GetAll)
 	adminRoutes.Get("/users/email", user.Get)
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
-	adminRoutes.Delete("/contacts", contact.Remove)
+	adminRoutes.Delete("/contacts", contact.Delete)
 
 	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
 	adminRoutes.Delete("/eatables/:key", eatable.Delete)

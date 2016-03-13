@@ -64,15 +64,15 @@ func GetAll(context *echo.Context) error {
 	var err error
 	switch sortParam {
 	case "newer":
-		contacts, totalCount, err = LoadAll("created_at", "DESC", offsetParam, limitParam)
+		contacts, totalCount, err = FindAll("created_at", "DESC", offsetParam, limitParam)
 	case "older":
-		contacts, totalCount, err = LoadAll("created_at", "ASC", offsetParam, limitParam)
+		contacts, totalCount, err = FindAll("created_at", "ASC", offsetParam, limitParam)
 	case "emailAsc":
-		contacts, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam)
+		contacts, totalCount, err = FindAll("email", "ASC", offsetParam, limitParam)
 	case "emailDesc":
-		contacts, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam)
+		contacts, totalCount, err = FindAll("email", "DESC", offsetParam, limitParam)
 	default:
-		contacts, totalCount, err = LoadAll("created_at", "DESC", offsetParam, limitParam)
+		contacts, totalCount, err = FindAll("created_at", "DESC", offsetParam, limitParam)
 	}
 
 	if err != nil {
@@ -164,18 +164,15 @@ func Create(context *echo.Context) error {
 	return context.JSON(http.StatusCreated, contact)
 }
 
-// Remove deletes the contact for a given email
-func Remove(context *echo.Context) error {
+// Delete deletes the contact for a given email
+func Delete(context *echo.Context) error {
 	email := context.Query("email")
 	if email == "" {
 		return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in GET request"})
 	}
-	notFound, err := Delete(email)
+	err := Remove(email)
 
 	if err != nil {
-		if notFound {
-			return context.JSON(http.StatusNotFound, err)
-		}
 		log.Printf("Cannot delete contact with email %s, error: %s", email, err)
 		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot delete contact with email %s", email))
 	}

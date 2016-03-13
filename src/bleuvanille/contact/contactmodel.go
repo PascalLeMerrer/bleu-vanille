@@ -1,22 +1,20 @@
 package contact
 
 import (
-	"bleuvanille/config"
 	"errors"
 	"log"
 	"time"
-
-	ara "github.com/diegogub/aranGO"
 )
 
 // Contact is a user who registered to get information about our service
 type Contact struct {
-	ara.Document
+	ID        string    `json:"id"`
+	Key       string    `json:"_key,omitempty"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
-	UserAgent string
+	UserAgent string    `json:"useragent,omitempty"`
 	Referer   string
-	TimeSpent int
+	TimeSpent int `json:"timespent,omitempty"`
 }
 
 // Contacts is a list of Contact
@@ -37,19 +35,4 @@ func New(email string, userAgent string, referer string, timeSpent int) (Contact
 	contact.TimeSpent = timeSpent
 
 	return contact, nil
-}
-
-// GetKey returns the key in ArangoDB for the contact
-func (contact *Contact) GetKey() string {
-	return contact.Key
-}
-
-// GetCollection returns the collection name in ArangoDB for contacts
-func (contact *Contact) GetCollection() string {
-	return config.COLNAME_CONTACTS
-}
-
-// GetError returns true if there is an error and gives the last error message
-func (contact *Contact) GetError() (string, bool) {
-	return contact.Message, contact.Error
 }
