@@ -52,7 +52,7 @@ const (
 
 // CreateDefault creates a default admin account if it does not exist
 func CreateDefault() {
-	existingAdmin, err := LoadByEmail(config.AdminEmail)
+	existingAdmin, err := FindByEmail(config.AdminEmail)
 	if err != nil {
 		log.Println(err)
 	}
@@ -79,7 +79,7 @@ func CreateDefault() {
 
 	//Create the test user if we are not in production
 	if !config.ProductionMode {
-		existingTestUser, err := LoadByEmail(config.TestUserEmail)
+		existingTestUser, err := FindByEmail(config.TestUserEmail)
 
 		if err != nil {
 			log.Println(err)
@@ -132,27 +132,30 @@ var Create = emailAndPasswordRequired(
 		}
 		user.Hash = "" // dont return the hash, for security concerns
 
-		return context.JSON(http.StatusCreated, user)
+		return context.JSON(http.StatusCreated, formatUser(&user))
 	})
+
+// converts a User object to a FormattedUSer object
+// which is its public counterpart
+func formatUser(user *User) formattedUser {
+	return formattedUser{user.ID, user.Email, formatDate(user.CreatedAt), user.Firstname, user.Lastname, user.IsAdmin}
+}
 
 // Get returns the entry for a given email if any
 var Get = emailRequired(
 	func(context *echo.Context) error {
 
 		email := context.Query("email")
-		var user, err = LoadByEmail(email)
-		if err != nil {
+		var user, err = FindByEmail(email)
+		if err != nil || user == nil {
 			log.Println(err)
 			return context.JSON(http.StatusNotFound, nil)
 		}
-		return context.JSON(http.StatusOK, user)
+		return context.JSON(http.StatusOK, formatUser(user))
 	})
 
 // GetAll returns the list of all users
 func GetAll(context *echo.Context) error {
-	sortParam := context.Query("sort")
-	emailParam := context.Query("email")
-	nameParam := context.Query("name")
 	offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
 	if offsetErr != nil {
 		offsetParam = 0
@@ -164,23 +167,9 @@ func GetAll(context *echo.Context) error {
 	var users Users
 	var totalCount int
 	var err error
-	// TODO: refactor
-	switch sortParam {
-	case "newer":
-		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam, emailParam, nameParam)
-	case "older":
-		users, totalCount, err = LoadAll("createdAt", "ASC", offsetParam, limitParam, emailParam, nameParam)
-	case "emailAsc":
-		users, totalCount, err = LoadAll("email", "ASC", offsetParam, limitParam, emailParam, nameParam)
-	case "emailDesc":
-		users, totalCount, err = LoadAll("email", "DESC", offsetParam, limitParam, emailParam, nameParam)
-	case "nameAsc":
-		users, totalCount, err = LoadAll("lastname", "ASC", offsetParam, limitParam, emailParam, nameParam)
-	case "nameDesc":
-		users, totalCount, err = LoadAll("lastname", "DESC", offsetParam, limitParam, emailParam, nameParam)
-	default:
-		users, totalCount, err = LoadAll("createdAt", "DESC", offsetParam, limitParam, emailParam, nameParam)
-	}
+	criteria, order := getSortingParams(context)
+
+	users, totalCount, err = FindAll(criteria, order, offsetParam, limitParam)
 
 	if err != nil {
 		log.Println(err)
@@ -188,8 +177,7 @@ func GetAll(context *echo.Context) error {
 	}
 	formattedUsers := make([]formattedUser, len(users))
 	for i := range users {
-		formattedDate := formatDate(users[i].CreatedAt)
-		formattedUsers[i] = formattedUser{users[i].ID, users[i].Email, formattedDate, users[i].Firstname, users[i].Lastname, users[i].IsAdmin}
+		formattedUsers[i] = formatUser(&users[i])
 		i++
 	}
 	contentType := context.Request().Header.Get("Accept")
@@ -202,8 +190,42 @@ func GetAll(context *echo.Context) error {
 		fmt.Printf("Cannot create User list file: %v", err)
 		return context.JSON(http.StatusInternalServerError, fmt.Errorf("Cannot open file: %v", err))
 	}
-	// TODO: How to cleanup the temp dir?
 	return context.File(filepath, filename, true)
+}
+
+// extracts from the sortParam parameter a criteria value and a sorting order
+// @returns the nma of the property on which user list must be sorted, and the sort order (ASC or DESC)
+func getSortingParams(context *echo.Context) (string, string) {
+
+	sortParam := context.Query("sort")
+
+	var criteria string
+	var order string
+
+	switch sortParam {
+	case "newer":
+		criteria = "createdAt"
+		order = "DESC"
+	case "older":
+		criteria = "createdAt"
+		order = "ASC"
+	case "emailAsc":
+		criteria = "email"
+		order = "ASC"
+	case "emailDesc":
+		criteria = "email"
+		order = "DESC"
+	case "nameAsc":
+		criteria = "lastname"
+		order = "ASC"
+	case "nameDesc":
+		criteria = "lastname"
+		order = "DESC"
+	default:
+		criteria = "createdAt"
+		order = "DESC"
+	}
+	return criteria, order
 }
 
 // formats a date according to FR locale
@@ -247,7 +269,7 @@ func Patch(context *echo.Context) error {
 		return context.JSON(http.StatusUnauthorized, "")
 	}
 
-	user, err := LoadByID(userID)
+	user, err := FindByID(userID)
 	if err != nil || user == nil {
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
 	}
@@ -275,7 +297,7 @@ func Patch(context *echo.Context) error {
 // RemoveByAdmin removes the user account for a given ID
 // This is an admin feature, not supposed to be used by normal users
 func RemoveByAdmin(context *echo.Context) error {
-	user, err := LoadByID(context.Param("userID"))
+	user, err := FindByID(context.Param("userID"))
 	if err != nil || user == nil {
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
 
@@ -283,8 +305,8 @@ func RemoveByAdmin(context *echo.Context) error {
 	return _delete(context, user)
 }
 
-// Remove removes the user account for a given email
-func Remove(context *echo.Context) error {
+// Delete removes the user account for a given email
+func Delete(context *echo.Context) error {
 	userID := context.Get("session").(*session.Session).UserID
 	if userID == "" {
 		log.Println("Missing userID in session")
@@ -295,7 +317,7 @@ func Remove(context *echo.Context) error {
 		log.Println("Missing password parameter in DELETE request")
 		return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in DELETE request"))
 	}
-	user, err := LoadByID(userID)
+	user, err := FindByID(userID)
 	if err != nil || user == nil {
 		log.Printf("Cannot load user with ID %s", userID)
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
@@ -309,7 +331,7 @@ func Remove(context *echo.Context) error {
 
 // Effective deletion of a user account
 func _delete(context *echo.Context, user *User) error {
-	deleteErr := Delete(user)
+	deleteErr := Remove(user.Key)
 	if deleteErr != nil {
 		log.Printf("Cannot delete user %v", deleteErr)
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot delete user with ID: "+user.ID))
@@ -323,7 +345,7 @@ var Login = emailAndPasswordRequired(
 		password := context.Form("password")
 		fmt.Printf("Password %v", password)
 		email := context.Form("email")
-		user, err := LoadByEmail(email)
+		user, err := FindByEmail(email)
 		if err != nil || user == nil {
 			log.Println(err)
 			return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
@@ -368,7 +390,7 @@ var ChangePassword = emailAndPasswordRequired(
 		// TODO we should use info from session instead of an email parameter
 		email, oldPassword, newPassword := context.Form("email"), context.Form("password"), context.Form("newPassword")
 
-		user, err := LoadByEmail(email)
+		user, err := FindByEmail(email)
 		if err != nil {
 			log.Println(err)
 			return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
@@ -402,7 +424,7 @@ func ResetPassword(context *echo.Context) error {
 		log.Println("Missing email in password reset request")
 		return context.JSON(http.StatusUnauthorized, errors.New("Missing email in password reset request"))
 	}
-	user, err := LoadByEmail(email)
+	user, err := FindByEmail(email)
 	if err != nil {
 		log.Printf("Cannot find user during password reset: %v\n", err)
 		return context.JSON(http.StatusUnauthorized, errors.New("Wrong email in password reset request"))
@@ -428,7 +450,7 @@ func ResetPassword(context *echo.Context) error {
 var SendResetLink = emailRequired(
 	func(context *echo.Context) error {
 		email := context.Form("email")
-		user, err := LoadByEmail(email)
+		user, err := FindByEmail(email)
 		if err != nil || user == nil {
 			log.Println(err)
 			return context.JSON(http.StatusNotFound, errors.New("Cannot find user for email "+email))
@@ -466,7 +488,7 @@ func DisplayResetForm(context *echo.Context) error {
 	if token == "" || email == "" {
 		return context.JSON(http.StatusUnauthorized, "Invalid URL for password reset")
 	}
-	user, err := LoadByEmail(email)
+	user, err := FindByEmail(email)
 	if user == nil || err != nil {
 		return context.JSON(http.StatusUnauthorized, "Invalid user for password reset")
 	}
@@ -485,10 +507,10 @@ func DisplayResetForm(context *echo.Context) error {
 // If it's the current one,or if if it's an admin that requires it,
 // the returned profile is richer than if it a normal user that asks
 func Profile(context *echo.Context) error {
-	user, err := LoadByID(context.Param("userID"))
+
+	user, err := FindByID(context.Param("userID"))
 	if err != nil || user == nil {
 		return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
-
 	}
 
 	session := context.Get("session").(*session.Session)
@@ -498,15 +520,7 @@ func Profile(context *echo.Context) error {
 		return context.JSON(http.StatusOK, user)
 	}
 
-	publicProfile := formattedUser{
-		user.ID,
-		"",
-		formatDate(user.CreatedAt),
-		user.Firstname,
-		user.Lastname,
-		user.IsAdmin,
-	}
-	return context.JSON(http.StatusOK, publicProfile)
+	return context.JSON(http.StatusOK, formatUser(user))
 }
 
 // emailRequired verifies the presence of an "email" parameter in the body of the request

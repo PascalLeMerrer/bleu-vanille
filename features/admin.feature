@@ -72,23 +72,18 @@ Feature:
     And response body path $[1].email should be \w
     And response body path $[1].createdAt should be \w
 
-  Scenario: As an admin, search for users with a given email
+  Scenario: As an admin, search for a user with a given email
     Given I set bearer token
     And I set Content-Type header to application/json;charset=UTF-8
     And I set Accept header to application/json
-    When I GET /admin/users?email=admin_test1@mail.org
+    When I GET /admin/users/email?email=admin_test1@mail.org
     Then response code should be 200
-    And response header X-TOTAL-COUNT should exist
-    And response header X-TOTAL-COUNT should be 1
     And response body should be valid json
-    And response body at path $ should be a json array
-    And response body at path $ should be an array of length 1
-    And response body path $[0].id should be \w
-    And response body path $[0].firstname should be JOHN
-    And response body path $[0].lastname should be DOE
-    And response body path $[0].email should be admin_test1@mail.org
-    And response body path $[0].createdAt should be \w
-
+    And response body path $.id should be \w
+    And response body path $.firstname should be JOHN
+    And response body path $.lastname should be DOE
+    And response body path $.email should be admin_test1@mail.org
+    And response body path $.createdAt should be \w
 
 
   Scenario: check rights on account used for admin tests

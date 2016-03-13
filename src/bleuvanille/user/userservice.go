@@ -4,21 +4,36 @@ package user
 
 import (
 	"bleuvanille/config"
-	"errors"
+	"encoding/json"
 	"fmt"
-	"math"
-	"strconv"
 
-	ara "github.com/diegogub/aranGO"
+	"github.com/solher/arangolite"
 )
+
+// CollectionName is the name of the user collection in the database
+const CollectionName = "users"
+
+// init creates the users collections if it do not already exist
+func init() {
+	config.DB().Run(&arangolite.CreateCollection{Name: CollectionName})
+	//TODO create a hash on email field
+}
 
 // Save inserts a user into the database
 func Save(user *User) error {
-	errorMap := config.Context().Save(user)
-	if value, ok := errorMap["error"]; ok {
-		return errors.New(value)
+	var resultByte []byte
+	var err error
+
+	if user.Key == "" {
+		resultByte, err = config.DB().Send("INSERT DOCUMENT", "POST", "/_api/document?collection="+CollectionName, user)
+	} else {
+		query := fmt.Sprintf("/_api/document/%s/%s", CollectionName, user.Key)
+		resultByte, err = config.DB().Send("UPDATE DOCUMENT", "PUT", query, user)
 	}
-	return nil
+	if err == nil {
+		err = json.Unmarshal(resultByte, user)
+	}
+	return err
 }
 
 // SavePassword updates the password of a given user into the database
@@ -27,104 +42,88 @@ func SavePassword(user *User, newPassword string) error {
 	return Save(user)
 }
 
-// LoadByEmail returns the user object for a given email, if any
-func LoadByEmail(email string) (*User, error) {
-	var result User
+// FindByEmail returns the user object for a given email, if any
+func FindByEmail(email string) (*User, error) {
+	return FindBy("email", email)
+}
 
-	col := config.GetCollection(&result)
-	cursor, err := col.Example(map[string]interface{}{"email": email}, 0, 1)
+// FindByID returns the user object for a given user ID, if any
+func FindByID(ID string) (*User, error) {
+	return FindBy("id", ID)
+}
 
-	//return an error
+// FindByName returns the user object for a given name, if any
+// TODO: what if two users have the same name?
+func FindByName(name string) (*User, error) {
+	return FindBy("name", name)
+}
+
+// FindBy returns an user matching the given property value, or nil if not user matches
+func FindBy(name, value string) (*User, error) {
+
+	query := arangolite.NewQuery(` FOR u IN %s FILTER u.@name == @value LIMIT 1 RETURN u `, CollectionName)
+	query.Bind("name", name)
+	query.Bind("value", value)
+
+	return executeReadingQuery(query)
+}
+
+// Executes a given query that is expected to return a single user
+func executeReadingQuery(query *arangolite.Query) (*User, error) {
+	var result []User
+
+	rawResult, err := config.DB().Run(query)
 	if err != nil {
 		return nil, err
 	}
 
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		cursor.FetchOne(&result)
-		return &result, nil
+	marshallErr := json.Unmarshal(rawResult, &result)
+	if marshallErr != nil {
+		return nil, marshallErr
 	}
-
-	return nil, nil
-}
-
-// LoadByID returns the user object for a given user ID, if any
-func LoadByID(ID string) (*User, error) {
-	querystr := fmt.Sprintf("FOR u in users filter u.id == %q RETURN u", ID)
-
-	arangoquery := ara.NewQuery(querystr)
-	cursor, err := config.Db().Execute(arangoquery)
-
-	//return an error
-	if err != nil {
-		return nil, err
-	}
-
-	var result User
-
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		cursor.FetchOne(&result)
-		return &result, nil
+	if len(result) > 0 {
+		return &result[0], nil
 	}
 	return nil, nil
 }
 
-// LoadAll returns the list of all users in the database
+// FindAll returns the list of all users in the database
 // sort defines the sorting property name
 // order must be either ASC or DESC
 // offset is the start index
 // limit defines the max number of results to be returned
-// email is a filtering criteria - may be an empty string to return all or an email address.
 // returns an array of user, the total number of users, an error
-func LoadAll(sort string, order string, offset int, limit int, email string, name string) ([]User, int, error) {
+func FindAll(sort string, order string, offset int, limit int) ([]User, int, error) {
+
 	limitString := ""
 	if limit > 0 {
-		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
-	} else {
-		limitString = " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(math.MaxUint16)
+		limitString = fmt.Sprintf("LIMIT %d, %d", offset, limit)
 	}
-	emailString := ""
-	if email != "" {
-		emailString = " FILTER u.email == \"" + email + "\""
-	}
-	nameString := ""
-	if name != "" {
-		nameString = " FILTER u.lastname == \"" + name + "\""
+	queryString := "FOR u IN %s SORT u.%s %s %s RETURN u"
+	query := arangolite.NewQuery(queryString, CollectionName, sort, order, limitString)
+
+	async, asyncErr := config.DB().RunAsync(query)
+	if asyncErr != nil {
+		return nil, 0, asyncErr
 	}
 
-	queryString := "FOR u in users " + emailString + nameString + " SORT u." + sort + " " + order + limitString + " RETURN u"
+	users := []User{}
+	decoder := json.NewDecoder(async.Buffer())
 
-	fmt.Println(queryString)
-
-	arangoQuery := ara.NewQuery(queryString)
-	arangoQuery.SetFullCount(true)
-	cursor, err := config.Db().Execute(arangoQuery)
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, 0, err
+	for async.HasMore() {
+		batch := []User{}
+		decoder.Decode(&batch)
+		users = append(users, batch...)
 	}
-	result := make([]User, len(cursor.Result))
-	err = cursor.FetchBatch(&result)
-	if err != nil {
-		fmt.Println(err)
-		return nil, 0, err
-	}
-	return result, cursor.FullCount(), nil
+
+	return users, len(users), nil
+
 }
 
-// Delete delete the given user from the database
-func Delete(user *User) error {
-
-	if user == nil {
-		return errors.New("Impossible to delete nil user")
-	}
-
-	err := config.Context().Delete(user)
-
-	if err != nil && len(err) > 0 {
-		errorstring := fmt.Sprintf("Impossible to delete User %s : %s", user.Key, err)
-		return errors.New(errorstring)
-	}
-
-	return nil
+// Remove deletes the user for the given key from the database
+func Remove(key string) error {
+	query := arangolite.NewQuery(`REMOVE @key IN %s`, CollectionName)
+	query.Bind("key", key)
+	_, err := config.DB().Run(query)
+	return err
 }

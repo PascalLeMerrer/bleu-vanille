@@ -16,7 +16,7 @@ func TestSessionSave(t *testing.T) {
 	assert.NoError(t, userCreationError, "User creation error.")
 
 	// Cleanup before testing
-	_ = Delete(&testUser)
+	_ = Remove(testUser.Key)
 
 	userSaveError := Save(&testUser)
 	assert.NoError(t, userSaveError, "User save error.")
@@ -26,7 +26,7 @@ func TestSessionSave(t *testing.T) {
 	err := session.Save(&testSession)
 	assert.NoError(t, err, "Session save error.")
 
-	userDeletionError := Delete(&testUser)
+	userDeletionError := Remove(testUser.Key)
 	assert.NoError(t, userDeletionError, "User Deletion error.")
 
 }
@@ -36,7 +36,7 @@ func TestUserUpdate(t *testing.T) {
 	assert.NoError(t, userCreationError, "User creation error.")
 
 	// Cleanup before testing
-	_ = Delete(&testUser)
+	_ = Remove(testUser.Key)
 
 	userSaveError := Save(&testUser)
 	assert.NoError(t, userSaveError, "User save error.")
@@ -51,8 +51,8 @@ func TestUserUpdate(t *testing.T) {
 	userUpdateError := Save(&testUser)
 	assert.NoError(t, userUpdateError, "User update error.")
 
-	updatedUser, loadUserError := LoadByID(testUser.ID)
-	assert.NoError(t, loadUserError, "User loading error.")
+	updatedUser, findUserError := FindByID(testUser.ID)
+	assert.NoError(t, findUserError, "User loading error.")
 	assert.Equal(t, testUser.Email, updatedUser.Email, "Updated user does not contain the expected Email.")
 	assert.Equal(t, testUser.Firstname, updatedUser.Firstname, "Updated user does not contain the expected Firstname.")
 	assert.Equal(t, testUser.Hash, updatedUser.Hash, "Updated user does not contain the expected Hash.")
@@ -62,6 +62,6 @@ func TestUserUpdate(t *testing.T) {
 	assert.Equal(t, testUser.ResetToken, updatedUser.ResetToken, "Updated user does not contain the expected ResetToken.")
 
 	// Cleanup after testing
-	userDeletionError := Delete(&testUser)
+	userDeletionError := Remove(testUser.Key)
 	assert.NoError(t, userDeletionError, "User Deletion error.")
 }

@@ -112,7 +112,7 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 
 	userRoutes.Post("/logout", session.Logout)
 	// echo does not accept Delete request with body so we use a Post instead
-	userRoutes.Post("/delete", user.Remove)
+	userRoutes.Post("/delete", user.Delete)
 	userRoutes.Put("/password", user.ChangePassword)
 	userRoutes.Get("/:userID", user.Profile)
 	userRoutes.Patch("/:userID", user.Patch)
@@ -156,6 +156,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/dashboard", admin.Dashboard)
 	adminRoutes.Get("/contacts", contact.GetAll)
 	adminRoutes.Get("/users", user.GetAll)
+	adminRoutes.Get("/users/email", user.Get)
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Remove)
 

@@ -1,26 +1,26 @@
 package user
 
 import (
-	"bleuvanille/config"
 	"errors"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
 
-	ara "github.com/diegogub/aranGO"
 	"github.com/speps/go-hashids"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 // User is any type of registered user
 type User struct {
-	ara.Document
-	ID         string `json:"id"`
-	Email      string `json:"email"`
-	Firstname  string `json:"firstname"`
-	Lastname   string `json:"lastname"`
-	Hash       string
+	ID         string    `json:"id"`
+	InternalID string    `json:"_id,omitempty"`
+	Key        string    `json:"_key,omitempty"`
+	Email      string    `json:"email"`
+	Firstname  string    `json:"firstname"`
+	Lastname   string    `json:"lastname"`
+	Hash       string    `json:"hash,omitempty"`
 	IsAdmin    bool      `json:"isAdmin"`
 	CreatedAt  time.Time `json:"createdAt"`
 	ResetToken string
@@ -97,19 +97,4 @@ func intToIntArray(value int64, length int) []int {
 		result[index] = int(intValue)
 	}
 	return result
-}
-
-// GetKey returns the primary key
-func (e *User) GetKey() string {
-	return e.Key
-}
-
-// GetCollection returns the name of collection in the database
-func (e *User) GetCollection() string {
-	return config.COLNAME_USERS
-}
-
-// GetError returns the error status and message
-func (e *User) GetError() (string, bool) {
-	return e.Message, e.Error
 }
