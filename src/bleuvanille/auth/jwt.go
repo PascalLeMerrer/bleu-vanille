@@ -61,7 +61,7 @@ func JWTAuth() echo.HandlerFunc {
 
 func deleteExpiredSession(token *jwt.Token) {
 	if sessionID, ok := token.Claims["id"].(string); ok {
-		session.Delete(sessionID)
+		session.Remove(sessionID)
 	}
 }
 

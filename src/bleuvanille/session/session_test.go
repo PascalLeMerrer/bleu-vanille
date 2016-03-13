@@ -7,10 +7,10 @@ import (
 )
 
 func TestSearchByID(t *testing.T) {
-	session, _ := GetByID("UNKNOWNID")
+	session, _ := FindByID("UNKNOWNID")
 
 	if session != nil {
-		t.Errorf("Found a session that does not exist : %s", session)
+		t.Errorf("Found a session that does not exist : %+v", session)
 	}
 
 	var session1 Session
@@ -20,7 +20,7 @@ func TestSearchByID(t *testing.T) {
 
 	Save(&session1)
 
-	sessionbyid, err := GetByID("1")
+	sessionbyid, err := FindByID("1")
 
 	assert.NoError(t, err, "Get Session by ID error.")
 
@@ -28,14 +28,14 @@ func TestSearchByID(t *testing.T) {
 		t.Errorf("Not Found a session with the id \"1\"")
 	} else {
 		if sessionbyid.SessionID != "1" {
-			t.Errorf("Found a session with the wrong id : %s", session)
+			t.Errorf("Found a session with the wrong id : %+v", session)
 		}
 	}
 
-	//purge the database with the test contact
-	Delete("1")
+	//purge the database with the test session
+	Remove("1")
 
-	session, _ = GetByID("1")
+	session, _ = FindByID("1")
 
 	if session != nil {
 		t.Errorf("Session incorrectly deleted")

@@ -13,7 +13,7 @@ func Logout(context *echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
 	sessionID := rawSessionID.(string)
-	err := Delete(sessionID)
+	err := Remove(sessionID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}

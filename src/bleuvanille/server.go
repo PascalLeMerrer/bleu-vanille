@@ -39,7 +39,6 @@ type Template struct {
 
 func main() {
 
-	config.DatabaseInit()
 	user.CreateDefault()
 
 	echoServer := echo.New()

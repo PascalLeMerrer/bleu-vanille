@@ -15,7 +15,7 @@ func Middleware() echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 		sessionID := rawSessionID.(string)
-		session, error := GetByID(sessionID)
+		session, error := FindByID(sessionID)
 
 		if error != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized)

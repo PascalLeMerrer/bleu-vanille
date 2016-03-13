@@ -5,14 +5,13 @@ import (
 	"errors"
 	"log"
 	"time"
-
-	ara "github.com/diegogub/aranGO"
 )
 
 // Session stores values for an active user. The user maybe authenticated or not
 // How to handle secure sessions: https://www.owasp.org/index.php/Session_Management_Cheat_Sheet
 type Session struct {
-	ara.Document
+	ID        string `json:"id"`
+	Key       string `json:"_key,omitempty"`
 	SessionID string
 	UserID    string
 	Email     string
@@ -54,14 +53,4 @@ func (session *Session) Get(key string) interface{} {
 // GetKey returns the primary key
 func (session *Session) GetKey() string {
 	return session.Key
-}
-
-// GetCollection returns the name of collection in the database
-func (session *Session) GetCollection() string {
-	return config.COLNAME_SESSIONS
-}
-
-// GetError returns the error status and message
-func (session *Session) GetError() (string, bool) {
-	return session.Message, session.Error
 }

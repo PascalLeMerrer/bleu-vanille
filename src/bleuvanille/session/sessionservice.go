@@ -2,77 +2,66 @@ package session
 
 import (
 	"bleuvanille/config"
-	"errors"
+	"encoding/json"
 	"fmt"
-
-	ara "github.com/diegogub/aranGO"
+	"github.com/solher/arangolite"
 )
 
-// Save inserts a session into the database
-func Save(sess *Session) error {
-	errorMap := config.Context().Save(sess)
-	if value, ok := errorMap["error"]; ok {
-		errorString := fmt.Sprintf("Impossible to save the session with ID %v, userID %v, isAdmin %v, ExpiresAt %v : %s\n", sess.SessionID, sess.UserID, sess.IsAdmin, sess.ExpiresAt, value)
-		return errors.New(errorString)
-	}
-	return nil
+// CollectionName is the name of the user collection in the database
+const CollectionName = "sessions"
+
+// init creates the contacts collections if it do not already exist
+func init() {
+	config.DB().Run(&arangolite.CreateCollection{Name: CollectionName})
+	//TODO create a hash on id field
 }
 
-// GetByID returns the sess object for a given ID, if any,
+// Save inserts a session into the database
+// TODO we should renew the id is the admin privilege is given
+// See https://www.owasp.org/index.php/Session_Management_Cheat_Sheet
+func Save(sess *Session) error {
+	var resultByte []byte
+	var err error
+
+	if sess.Key == "" {
+		resultByte, err = config.DB().Send("INSERT DOCUMENT", "POST", "/_api/document?collection="+CollectionName, sess)
+	} else {
+		query := fmt.Sprintf("/_api/document/%s/%s", CollectionName, sess.Key)
+		resultByte, err = config.DB().Send("UPDATE DOCUMENT", "PUT", query, sess)
+	}
+	if err == nil {
+		err = json.Unmarshal(resultByte, sess)
+	}
+	return err
+}
+
+// FindByID returns the sess object for a given ID, if any,
 // or nil if the session does not exist in the database
-func GetByID(ID string) (*Session, error) {
-	queryString := fmt.Sprintf("FOR s in sessions filter s.SessionID == %q RETURN s", ID)
+func FindByID(ID string) (*Session, error) {
+	var result []Session
 
-	arangoQuery := ara.NewQuery(queryString)
-	cursor, err := config.Db().Execute(arangoQuery)
+	query := arangolite.NewQuery(` FOR session IN %s FILTER session.SessionID == @id LIMIT 1 RETURN session `, CollectionName)
+	query.Bind("id", ID)
 
-	//return an error
+	rawResult, err := config.DB().Run(query)
 	if err != nil {
 		return nil, err
 	}
 
-	var result Session
-
-	if cursor.Result != nil && len(cursor.Result) > 0 {
-		cursor.FetchOne(&result)
-		return &result, nil
+	marshallErr := json.Unmarshal(rawResult, &result)
+	if marshallErr != nil {
+		return nil, marshallErr
+	}
+	if len(result) > 0 {
+		return &result[0], nil
 	}
 	return nil, nil
 }
 
-// Update updates the session in the database
-// TODO we should renew the id is the admin privilege is given
-// See https://www.owasp.org/index.php/Session_Management_Cheat_Sheet
-func Update(sess *Session) error {
-	errorMap := config.Context().Save(sess)
-
-	if value, ok := errorMap["error"]; ok {
-		errorString := fmt.Sprintf("Impossible to update the session with ID %v, userID %v, isAdmin %v, ExpiresAt %v : %s\n", sess.SessionID, sess.UserID, sess.IsAdmin, sess.ExpiresAt, value)
-		return errors.New(errorString)
-	}
-	return nil
-}
-
-// Delete removes from the database the session for the given ID
-func Delete(ID string) error {
-	result, err := GetByID(ID)
-
-	//return an error
-	if err != nil {
-		return err
-	}
-
-	if result == nil {
-		errorString := fmt.Sprintf("Session with ID %s does not exists", ID)
-		return errors.New(errorString)
-	}
-
-	errorMap := config.Context().Delete(result)
-
-	if value, ok := errorMap["error"]; ok {
-		errorString := fmt.Sprintf("Impossible to delete the session with ID %v : %s\n", result.SessionID, value)
-		return errors.New(errorString)
-	}
-
-	return nil
+// Remove removes from the database the session for the given ID
+func Remove(ID string) error {
+	query := arangolite.NewQuery(`FOR session IN %s FILTER session.SessionID==@id REMOVE session IN %s`, CollectionName, CollectionName)
+	query.Bind("id", ID)
+	_, err := config.DB().Run(query)
+	return err
 }
