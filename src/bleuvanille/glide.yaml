@@ -3,7 +3,7 @@ import:
 - package: github.com/dgrijalva/jwt-go
 - package: github.com/diegogub/napping
 - package: github.com/solher/arangolite
-  version: a7031841d8349b1108e344ee0c5311cfbedfe571
+  version: 543a24581716437e51e0db460cab69cc85b701f4
 - package: github.com/stretchr/testify
   subpackages:
   - /assert
