@@ -1,7 +1,6 @@
 package: bleuvanille
 import:
 - package: github.com/dgrijalva/jwt-go
-- package: github.com/diegogub/napping
 - package: github.com/solher/arangolite
   version: 543a24581716437e51e0db460cab69cc85b701f4
 - package: github.com/stretchr/testify
@@ -11,7 +10,6 @@ import:
   subpackages:
   - /bcrypt
 - package: github.com/steveyen/gtreap
-- package: github.com/diegogub/aranGO
 - package: github.com/boltdb/bolt
 - package: github.com/speps/go-hashids
 - package: github.com/labstack/gommon
