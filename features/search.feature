@@ -19,7 +19,6 @@ Scenario: Creating and searching for an eatable with authenticated user
     Then response code should be 201
     And response body path $._key should be \d+
     And I store the value of body path $._key as eatableKey in global scope
-    Given I set Cookie header to global variable cookie
     When I GET /search/main/Carotte
     Then response code should be 200
     And response body should be valid json
