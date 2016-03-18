@@ -7,11 +7,13 @@
     </header>
     <div class="flex-container">
         <modal></modal>
+        <createeatable-modal></createeatable-modal>
         <admin-menu></admin-menu>
         <div id="main" role="main" class="flex-item-fluid pam">
             <alert></alert>
             <contact-list></contact-list>
             <user-list></user-list>
+            <eatable-search></eatable-search>
         </div>
     </div>
     <footer id="footer" role="contentinfo" class="line pam txtcenter">
@@ -21,13 +23,42 @@
     <script type="text/javascript" src="/js/riot.min.js"></script>
     <script type="text/javascript" src="/tags/alert.js"></script>
     <script type="text/javascript" src="/tags/editable-text.js"></script>
+    <script type="text/javascript" src="/tags/createeatable-modal.js"></script>
     <script type="text/javascript" src="/tags/logout.js"></script>
     <script type="text/javascript" src="/tags/admin-menu.js"></script>
     <script type="text/javascript" src="/tags/contact-list.js"></script>
     <script type="text/javascript" src="/tags/pagination.js"></script>
     <script type="text/javascript" src="/tags/user-list.js"></script>
     <script type="text/javascript" src="/tags/modal.js"></script>
+    <script type="text/javascript" src="/tags/eatable-search.js"></script>
     <script type="text/javascript">
+
+      /**
+       * presets some parameter(s) value(s) for a given function
+       * @param fn the function to be curried
+       * @param scope the scope of the function to be curried
+       * @see http://stackoverflow.com/questions/5176313/javascript-curry
+       */
+      var curryMixin = {
+          curry(fn, scope) {
+              scope = scope || window;
+              var args = [];
+              for (var i = 2, len = arguments.length; i < len; ++i) {
+                  args.push(arguments[i]);
+              }
+              return function() {
+                  var args2 = [];
+                  for (var i = 0; i < arguments.length; i++) {
+                      args.push(arguments[i]);
+                  }
+                  var argstotal = args.concat(args2);
+                  return fn.apply(scope, argstotal);
+              };
+          }
+      }
+
+      riot.mixin('curryMixin', curryMixin)
+
       var bus = {};
       riot.observable(bus);
       bus.on('disconnected', function() {
@@ -37,6 +68,7 @@
       riot.mount('logout', { bus: bus})
       riot.mount('modal', { bus: bus})
       riot.mount('alert', { bus: bus})
+      riot.mount('createeatable-modal', { bus: bus})
 
     </script>
 {{template "footer"}}

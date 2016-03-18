@@ -1,18 +1,81 @@
 <editable-text>
-    <input name="input" class="editable" type="{ opts.type || text }" value={ opts.text } onkeyup={ submit } onblur={ invokeCallback }>
+    <input name="input" class="editable" type="{ opts.type || text }" value={ opts.text } onkeyup={ processKey } onblur={ invokeCallback }>
+    <div class="completion">
+        <ul show={ choices.length }>
+            <li each={ c, i in choices } onclick="{ parent.selected }" class="{ active: parent.active==i}">{ c }</li>
+        </ul>
+    </div>
     <script>
-        var self=this;
+        var self = this;
         var initialValue = self.opts.text;
         var value
+        self.min = opts.min || 2
+        self.choices  = []
+        self.active = -1
+        self.mode = opts.mode || 'start'
 
-        // validates the form when enter is pressed
-        submit(e) {
-            if (e.keyCode == 13) {
+        processKey(keyboardEvent) {
+
+            if(self.opts.loadchoices !== undefined) {
+                self.autoComplete(keyboardEvent)
+            }
+            else if(keyboardEvent.which == 13) { // enter
+                // validates the form
                 self.invokeCallback()
             }
         }
 
-        // invoke the continer's callback to save the new input value
+        autoComplete(keyboardEvent) {
+            if(keyboardEvent.target.value.length < self.min) {
+                self.choices = []
+                self.active = -1
+                return
+            }
+
+            if(keyboardEvent.which == 40 && self.choices.length) { // down
+                self.active = Math.min(self.active+1, self.choices.length-1)
+                return
+            }
+
+            if(keyboardEvent.which == 38 && self.choices.length) { // up
+                self.active = Math.max(self.active-1, 0)
+                return
+            }
+
+            if(keyboardEvent.which == 13) { // enter
+                self.choices.length && self.select(self.choices[self.active])
+                self.invokeCallback()
+                return
+            }
+
+            if(keyboardEvent.which == 27) { // escape
+                self.select('')
+                return
+            }
+
+            // require the list of items to display in automcpletion list
+            self.opts.loadchoices(self.setChoices, self.input.value)
+        }
+
+        /* sets the list of values for autocompletion */
+        setChoices(values) {
+            self.choices = values
+        }
+
+        /* use an item of the autcompletion list as the selected value */
+        selected(event) {
+            self.select(event.item.c)
+        }
+
+        /* selects a value */
+        select(text) {
+            self.input.value = text
+            self.active = -1
+            self.choices = []
+            self.trigger('selected', text)
+        }
+
+        // invoke the caller's callback to save the new input value
         invokeCallback() {
             value = self.input.value
             if( value != initialValue) {
@@ -30,9 +93,33 @@
         }
 
     </script>
-    <style>
+    <style scoped>
         input.editable {
             width: 100%;
         }
+
+        div.completion {
+            position: relative;
+        }
+
+
+        ul {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 200;
+            list-style: none;
+            width: 10em;
+            margin-top: 0;
+            padding-left: 0;
+            z-index: 200;
+        }
+
+        li {
+            cursor: pointer;
+            padding-left: 1em;
+        }
+
+
     </style>
 </editable-text>

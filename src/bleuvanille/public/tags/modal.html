@@ -10,6 +10,7 @@
 
     <div class="body">
       { content }
+      <yield/>
     </div>
 
     <footer class="footer mod">
@@ -30,21 +31,24 @@
     self.content = null
     self.buttons = null
 
-    self.opts.bus.on('openModal', function(params) {
+    if(self.opts.bus !== undefined) {
+      self.opts.bus.on('openModal', function(params) {
+          self.open(params)
+      })
+      self.opts.bus.on('closeModal', function() {
+          self.close()
+      })
+    }
+
+    open(params) {
         self.showModal = true
         self.heading = params.title
         self.content = params.content
         self.buttons = params.buttons
         self.update()
-    }) 
-
-    self.opts.bus.on('closeModal', function() {
-        console.log("closeModal event received")
-        self.close()
-    })
+    }
 
     close() {
-        console.log("close called")
         self.showModal = false
         self.update()
     }

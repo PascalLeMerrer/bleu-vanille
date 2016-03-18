@@ -4,6 +4,7 @@
             <ul class="unstyled">
                 <li><div id="user-list"    onclick={ display } class={ active: isSelected('user-list') }>Utilisateurs</div></li>
                 <li><div id="contact-list" onclick={ display } class={ active: isSelected('contact-list') }>Contacts</div></li>
+                <li><div id="eatable-search" onclick={ display } class={ active: isSelected('eatable-search') }>Comestibles</div></li>
             </ul>
         </nav>
     </aside>
@@ -17,7 +18,7 @@
       self.on('mount', function() {
         tags = riot.mount(self.selected, { bus: self.opts.bus})
       })
-      
+
       display(event) {
         self.selected = event.target.id
         for (var i = tags.length - 1; i >= 0; i--) {

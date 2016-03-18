@@ -1,0 +1,182 @@
+<createeatable-modal>
+  <modal name="modal" bus="{ bus }" preventdefault="true">
+        <label for="eatableName">Nom</label>
+        <input type="text" id="eatableName" value="{ eatable.name }" class="{ error-format: parent.invalidName}"><br>
+        <label for="eatableDescription">Description</label>
+        <input type="textarea" id="eatableDescription" value="{ eatable.description }"><br>
+        <fieldset>
+          <legend>Nutriments pour 100 gr</legend>
+          <p>
+            <label for="nutrientCarbohydrate">Glucide</label>
+            <input type="text" id="nutrientCarbohydrate" class="{ error-format: parent.invalidCarbohydrate}" size="6" > gr <br>
+            <label for="nutrientProtein">Protéine</label>
+            <input type="text" id="nutrientProtein" class="{ error-format: parent.invalidProtein}" size="6"> gr <br>
+            <label for="nutrientSugar">Sucre</label>
+            <input type="text" id="nutrientSugar" class="{ error-format: parent.invalidSugar}" size="6"> gr <br>
+            <label for="nutrientLipid">Lipide</label>
+            <input type="text" id="nutrientLipid" class="{ error-format: parent.invalidLipid}" size="6"> gr <br>
+            <label for="nutrientFiber">Fibre</label>
+            <input type="text" id="nutrientFiber" class="{ error-format: parent.invalidFiber}" size="6"> gr <br>
+            <label for="nutrientAlcohol">Alcool</label>
+            <input type="text" id="nutrientAlcohol" class="{ error-format: parent.invalidAlcohol}" size="6"> gr <br>
+          </p>
+        </fieldset>
+        <alert name="innerAlert"></alert>
+    </modal>
+
+  <script>
+    var self = this
+    self.showModal = false
+    self.heading = null
+    self.buttons = null
+    self.nutrient = {}
+
+    self.invalidName = false
+    self.invalidCarbohydrate = false
+    self.invalidProtein = false
+    self.invalidSugar = false
+    self.invalidLipid = false
+    self.invalidFiber = false
+    self.invalidAlcohol = false
+
+    self.eatable = {
+        name : "",
+        type : "ingredient",
+        description : ""
+    }
+
+    self.opts.bus.on('openCreateEatableModal', function(params) {
+        self.tags.modal.eatableName.value=""
+        self.tags.modal.eatableDescription.value=""
+        self.tags.modal.nutrientCarbohydrate.value=0
+        self.tags.modal.nutrientProtein.value=0
+        self.tags.modal.nutrientSugar.value=0
+        self.tags.modal.nutrientLipid.value=0
+        self.tags.modal.nutrientFiber.value=0
+        self.tags.modal.nutrientAlcohol.value=0
+        params.buttons = [ { action: function(e){
+                                                e.item.isWaiting = true
+                                                e.item.label = 'Création...'
+                                                self.create()
+                                              },
+                          label: "Créer",
+                          isWaiting: false,
+                          isPrimary: true
+                        },
+                        { action: function(){ this.close() },
+                          label: "Annuler",
+                          isDangerous: true
+                        }]
+        self.tags.modal.open(params)
+        self.update()
+    })
+
+    create() {
+        self.invalidName = (self.tags.modal.eatableName.value.length === 0)
+        if (self.invalidName) {
+          self.tags.modal.eatableName.title = "Vous devez spécifier un nom pour ce comestible."
+        } else {
+          self.eatable.name = self.tags.modal.eatableName.value;
+        }
+
+        self.eatable.description = self.tags.modal.eatableDescription.value;
+
+        self.invalidCarbohydrate = self.copyNutrientInput(self.tags.modal.nutrientCarbohydrate, 'carbohydrate')
+        self.invalidProtein      = self.copyNutrientInput(self.tags.modal.nutrientProtein, 'protein')
+        self.invalidSugar        = self.copyNutrientInput(self.tags.modal.nutrientSugar, 'sugar')
+        self.invalidLipid        = self.copyNutrientInput(self.tags.modal.nutrientLipid, 'lipid')
+        self.invalidFiber        = self.copyNutrientInput(self.tags.modal.nutrientFiber, 'fiber')
+        self.invalidAlcohol      = self.copyNutrientInput(self.tags.modal.nutrientAlcohol, 'alcohol')
+        self.update()
+
+        if ( !self.invalidName
+          && !self.invalidCarbohydrate
+          && !self.invalidProtein
+          && !self.invalidSugar
+          && !self.invalidLipid
+          && !self.invalidFiber
+          && !self.invalidAlcohol) {
+            superagent.post('/eatables')
+            .set('Content-Type', 'application/json; charset=UTF-8')
+            .send(self.eatable)
+            .end(self.createCallback)
+        } else {
+            self.tags.modal.tags.innerAlert.displayError("Au moins une des valeurs saisies est incorrecte.")
+            self.cancel()
+        }
+    }
+
+    cancel() {
+        self.tags.modal.buttons[0].label = "Créer"
+        self.tags.modal.buttons[0].isWaiting = false
+        self.update()
+    }
+
+    createCallback(err, response) {
+          if(response.ok) {
+            self.eatable = response.body
+            self.opts.bus.trigger('eatableCreated', self.eatable)
+            superagent.put('/eatables/' + self.eatable._key + '/nutrient')
+              .set('Content-Type', 'application/json; charset=UTF-8')
+              .send(self.nutrient)
+              .end(self.createNutrientCallback)
+          } else {
+            var message ;
+            if (response.status == 409) {
+              message = "Un comestible portant ce nom existe déjà."
+            } else {
+              message = response.body.error
+            }
+            self.tags.modal.tags.innerAlert.displayError("Erreur : " + message)
+            self.cancel()
+          }
+    }
+
+    createNutrientCallback(err, response) {
+        if(response.ok) {
+            self.opts.bus.trigger('displaySuccess', "Le comestible " + self.eatable.name + " a été créé.")
+            self.tags.modal.close()
+        } else {
+            self.tags.modal.tags.innerAlert.displayError("Erreur : " + response.body.error)
+            self.cancel()
+        }
+    }
+
+    /**
+     * Checks if a nutrient input field contains a numeric value between 1 and 100
+     * If so, copies its value in the given property
+     * @return false when there is no error, true when the value is incorrect
+     */
+    copyNutrientInput(inputField, propertyName) {
+      var intValue = parseInt(inputField.value);
+      if (isNaN(intValue) || intValue < 0 || intValue > 100) {
+          inputField.title = "Doit être un chiffre de 0 à 100";
+          return true
+      }
+      self.nutrient[propertyName] = intValue
+      return false
+    }
+  </script>
+  <style>
+  .error-format {
+    border: 1px solid #FF0000;
+  }
+
+  label {
+    display: inline-block;
+    width: 140px;
+    text-align: right;
+  }
+
+  fieldset {
+      border: 1px solid #c0c0c0;
+      padding: 0.35em 0.625em 0.75em;
+      text-align: center;
+  }​
+
+  legend {
+    text-align: center;
+  }
+
+  </style>
+</createeatable-modal>

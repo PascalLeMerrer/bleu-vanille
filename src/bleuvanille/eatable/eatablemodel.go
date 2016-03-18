@@ -11,6 +11,22 @@ const (
 	STATUS_NEW             = "new"
 )
 
+type Unit int
+
+const (
+	WEIGHT Unit = iota
+	VOLUME Unit = iota
+	UNIT Unit = iota
+	PERSON Unit = iota
+)
+
+type Level int
+
+const (
+	DAILY Level = 1
+	FEAST Level = 2 	
+)
+
 var validTypes = map[string]bool{
 	"ingredient":        true,
 	"ingredientrecette": true,
@@ -40,6 +56,27 @@ type Nutrient struct {
 
 	// "computed" is computed from other source, "humanly-set" if a human set the value of the nutrient
 	Status string `json:"status,ommitempty"`
+}
+
+//UnitInfo stores information about the unit of the eatable
+type UnitInfo struct {
+	DefaultUnit Unit`json:"default,omitempty"`
+	Density float32 `json:"density,omitempty"`
+	WeighPerUnit float32 `json:"weighperunit,omitempty"`
+	EatableRatio float32 `json:"eatableratio,omitempty"`
+}
+
+
+type CookingInfo struct {
+	Duration Duration `json:"duration,omitempty"`
+	Level Level `json:"level,omitempty"`
+	
+}
+
+type Duration struct {
+	PreparationTime int `json:"preparationtime,omitempty"`
+	CookingTime 	int `json:"cookingtime,omitempty"`
+	RestTime		int `json:"resttime,omitempty"`
 }
 
 // New creates an Eatable instance givent its name and description

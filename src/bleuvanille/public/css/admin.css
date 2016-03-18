@@ -135,3 +135,12 @@ table.focusable input.editable:hover {
 .navigation {
   color: var(--secondary-color);
 }
+
+.completion ul {
+    background: var(--third-color-light);
+    border: 1px solid var(--third-color);
+}
+
+.completion li:hover, li.active {
+    background: var(--primary-color-light);
+}

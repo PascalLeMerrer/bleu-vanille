@@ -23,6 +23,8 @@
     "gulp-cucumber": "latest",
     "gulp-riot": "latest",
     "gulp-watch": "latest",
+    "lodash": "^4.6.1",
+    "lodash.curry": "^4.0.0",
     "multipipe": "^0.2.1",
     "yargs": "^3.31.0"
   }

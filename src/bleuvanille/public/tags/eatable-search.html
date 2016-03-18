@@ -1,0 +1,348 @@
+<eatable-search>
+    <div class="grid-2-4">
+        <div class="grid-2 navbar">
+            <div>
+                <h2>{ getTitle() }</h2>
+            </div>
+            <div class="navbar">
+                <pagination pager="{ pager }" loader="{ load }"></pagination>
+            </div>
+        </div>
+        <div class="grid-4">
+            <div>
+                <input name="searchcriteria" onkeyup="{ triggerSearch }" value="{ criteriaValue }">
+            </div>
+            <div class="navbar link">
+                <a href="#null" onclick="{ search }">Chercher</i></a>
+            </div>
+            <div class="navbar link">
+                <a href="#null" onclick="{ indexAll }">Reconstruire l'index</i></a>
+            </div>
+            <div class="navbar link">
+                <a href="#null" onclick="{ openModal }">Ajouter</i></a>
+            </div>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th class="id-column">#</th>
+                <th class="name-column">Nom</th>
+                <th class="name-column">Parent</th>
+                <th class="action-column"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr each={eatable, index in eatables} class="{ highlighted: eatable.created, not-highlighted: !eatable.created } ">
+                <td>{ index + 1 }</td>
+                <td><editable-text bus="{ self.opts.bus }" callback="{ save }"
+                        property="name" id="{ eatable._id }"
+                        text="{ eatable.name }" type="text"></editable-text></td>
+                <td><editable-text bus="{ self.opts.bus }" callback="{ searchAndSaveParent }"
+                        property="eatable.parent.name" id="{ eatable._id }"
+                        text="{ eatable.parent.name }" type="text"
+                        loadchoices="{ parent.loadChoices }"></editable-text>
+                        </td>
+                <td class="action-column"><a href="" onclick="{ parent.deleteEatable }" alt="Supprimer"><i class="fa fa-times"></i></a></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="txtcenter">
+        <pagination pager="{ pager }" loader="{ load }"></pagination>
+    </div>
+    <script>
+        var self = this
+
+        self.mixin('curryMixin')
+
+        self.criteriaValue = null
+        self.eatables = null
+        self.totalCount = 0
+        self.notfound = false
+        self.triggerTimeOutVar = null
+        self.pager = {
+            maxPage: 0,
+            itemPerPage: 10,
+            currentPage: 1
+        }
+
+        //Mounted events
+        self.on('mount', function() {
+            self.load()
+        });
+
+        self.opts.bus.on('eatableCreated', function(eatable) {
+            self.eatables.push(eatable)
+            self.update()
+            // highlight the newly created item
+            window.setTimeout(function(){
+                eatable.created = true
+                self.update()
+            }, 100)
+            window.setTimeout(function(){
+                eatable.created = false
+                self.update()
+            }, 1500)
+        });
+
+        //Functions
+        getTitle() {
+            if (self.notfound) {
+                return "Cette recherche ne correspond à aucun comestible";
+            }
+            if (self.criteriaValue !== null) {
+                return self.totalCount + " comestible" + (self.totalCount > 1 ? 's' : '') + " trouvé" + (self.totalCount > 1 ? 's' : '')
+            }
+
+            return self.totalCount + " comestible" + (self.totalCount > 1 ? 's' : '') + " indexé" + (self.totalCount > 1 ? 's' : '');
+        }
+
+        load(offset, limit) {
+            if (offset === undefined) {
+                offset = 0
+            }
+
+            if (limit === undefined) {
+                limit = self.pager.itemPerPage
+            }
+
+            superagent
+                .get('/search/fetch/all?offset=' + offset + '&limit=' + limit)
+                .set('Content-Type', 'application/json; charset=UTF-8').set(
+                    'Accept', 'application/json').end(self.searchCallback)
+        }
+
+        // triggers a search when the user is typing
+        triggerSearch(event) {
+
+            var criteriaValue = self.searchcriteria.value
+
+            if (self.triggerTimeOutVar != null) {
+                clearTimeout(self.triggerTimeOutVar)
+                self.triggerTimeOutVar = null
+            }
+
+            if (criteriaValue.length > 4) {
+                self.triggerTimeOutVar = setTimeout(self.searchIntern, 500);
+            }
+
+            if ((event.keyCode === 13 || event.keyCode === 32) & criteriaValue != undefined && criteriaValue.length > 1) {
+                self.searchIntern()
+            }
+        }
+
+        /* loads list of autocompletion values for the given root text */
+        loadChoices(setChoicesCallback, root) {
+            var getChoicesCallback = self.curry(self.getChoicesCallback, self, setChoicesCallback)
+            superagent
+                .get('/search/completion/' + root +'?limit=10')
+                .set('Content-Type', 'application/json; charset=UTF-8').set(
+                    'Accept', 'application/json').end(getChoicesCallback)
+
+        }
+
+        /* set the list of autcompletion choices */
+        getChoicesCallback(setChoicesCallback, err, response) {
+            if (response !== undefined && response.ok) {
+                console.log(response.body)
+                //setChoicesCallback(response.body)
+                setChoicesCallback(['Poulet', 'Viande'])
+            }
+        }
+
+        // search the eatables matching the criteria
+        search(event) {
+            self.triggerTimeOutVar = null
+            self.criteriaValue = self.searchcriteria.value
+            var criteriaValue
+            if (self.criteriaValue.startsWith("querystring")) {
+                criteriaValue = self.criteriaValue.substring(12)
+            } else {
+                criteriaValue = self.criteriaValue
+            }
+
+            superagent.get('/search/main/' + criteriaValue).set('Content-Type',
+                    'application/json; charset=UTF-8').set('Accept',
+                    'application/json').end(self.searchCallback)
+        }
+
+        // processes search response
+        searchCallback(err, response) {
+            if (response.ok) {
+                self.eatables = response.body
+                self.notfound = false
+                self.totalCount = response.headers['x-total-count']
+                self.pager.maxPage = Math.ceil(self.totalCount / self.pager.itemPerPage)
+                self.update()
+            } else {
+                self.eatables = []
+                self.notfound = true
+                self.opts.bus.trigger('displayError', "La recherche de " + self.searchText + " a échouée.")
+            }
+        }
+
+        // Saves the new value of a given user property
+        save(id, property, value, callback) {
+            superagent.patch("/" + id).send(
+                '{"' + property + '":"' + value + '"}').set('Content-Type',
+                'application/json; charset=UTF-8').end(callback)
+        }
+
+
+        // Saves the new value of a given user property
+        searchAndSaveParent(id, property, value, callback) {
+            if (!value) {
+                return;
+            }
+            var searchParentCallback = self.curry(self.saveParent, self, id, value)
+            superagent.get('/search/main/' + value + "?parent").set('Content-Type',
+                'application/json; charset=UTF-8').set('Accept',
+                'application/json').end(searchParentCallback);
+        }
+
+        saveParent(id, value, err, response) {
+            if (response.ok) {
+                foundParentEatables = response.body
+
+                if (foundParentEatables != null && foundParentEatables.length > 0) {
+                    var callback = self.curry(self.saveParentCallback, self, foundParentEatables[0].name)
+                    superagent.put('/' + id + '/parent/' + foundParentEatables[0]._key).set('Content-Type',
+                        'application/json; charset=UTF-8').set('Accept',
+                        'application/json').end(callback);
+                } else {
+                    self.opts.bus.trigger('displayError', "Impossible de trouver le parent " + value)
+                }
+            } else {
+                self.foundEatables = []
+                self.notfound = true
+                self.opts.bus.trigger('displayError', "La recherche de " + self.searchText + " a échouée.")
+            }
+        }
+
+        //saveParentCallback says if the parent was successfully set.
+        saveParentCallback(parentName, err, response) {
+            if (response.ok) {
+                self.opts.bus.trigger('displaySuccess', "Le Parent " + parentName + " a été sauvegardé.")
+            } else {
+                self.opts.bus.trigger('displayError', "Le Parent " + parentName + " n'a pas été sauvegardé : " + response.code)
+            }
+        }
+
+        indexAll() {
+            var params = {
+                "title": "Réindexer tous les comestibles",
+                "content": "Êtes-vous certain de vouloir réindexer tous les comestibles ?",
+                "buttons": [{
+                    "action": function(e) {
+                        e.item.isWaiting = true
+                        e.item.label = 'Réindexation'
+                        superagent.get('/search/indexall')
+                            .set('Content-Type', 'application/json; charset=UTF-8')
+                            .end(self.indexAllCallBack)
+                    },
+                    "label": "Réindexer",
+                    "isWaiting": false,
+                    "isDangerous": true
+                }, {
+                    "action": function() {
+                        this.close()
+                    },
+                    "label": "Annuler",
+                    "isPrimary": true
+                }]
+            }
+            self.opts.bus.trigger('openModal', params)
+        }
+
+        indexAllCallBack(err, response) {
+            self.opts.bus.trigger('closeModal')
+            if (response.ok) {
+                self.opts.bus.trigger('displaySuccess',
+                    "La réindexation a traité " + response.body + " comestibles.")
+                self.update()
+            } else {
+                self.opts.bus.trigger('displayError',
+                    "La réindexation a échoué : " + err)
+            }
+        }
+
+        openModal() {
+            var params = {
+                "title": "Ajouter un comestible"
+            };
+
+            self.opts.bus.trigger('openCreateEatableModal', params)
+        }
+
+        // delete the selected eatable
+        deleteEatable(event) {
+            self.selectedEatable = event.item.eatable;
+            var params = {
+                "title": "Supprimer un comestible",
+                "content": "Êtes-vous certain de vouloir détruire le comestible " + self.selectedEatable.name + " ? Cette opération est irréversible.",
+                "buttons": [{
+                    "action": function(e) {
+                        e.item.isWaiting = true
+                        e.item.label = 'Suppression...'
+                        superagent.del('/admin/eatables/' + self.selectedEatable._key)
+                            .set('Content-Type', 'application/json; charset=UTF-8')
+                            .end(self.deleteCallback)
+                    },
+                    "label": "Supprimer",
+                    "isWaiting": false,
+                    "isDangerous": true
+                }, {
+                    "action": function() {
+                        this.close()
+                    },
+                    "label": "Annuler",
+                    "isPrimary": true
+                }]
+            }
+            self.opts.bus.trigger('openModal', params)
+        }
+
+        // processes user removal response
+        deleteCallback(err, response) {
+            self.opts.bus.trigger('closeModal')
+            if (response.ok) {
+                self.selectedEatable.deleted = true
+                self.opts.bus.trigger('displaySuccess',
+                    "La suppression de " + self.selectedEatable.name + " a réussie.")
+                self.update()
+                setTimeout(function() {
+                    self.eatables.splice(self.eatables.indexOf(self.selectedEatable), 1)
+                    self.update()
+                }, 1000)
+            } else {
+                self.opts.bus.trigger('displayError',
+                    "La suppression de l'ingrédient/recette " + self.selectedEatable.name + " a échoué.")
+            }
+        }
+
+    </script>
+
+    <style>
+
+        .id-column {
+            width: 2em;
+        }
+
+        .name-column {
+            width: 6em;
+        }
+
+        .action-column {
+            width: 4em;
+            text-align: center;
+        }
+
+        .navbar {
+            display: inline;
+        }
+        .link {
+            margin-left: 0;
+            margin-right: 2rem;
+        }
+    </style>
+</eatable-search>

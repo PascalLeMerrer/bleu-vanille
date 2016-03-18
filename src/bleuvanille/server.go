@@ -26,6 +26,10 @@ import (
 // the id of the git commit
 var Sha1 string
 
+//Injection in the eatable controller of the search service to be able to perform search operation within the Eatable package.
+var eatableController eatable.EatableController
+var searchService search.SearchService
+
 // Render processes a template
 // name is the file name, without its HTML extension
 func (t *Template) Render(w io.Writer, name string, data interface{}) error {
@@ -38,6 +42,9 @@ type Template struct {
 }
 
 func main() {
+
+	// dependencies injection
+	eatableController.Search = &searchService
 
 	user.CreateDefault()
 
@@ -120,21 +127,25 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	eatableRoutes.Use(auth.JWTAuth())
 	eatableRoutes.Use(session.Middleware())
 
-	eatableRoutes.Post("", eatable.Create)
-	eatableRoutes.Get("/:key", eatable.Get)
-	eatableRoutes.Put("/:key", eatable.Update)
+	eatableRoutes.Post("", eatableController.Create)
+	eatableRoutes.Get("/:key", eatableController.Get)
+	eatableRoutes.Put("/:key", eatableController.Update)
+	eatableRoutes.Patch("/:key", eatableController.Patch)
 
-	eatableRoutes.Put("/:key/nutrient", eatable.SetNutrient)
+	eatableRoutes.Put("/:key/nutrient", eatableController.SetNutrient)
 
-	eatableRoutes.Put("/:key/parent/:parentKey", eatable.SetParent)
+	eatableRoutes.Put("/:key/parent/:parentKey", eatableController.SetParent)
 
 	//Search Section
 	searchRoutes := echoServer.Group("/search")
 	searchRoutes.Use(auth.JWTAuth())
 	searchRoutes.Use(session.Middleware())
-	searchRoutes.Get("/:name", search.Search)
+	searchRoutes.Get("/fetch/all", search.SearchAllEatable)
 	searchRoutes.Get("/query/:query", search.SearchQueryString)
+	searchRoutes.Get("/completion/:name", search.SearchCompletion)
 	searchRoutes.Get("/index/:key", search.IndexFromKey)
+	searchRoutes.Get("/indexall", search.IndexAll)
+	searchRoutes.Get("/main/:name", search.Search)
 }
 
 // special Routes require a valid user auth token but no sessionID
@@ -159,8 +170,8 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
 	adminRoutes.Delete("/contacts", contact.Delete)
 
-	adminRoutes.Patch("/eatables/:key/status", eatable.SetStatus)
-	adminRoutes.Delete("/eatables/:key", eatable.Delete)
+	adminRoutes.Patch("/eatables/:key/status", eatableController.SetStatus)
+	adminRoutes.Delete("/eatables/:key", eatableController.Delete)
 
 	adminRoutes.Delete("/unindex/:key", search.UnIndexFromKey)
 }
