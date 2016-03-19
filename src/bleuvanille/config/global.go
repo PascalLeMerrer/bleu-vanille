@@ -70,8 +70,18 @@ var (
 	ProductionMode = getBooleanEnvWithDefault("ProductionMode", false)
 
 	// Debug mode displays useful information during dev
-	Debug = getBooleanEnvWithDefault("Debug", false)
+	Debug = getEnv("Debug")
 )
+
+// ServerDebug when server logs should be in verbose mode
+func ServerDebug() bool {
+	return Debug == "server" || Debug == "all"
+}
+
+// DbDebug returns true when database request have to be displayed in console
+func DbDebug() bool {
+	return Debug == "db" || Debug == "database" || Debug == "all"
+}
 
 func getNumericEnv(name string) int {
 	value := os.Getenv(name)

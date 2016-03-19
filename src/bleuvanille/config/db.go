@@ -15,7 +15,7 @@ func DB() *arangolite.DB {
 	}
 
 	dbSession = arangolite.New().
-		LoggerOptions(Debug, Debug, Debug).
+		LoggerOptions(DbDebug(), DbDebug(), DbDebug()).
 		Connect(DatabaseProtocol+"://"+DatabaseHost+":"+fmt.Sprint(DatabasePort),
 		"_system",
 		"root",

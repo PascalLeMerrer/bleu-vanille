@@ -11,6 +11,7 @@ import (
 	"bleuvanille/session"
 	"bleuvanille/user"
 	"fmt"
+	gommonlog "github.com/labstack/gommon/log"
 	"html/template"
 	"io"
 	"net/http"
@@ -49,7 +50,11 @@ func main() {
 	user.CreateDefault()
 
 	echoServer := echo.New()
-	echoServer.SetDebug(true)
+	if config.ServerDebug() {
+		echoServer.SetDebug(true)
+		echoServer.SetLogLevel(gommonlog.DEBUG)
+	}
+
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())

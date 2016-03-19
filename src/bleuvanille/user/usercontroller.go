@@ -73,7 +73,7 @@ func CreateDefault() {
 		log.Println("Admin account created with default password. You should change it.")
 		return
 	}
-	if config.Debug {
+	if config.ServerDebug() {
 		log.Println("Admin account found.")
 	}
 
@@ -343,7 +343,6 @@ func _delete(context *echo.Context, user *User) error {
 var Login = emailAndPasswordRequired(
 	func(context *echo.Context) error {
 		password := context.Form("password")
-		fmt.Printf("Password %v", password)
 		email := context.Form("email")
 		user, err := FindByEmail(email)
 		if err != nil || user == nil {
