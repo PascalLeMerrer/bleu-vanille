@@ -2,7 +2,7 @@ package: bleuvanille
 import:
 - package: github.com/dgrijalva/jwt-go
 - package: github.com/solher/arangolite
-  version: 543a24581716437e51e0db460cab69cc85b701f4
+  version: 23c77effcbfaf48a2f7be5256a4a184f3d128a01
 - package: github.com/stretchr/testify
   subpackages:
   - /assert
@@ -13,10 +13,12 @@ import:
 - package: github.com/boltdb/bolt
 - package: github.com/speps/go-hashids
 - package: github.com/labstack/gommon
+  version: 9c0a60557b6840125c331d8c8075119770aa2805
   subpackages:
   - /color
 - package: github.com/willf/bitset
 - package: github.com/labstack/echo
+  version: b47abdb9ec9b6d38475ed385ebe052affbc14172
 - package: github.com/golang/protobuf
   subpackages:
   - /proto

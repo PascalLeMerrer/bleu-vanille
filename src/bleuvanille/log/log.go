@@ -14,53 +14,56 @@ import (
 
 // Error writes an error message - Don't forget to provide
 // contextual information to make easy the debug process
-func Error(context *echo.Context, message string) {
+func Error(context echo.Context, message string) {
 	_log("ERROR", context, message)
 }
 
-// Debug writes an debug message
-func Debug(context *echo.Context, message string) {
+// Debug writes a debug message
+func Debug(context echo.Context, message string) {
 	_log("DEBUG", context, message)
 }
 
 // Info writes any other message
-func Info(context *echo.Context, message string) {
+func Info(context echo.Context, message string) {
 	_log("INFO", context, message)
 }
 
-// Info writes any other message
+// Fatal writes a crash message
 func Fatal(v ...interface{}) {
 	golog.Fatal(v)
 }
 
+// Printf format and writes a message to standard output
 func Printf(format string, v ...interface{}) {
 	golog.Printf(format, v)
 }
 
 // Middleware retrieves the session for an authenticated user
 // It also deletes session for expired token
-func Middleware() echo.HandlerFunc {
-	return func(context *echo.Context) error {
-		correlationId := uuid.NewV4().String()
+func Middleware() echo.MiddlewareFunc {
+	return func(next echo.Handler) echo.Handler {
+		return echo.HandlerFunc(func(context echo.Context) error {
+			correlationID := uuid.NewV4().String()
 
-		context.Set("correlationId", correlationId)
-		return nil
+			context.Set("correlationID", correlationID)
+			return next.Handle(context)
+		})
 	}
 }
 
-func _log(level string, context *echo.Context, message string) {
-	var correlationId string
+func _log(level string, context echo.Context, message string) {
+	var correlationID string
 	nowstr := time.Now().Format(time.UnixDate)
 
 	if context == nil {
-		correlationId = "no correlationId"
+		correlationID = "no correlationID"
 	} else {
-		if correlationIdAux, ok := context.Get("correlationId").(string); !ok {
-			golog.Println(nowstr + " - no correlationId - " + message)
+		correlationIDAux, ok := context.Get("correlationID").(string)
+		if !ok {
+			golog.Println(nowstr + " - no correlationID - " + message)
 			return
-		} else {
-			correlationId = correlationIdAux
 		}
+		correlationID = correlationIDAux
 	}
-	golog.Println(level + " - " + nowstr + " - " + correlationId + " - " + message)
+	golog.Println(level + " - " + nowstr + " - " + correlationID + " - " + message)
 }

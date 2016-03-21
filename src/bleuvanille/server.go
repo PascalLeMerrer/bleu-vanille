@@ -5,9 +5,7 @@ import (
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
-	"bleuvanille/eatable"
 	"bleuvanille/log"
-	"bleuvanille/search"
 	"bleuvanille/session"
 	"bleuvanille/user"
 	"fmt"
@@ -21,19 +19,16 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
 )
 
 // the id of the git commit
 var Sha1 string
 
-//Injection in the eatable controller of the search service to be able to perform search operation within the Eatable package.
-var eatableController eatable.EatableController
-var searchService search.SearchService
-
 // Render processes a template
 // name is the file name, without its HTML extension
-func (t *Template) Render(w io.Writer, name string, data interface{}) error {
+func (t *Template) Render(w io.Writer, name string, data interface{}, context echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
@@ -45,7 +40,6 @@ type Template struct {
 func main() {
 
 	// dependencies injection
-	eatableController.Search = &searchService
 
 	user.CreateDefault()
 
@@ -58,7 +52,7 @@ func main() {
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())
-	echoServer.Use(log.Middleware())
+	//echoServer.Use(log.Middleware())
 
 	// precompile templates
 
@@ -78,6 +72,7 @@ func main() {
 	templateRenderer := &Template{
 		templates: templates,
 	}
+
 	echoServer.SetRenderer(templateRenderer)
 
 	declareStaticRoutes(echoServer)
@@ -89,7 +84,7 @@ func main() {
 
 	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
-	echoServer.Run("127.0.0.1:" + strconv.Itoa(config.HostPort))
+	echoServer.Run(standard.New("127.0.0.1:" + strconv.Itoa(config.HostPort)))
 }
 
 // static pages
@@ -104,15 +99,15 @@ func declareStaticRoutes(echoServer *echo.Echo) {
 
 // public pages
 func declarePublicRoutes(echoServer *echo.Echo) {
-	echoServer.Get("/", contact.LandingPage)
-	echoServer.Get("/version", getVersion)
-	echoServer.Get("/admin", admin.LoginPage)
-	echoServer.Get("/admin/", admin.LoginPage)
-	echoServer.Post("/contacts", contact.Create)
-	echoServer.Post("/users", user.Create)
-	echoServer.Post("/users/login", user.Login)
-	echoServer.Post("/users/sendResetLink", user.SendResetLink)
-	echoServer.Get("/users/resetForm", user.DisplayResetForm)
+	echoServer.Get("/", contact.LandingPage())
+	echoServer.Get("/version", getVersion())
+	echoServer.Get("/admin", admin.LoginPage())
+	echoServer.Get("/admin/", admin.LoginPage())
+	echoServer.Post("/contacts", contact.Create())
+	echoServer.Post("/users", user.Create())
+	echoServer.Post("/users/login", user.Login())
+	echoServer.Post("/users/sendResetLink", user.SendResetLink())
+	echoServer.Get("/users/resetForm", user.DisplayResetForm())
 }
 
 // privates Routes require a valid user auth token and a sessionID
@@ -121,43 +116,19 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes.Use(auth.JWTAuth())
 	userRoutes.Use(session.Middleware())
 
-	userRoutes.Post("/logout", session.Logout)
+	userRoutes.Post("/logout", session.Logout())
 	// echo does not accept Delete request with body so we use a Post instead
-	userRoutes.Post("/delete", user.Delete)
-	userRoutes.Put("/password", user.ChangePassword)
-	userRoutes.Get("/:userID", user.Profile)
-	userRoutes.Patch("/:userID", user.Patch)
-
-	eatableRoutes := echoServer.Group("/eatables")
-	eatableRoutes.Use(auth.JWTAuth())
-	eatableRoutes.Use(session.Middleware())
-
-	eatableRoutes.Post("", eatableController.Create)
-	eatableRoutes.Get("/:key", eatableController.Get)
-	eatableRoutes.Put("/:key", eatableController.Update)
-	eatableRoutes.Patch("/:key", eatableController.Patch)
-
-	eatableRoutes.Put("/:key/nutrient", eatableController.SetNutrient)
-
-	eatableRoutes.Put("/:key/parent/:parentKey", eatableController.SetParent)
-
-	//Search Section
-	searchRoutes := echoServer.Group("/search")
-	searchRoutes.Use(auth.JWTAuth())
-	searchRoutes.Use(session.Middleware())
-	searchRoutes.Get("/fetch/all", search.SearchAllEatable)
-	searchRoutes.Get("/query/:query", search.SearchQueryString)
-	searchRoutes.Get("/completion/:name", search.SearchCompletion)
-	searchRoutes.Get("/index/:key", search.IndexFromKey)
-	searchRoutes.Get("/indexall", search.IndexAll)
-	searchRoutes.Get("/main/:name", search.Search)
+	userRoutes.Post("/delete", user.Delete())
+	userRoutes.Put("/password", user.ChangePassword())
+	userRoutes.Get("/:userID", user.Profile())
+	userRoutes.Patch("/:userID", user.Patch())
 }
 
 // special Routes require a valid user auth token but no sessionID
 func declareSpecialRoutes(echoServer *echo.Echo) {
 	specialRoutes := echoServer.Group("/special")
 	specialRoutes.Use(auth.JWTAuth())
-	specialRoutes.Post("/resetPassword", user.ResetPassword)
+	specialRoutes.Post("/resetPassword", user.ResetPassword())
 }
 
 // Admin routes require a valid auth token AND the user to have the admin rights
@@ -168,24 +139,22 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Use(session.Middleware())
 	adminRoutes.Use(session.AdminMiddleware())
 
-	adminRoutes.Get("/dashboard", admin.Dashboard)
-	adminRoutes.Get("/contacts", contact.GetAll)
-	adminRoutes.Get("/users", user.GetAll)
-	adminRoutes.Get("/users/email", user.Get)
-	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin)
-	adminRoutes.Delete("/contacts", contact.Delete)
+	adminRoutes.Get("/dashboard", admin.Dashboard())
+	adminRoutes.Get("/contacts", contact.GetAll())
+	adminRoutes.Get("/users", user.GetAll())
+	adminRoutes.Get("/users/email", user.Get())
+	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin())
+	adminRoutes.Delete("/contacts", contact.Delete())
 
-	adminRoutes.Patch("/eatables/:key/status", eatableController.SetStatus)
-	adminRoutes.Delete("/eatables/:key", eatableController.Delete)
-
-	adminRoutes.Delete("/unindex/:key", search.UnIndexFromKey)
 }
 
-func getVersion(context *echo.Context) error {
-	version := struct {
-		Version string `json:"version"`
-	}{Sha1}
-	return context.JSON(200, version)
+func getVersion() echo.HandlerFunc {
+	return func(context echo.Context) error {
+		version := struct {
+			Version string `json:"version"`
+		}{Sha1}
+		return context.JSON(200, version)
+	}
 }
 
 // Defines a custom error handler
@@ -194,19 +163,19 @@ func getVersion(context *echo.Context) error {
 // TODO: see how to improve this
 func addErrorHandler(echoServer *echo.Echo) {
 
-	myHTTPErrorHandler := func(err error, context *echo.Context) {
+	myHTTPErrorHandler := func(err error, context echo.Context) {
 		fmt.Println("Custom error handler invoked")
 		code := http.StatusInternalServerError
 		message := http.StatusText(code)
 		if httpError, ok := err.(*echo.HTTPError); ok {
-			code = httpError.Code()
+			code = httpError.Code
 			message = httpError.Error()
 		}
 
 		log.Error(context, err.Error())
 
 		if !context.Response().Committed() {
-			http.Error(context.Response(), message, code)
+			http.Error(context.Response().(*standard.Response).ResponseWriter, message, code)
 		}
 	}
 

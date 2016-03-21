@@ -11,6 +11,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/engine/standard"
+
 	"github.com/twinj/uuid"
 )
 
@@ -22,40 +24,38 @@ const (
 )
 
 // JWTAuth is a JSON Web Token middleware
-func JWTAuth() echo.HandlerFunc {
-	return func(context *echo.Context) error {
-		// Skip WebSocket
-		if (context.Request().Header.Get(echo.Upgrade)) == echo.WebSocket {
-			return nil
-		}
+func JWTAuth() echo.MiddlewareFunc {
+	return func(next echo.Handler) echo.Handler {
+		return echo.HandlerFunc(func(context echo.Context) error {
 
-		header := context.Request().Header.Get("Authorization")
-		if header == "" {
-			cookie, err := context.Request().Cookie("token")
-			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized)
-			}
-			header = cookie.Value
-		}
-		prefixLength := len(Bearer)
-		if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
-			encodedToken := header[prefixLength+1:]
-			token, err := ExtractToken(encodedToken)
-			if err == nil {
-				if token.Valid {
-					// Store token data (=claims) in echo.Context
-					// an aotuehticated user token contains a session Id
-					context.Set("sessionId", token.Claims["id"])
-					// a password reset token will contain an email
-					context.Set("email", token.Claims["email"])
-					return nil
+			header := context.Request().Header().Get("Authorization")
+			if header == "" {
+				cookie, err := context.Request().(*standard.Request).Request.Cookie("token")
+				if err != nil {
+					return echo.NewHTTPError(http.StatusUnauthorized)
 				}
-				deleteExpiredSession(token)
-				return echo.NewHTTPError(http.StatusUnauthorized)
+				header = cookie.Value
 			}
-		}
-		log.Printf("DEBUG: Invalid token. Header is %v\n", header)
-		return echo.NewHTTPError(http.StatusUnauthorized)
+			prefixLength := len(Bearer)
+			if len(header) > prefixLength+1 && header[:prefixLength] == Bearer {
+				encodedToken := header[prefixLength+1:]
+				token, err := ExtractToken(encodedToken)
+				if err == nil {
+					if token.Valid {
+						// Store token data (=claims) in echo.Context
+						// an aotuehticated user token contains a session Id
+						context.Set("sessionId", token.Claims["id"])
+						// a password reset token will contain an email
+						context.Set("email", token.Claims["email"])
+						return next.Handle(context)
+					}
+					deleteExpiredSession(token)
+					return echo.NewHTTPError(http.StatusUnauthorized)
+				}
+			}
+			log.Printf("DEBUG: Invalid token. Header is %v\n", header)
+			return echo.NewHTTPError(http.StatusUnauthorized)
+		})
 	}
 }
 

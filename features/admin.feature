@@ -42,7 +42,7 @@ Feature:
     Then response code should be 200
     And response header X-TOTAL-COUNT should exist
     And response header X-TOTAL-COUNT should be \d+
-    And response body should contain "email":"admin@bleuvanille.com"
+    And response body should contain "email": "admin@bleuvanille.com"
     And response body should be valid json
     And response body path $[0].id should be \w
     And response body path $[0].firstname should be \w
