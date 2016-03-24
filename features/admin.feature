@@ -3,12 +3,36 @@ Feature:
   As an administrator, I shoul be allowed to perform admin tasks
 
   Scenario: Sign up (creating a basic account) should succeed
-    Given I set body to email=admin_test1@mail.org;password=PASSWORD;firstname=JOHN;lastname=DOE
+    Given I set body to email=admin_test1@mail.org;password=PASSWORD;firstname=JOHN_1;lastname=DOE_1
     And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
     When I POST to /users
     Then response code should be 201
     And response body path $.id should be \w
     And I store the value of body path $.id as userId in global scope
+
+  Scenario: Sign up (creating a basic account) should succeed
+    Given I set body to email=admin_test2@mail.org;password=PASSWORD;firstname=JOHN_2;lastname=DOE_2
+    And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
+    When I POST to /users
+    Then response code should be 201
+    And response body path $.id should be \w
+    And I store the value of body path $.id as userId2 in global scope
+
+  Scenario: Sign up (creating a basic account) should succeed
+    Given I set body to email=admin_test3@mail.org;password=PASSWORD;firstname=JOHN_3;lastname=DOE_3
+    And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
+    When I POST to /users
+    Then response code should be 201
+    And response body path $.id should be \w
+    And I store the value of body path $.id as userId3 in global scope
+
+  Scenario: Sign up (creating a basic account) should succeed
+    Given I set body to email=admin_test4@mail.org;password=PASSWORD;firstname=JOHN_4;lastname=DOE_4
+    And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
+    When I POST to /users
+    Then response code should be 201
+    And response body path $.id should be \w
+    And I store the value of body path $.id as userId4 in global scope
 
 
   Scenario: I cannot not perform admin task with a non admin account
@@ -42,7 +66,7 @@ Feature:
     Then response code should be 200
     And response header X-TOTAL-COUNT should exist
     And response header X-TOTAL-COUNT should be \d+
-    And response body should contain "email": "admin@bleuvanille.com"
+    And response body should contain "email":"admin@bleuvanille.com"
     And response body should be valid json
     And response body path $[0].id should be \w
     And response body path $[0].firstname should be \w
@@ -100,7 +124,7 @@ Feature:
     When I PATCH /users/`userId` with body
     """
     {
-        "email": "admin_test2@mail.org",
+        "email": "admin_test5@mail.org",
         "firstname": "Alphonse",
         "lastname": "Dans l'tas"
     }
@@ -109,7 +133,7 @@ Feature:
     When I GET /users/`userId`
     Then response code should be 200
     And response body path $.isAdmin should be false
-    And response body path $.email should be admin_test2@mail.org
+    And response body path $.email should be admin_test5@mail.org
     And response body path $.firstname should be Alphonse
     And response body path $.lastname should be Dans l'tas
 
@@ -143,4 +167,22 @@ Feature:
     Given I set bearer token
     And I set Content-Type header to application/json;charset=UTF-8
     When I DELETE /admin/users/`userId`
+    Then response code should be 204
+
+  Scenario: Cleanup test data - delete account used for admin test
+    Given I set bearer token
+    And I set Content-Type header to application/json;charset=UTF-8
+    When I DELETE /admin/users/`userId2`
+    Then response code should be 204
+
+  Scenario: Cleanup test data - delete account used for admin test
+    Given I set bearer token
+    And I set Content-Type header to application/json;charset=UTF-8
+    When I DELETE /admin/users/`userId3`
+    Then response code should be 204
+
+  Scenario: Cleanup test data - delete account used for admin test
+    Given I set bearer token
+    And I set Content-Type header to application/json;charset=UTF-8
+    When I DELETE /admin/users/`userId4`
     Then response code should be 204
