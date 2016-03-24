@@ -1,0 +1,11 @@
+@startuml
+Recipe o- "1..*" Ingredient
+Recipe o-- "1..*" Step
+Meal <- User : Creates
+Meal o-- Recipe : Contains
+User o-- "0..x" Recipe : Favorites, Rated, Created, Done
+User o-- "0..*" Ingredient : "hates, likes, is allergic to"
+User "1" -> "1" "Shopping List" :  "Has"
+"Shopping List" "0..*" o-- "0..*" Ingredient : "Contains"
+"Shopping List" "0..*" o-- "0..*" "Non food item" : "Contains"
+@enduml
