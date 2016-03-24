@@ -52,7 +52,7 @@ func main() {
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())
-	//echoServer.Use(log.Middleware())
+	echoServer.Use(log.Middleware())
 
 	// precompile templates
 

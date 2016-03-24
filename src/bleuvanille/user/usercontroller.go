@@ -103,10 +103,8 @@ func CreateDefault() {
 
 // Create creates a new user
 func Create() echo.HandlerFunc {
-	log.Println("usercontroller.Create()")
 	return emailAndPasswordRequired(
 		func(context echo.Context) error {
-			log.Println("usercontroller.Create() nested func")
 
 			email := context.Form("email")
 			password := context.Form("password")
@@ -279,6 +277,7 @@ func Patch() echo.HandlerFunc {
 		}
 
 		user, err := FindByID(userID)
+
 		if err != nil || user == nil {
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
 		}
@@ -297,6 +296,7 @@ func Patch() echo.HandlerFunc {
 
 		saveErr := Save(user)
 		if saveErr != nil {
+			log.Printf("Cannot update user %v", user.ID)
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot update user "+user.ID))
 		}
 		user.Hash = "" // never leak the hash
@@ -496,9 +496,7 @@ func DisplayResetForm() echo.HandlerFunc {
 // If it's the current one,or if if it's an admin that requires it,
 // the returned profile is richer than if it a normal user that asks
 func Profile() echo.HandlerFunc {
-	fmt.Println("Profile")
 	return func(context echo.Context) error {
-		fmt.Println("inner Profile")
 		user, err := FindByID(context.Param("userID"))
 		if err != nil || user == nil {
 			return context.JSON(http.StatusInternalServerError, errors.New("Cannot load user with ID %s"))
@@ -533,9 +531,7 @@ func emailRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 // this function is a kind of decorator used to wrap an echo handler function
 // (http://talks.golang.org/2013/go4python.slide#37)
 func emailAndPasswordRequired(handler echo.HandlerFunc) echo.HandlerFunc {
-	log.Println("emailAndPasswordRequired")
 	return func(context echo.Context) error {
-		log.Println("emailAndPasswordRequired innner")
 		email := context.Form("email")
 		if email == "" {
 			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in POST body"))
