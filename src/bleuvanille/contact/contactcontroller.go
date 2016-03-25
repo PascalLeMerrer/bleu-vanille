@@ -3,6 +3,7 @@ package contact
 import (
 	"bleuvanille/config"
 	"fmt"
+	"github.com/goodsign/monday"
 	"log"
 	"net/http"
 	"os"
@@ -10,11 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/goodsign/monday"
-
+	"github.com/goware/emailx"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
-
 	"github.com/twinj/uuid"
 )
 
@@ -139,6 +138,12 @@ func Create() echo.HandlerFunc {
 			log.Println("Contact create email is null")
 			return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in POST body"})
 		}
+
+		err := emailx.Validate(email)
+		if err != nil {
+			return context.JSON(http.StatusBadRequest, errorMessage{"Invalid email parameter in POST body"})
+		}
+
 		timeSpent := context.Request().FormValue("timeSpent")
 		var timeSpentInt int
 		// timeSpent := context.Form("timeSpent")
@@ -150,7 +155,6 @@ func Create() echo.HandlerFunc {
 				timeSpentInt = -1
 			}
 		}
-		// TODO check email is valid
 		userAgent := context.Request().UserAgent()
 		referer := context.Request().Header().Get("Referer")
 		contact, err := New(email, userAgent, referer, timeSpentInt)

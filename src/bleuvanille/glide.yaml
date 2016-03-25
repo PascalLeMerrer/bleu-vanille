@@ -5,23 +5,23 @@ import:
   version: 23c77effcbfaf48a2f7be5256a4a184f3d128a01
 - package: github.com/stretchr/testify
   subpackages:
-  - /assert
+  - assert
 - package: golang.org/x/crypto
   subpackages:
-  - /bcrypt
+  - bcrypt
 - package: github.com/steveyen/gtreap
 - package: github.com/boltdb/bolt
 - package: github.com/speps/go-hashids
 - package: github.com/labstack/gommon
   version: 9c0a60557b6840125c331d8c8075119770aa2805
   subpackages:
-  - /color
+  - color
 - package: github.com/willf/bitset
 - package: github.com/labstack/echo
   version: b47abdb9ec9b6d38475ed385ebe052affbc14172
 - package: github.com/golang/protobuf
   subpackages:
-  - /proto
+  - proto
 - package: github.com/mattn/go-colorable
 - package: github.com/blevesearch/go-porterstemmer
 - package: github.com/twinj/uuid
@@ -29,13 +29,14 @@ import:
 - package: github.com/mattn/go-isatty
 - package: github.com/davecgh/go-spew
   subpackages:
-  - /spew
+  - spew
 - package: github.com/pmezard/go-difflib
   subpackages:
-  - /difflib
+  - difflib
 - package: github.com/blevesearch/segment
 - package: golang.org/x/net
   subpackages:
-  - /websocket
+  - websocket
 - package: github.com/bradfitz/http2
 - package: github.com/blevesearch/bleve
+- package: github.com/goware/emailx
