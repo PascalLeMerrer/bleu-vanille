@@ -27,6 +27,9 @@ const (
 )
 
 var (
+	// AdminPassword is the password of the administrator account
+	AdminPassword = getEnv("AdminPassword")
+
 	// DatabaseName is the name of the database used to store the service data
 	DatabaseName = getEnv("DatabaseName")
 

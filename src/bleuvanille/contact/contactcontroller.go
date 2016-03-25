@@ -132,7 +132,6 @@ func createCsvFile(formattedContacts []formattedContact) (string, error) {
 // Create creates a new contact
 func Create() echo.HandlerFunc {
 	return func(context echo.Context) error {
-
 		email := context.Form("email")
 		if email == "" {
 			log.Println("Contact create email is null")
@@ -146,7 +145,6 @@ func Create() echo.HandlerFunc {
 
 		timeSpent := context.Request().FormValue("timeSpent")
 		var timeSpentInt int
-		// timeSpent := context.Form("timeSpent")
 		if timeSpent != "" {
 			var err error
 			timeSpentInt, err = strconv.Atoi(timeSpent)

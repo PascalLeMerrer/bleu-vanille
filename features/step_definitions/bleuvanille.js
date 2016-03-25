@@ -31,7 +31,8 @@ module.exports = function() {
 	});
 
 	this.Given(/^I log as admin user$/, function(callback) {
-		this.bitterapple.setRequestBody("email=admin@bleuvanille.com;password=xeCuf8CHapreNe=");
+		var adminPassword = process.env.AdminPassword
+		this.bitterapple.setRequestBody("email=admin@bleuvanille.com;password=" + adminPassword);
 		this.bitterapple.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 		var self = this;
 		this.bitterapple.post("/users/login", function(error, response) {

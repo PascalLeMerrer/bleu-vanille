@@ -127,7 +127,7 @@ Feature:
       And I store the value of header Authorization as access token
 
     Scenario: Change password
-      Given I set body to email=user_test2@mail.org;password=OLDPASSWORD;newPassword=NEWPASSWORD
+      Given I set body to password=OLDPASSWORD;newPassword=NEWPASSWORD
       And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
       And I set bearer token
   		And I PUT /users/password

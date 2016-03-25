@@ -48,7 +48,7 @@ Feature:
 
 
   Scenario: Authenticate as an admin
-    Given I set body to email=admin@bleuvanille.com;password=xeCuf8CHapreNe=
+    Given I log as admin user
     And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
     When I POST to /users/login
     Then response code should be 200
