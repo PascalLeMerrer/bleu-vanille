@@ -19,6 +19,12 @@ Feature:
       When I POST to /users
       Then response code should be 409
 
+    Scenario: Sign up with invalid email should result in conflict
+      Given I set body to email=user_test1@mail;password=PASSWORD;firstname=JOHN;lastname=DOE
+      And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
+      When I POST to /users
+      Then response code should be 400
+
     Scenario: Sign in (login)
       Given I set body to email=user_test1@mail.org;password=mypassword
       And I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8

@@ -8,6 +8,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/goodsign/monday"
+	"github.com/goware/emailx"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -16,9 +19,6 @@ import (
 	"strconv"
 	"text/template"
 	"time"
-
-	"github.com/goodsign/monday"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo"
 )
@@ -61,7 +61,7 @@ func CreateDefault() {
 	}
 
 	if existingAdmin == nil {
-		admin, err := New(config.AdminEmail, "Admin", "Admin", "xeCuf8CHapreNe=")
+		admin, err := New(config.AdminEmail, "Admin", "Admin", config.AdminPassword)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -110,6 +110,11 @@ func Create() echo.HandlerFunc {
 			password := context.Form("password")
 			firstname := context.Form("firstname")
 			lastname := context.Form("lastname")
+
+			err := emailx.Validate(email)
+			if err != nil {
+				return context.JSON(http.StatusBadRequest, errors.New("Invalid email parameter in POST body"))
+			}
 
 			if firstname == "" {
 				return context.JSON(http.StatusBadRequest, errors.New("Missing firstname parameter in POST body"))
