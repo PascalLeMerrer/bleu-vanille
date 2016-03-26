@@ -2,6 +2,7 @@ package contact
 
 import (
 	"bleuvanille/config"
+	"errors"
 	"fmt"
 	"github.com/goodsign/monday"
 	"log"
@@ -16,10 +17,6 @@ import (
 	"github.com/labstack/echo/engine/standard"
 	"github.com/twinj/uuid"
 )
-
-type errorMessage struct {
-	Message string `json:"error"`
-}
 
 type formattedContact struct {
 	Email     string `json:"email"`
@@ -81,7 +78,7 @@ func GetAll() echo.HandlerFunc {
 		}
 
 		if err != nil {
-			return context.JSON(http.StatusInternalServerError, errorMessage{"Contact list retrieval error"})
+			return context.JSON(http.StatusInternalServerError, errors.New("Contact list retrieval error"))
 		}
 		formattedContacts := make([]formattedContact, len(contacts))
 		for i := range contacts {
@@ -135,12 +132,12 @@ func Create() echo.HandlerFunc {
 		email := context.Form("email")
 		if email == "" {
 			log.Println("Contact create email is null")
-			return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in POST body"})
+			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in POST body"))
 		}
 
 		err := emailx.Validate(email)
 		if err != nil {
-			return context.JSON(http.StatusBadRequest, errorMessage{"Invalid email parameter in POST body"})
+			return context.JSON(http.StatusBadRequest, errors.New("Invalid email parameter in POST body"))
 		}
 
 		timeSpent := context.Request().FormValue("timeSpent")
@@ -158,16 +155,16 @@ func Create() echo.HandlerFunc {
 		contact, err := New(email, userAgent, referer, timeSpentInt)
 		if err != nil {
 			log.Printf("Contact create error %v\n", err)
-			return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
+			return context.JSON(http.StatusInternalServerError, errors.New("Contact creation error"))
 		}
 
 		err = Save(&contact)
 		if err != nil {
 			if err.Error() == "cannot create document, unique constraint violated" {
-				return context.JSON(http.StatusConflict, errorMessage{"Contact is already registered"})
+				return context.JSON(http.StatusConflict, errors.New("Contact is already registered"))
 			}
 			log.Printf("Error: cannot save contact with email: %v\n", err)
-			return context.JSON(http.StatusInternalServerError, errorMessage{"Contact creation error"})
+			return context.JSON(http.StatusInternalServerError, errors.New("Contact creation error"))
 		}
 
 		return context.JSON(http.StatusCreated, contact)
@@ -179,7 +176,7 @@ func Delete() echo.HandlerFunc {
 	return func(context echo.Context) error {
 		email := context.Query("email")
 		if email == "" {
-			return context.JSON(http.StatusBadRequest, errorMessage{"Missing email parameter in GET request"})
+			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in GET request"))
 		}
 		err := Remove(email)
 
