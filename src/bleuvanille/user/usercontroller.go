@@ -70,7 +70,6 @@ func CreateDefault() {
 		if err != nil {
 			log.Fatalf("Cannot create admin user with email %v. Error: %v", config.AdminEmail, err.Error())
 		}
-		log.Println("Admin account created with default password. You should change it.")
 		return
 	}
 	if config.ServerDebug() {
@@ -94,7 +93,6 @@ func CreateDefault() {
 			if err != nil {
 				log.Fatalf("Cannot create user with email %v. Error: %v", config.TestUserEmail, err.Error())
 			}
-			log.Println("Test account created with default password.")
 			return
 		}
 		log.Println("Test account found.")
