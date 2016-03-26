@@ -549,36 +549,43 @@ func emailAndPasswordRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 
 // ChangePassword updates the password of the authenticated user
 func ChangePassword() echo.HandlerFunc {
-	return emailAndPasswordRequired(
-		func(context echo.Context) error {
+	return func(context echo.Context) error {
+		session := context.Get("session").(*session.Session)
+		if session == nil {
+			log.Printf("ERROR: invalid session %+v", session)
+			return context.JSON(http.StatusUnauthorized, "")
+		}
 
-			// TODO we should use info from session instead of an email parameter
-			email, oldPassword, newPassword := context.Form("email"), context.Form("password"), context.Form("newPassword")
+		oldPassword, newPassword := context.Form("password"), context.Form("newPassword")
+		if oldPassword == "" {
+			return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in POST body"))
+		}
 
-			user, err := FindByEmail(email)
-			if err != nil {
-				log.Println(err)
-				return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
-			}
-			err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(oldPassword))
-			if err != nil {
-				log.Println(err)
-				return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
-			}
-			hash, bcryptErr := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-			if bcryptErr != nil {
-				log.Println(bcryptErr)
-				return context.JSON(http.StatusInternalServerError, errors.New("Server error. The password was not changed."))
-			}
+		email := session.Email
+		user, err := FindByEmail(email)
+		if err != nil {
+			log.Println(err)
+			return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
+		}
+		err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(oldPassword))
+		if err != nil {
+			log.Println(err)
+			return context.JSON(http.StatusUnauthorized, errors.New("Wrong email and password combination"))
+		}
+		hash, bcryptErr := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+		if bcryptErr != nil {
+			log.Println(bcryptErr)
+			return context.JSON(http.StatusInternalServerError, errors.New("Server error. The password was not changed."))
+		}
 
-			err = SavePassword(user, string(hash))
-			if err != nil {
-				log.Println(err)
-				return context.JSON(http.StatusInternalServerError, errors.New("Server error. The password was not changed."))
-			}
+		err = SavePassword(user, string(hash))
+		if err != nil {
+			log.Println(err)
+			return context.JSON(http.StatusInternalServerError, errors.New("Server error. The password was not changed."))
+		}
 
-			return context.JSON(http.StatusOK, nil)
-		})
+		return context.JSON(http.StatusOK, nil)
+	}
 }
 
 //TODO extract in a util package
