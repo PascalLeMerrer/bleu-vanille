@@ -17,9 +17,6 @@ type Contact struct {
 	TimeSpent int `json:"timespent,omitempty"`
 }
 
-// Contacts is a list of Contact
-type Contacts []Contact
-
 // New creates a Contact instance
 func New(email string, userAgent string, referer string, timeSpent int) (Contact, error) {
 	var contact Contact
