@@ -61,7 +61,7 @@ func GetAll() echo.HandlerFunc {
 		if limitErr != nil {
 			limitParam = 0
 		}
-		var contacts Contacts
+		var contacts []Contact
 		var totalCount int
 		var err error
 		switch sortParam {

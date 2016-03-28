@@ -26,9 +26,6 @@ type User struct {
 	ResetToken string
 }
 
-// Users is a list of User
-type Users []User
-
 // New creates a User instance
 func New(email string, firstname string, lastname string, password string) (User, error) {
 	var user User
