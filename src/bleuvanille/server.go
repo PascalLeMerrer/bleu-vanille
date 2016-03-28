@@ -7,6 +7,7 @@ import (
 	"bleuvanille/contact"
 	"bleuvanille/log"
 	"bleuvanille/session"
+	"bleuvanille/statistics"
 	"bleuvanille/user"
 	"fmt"
 	gommonlog "github.com/labstack/gommon/log"
@@ -146,6 +147,7 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin())
 	adminRoutes.Delete("/contacts", contact.Delete())
 
+	adminRoutes.Get("/statistics/:counter", statistics.Get())
 }
 
 func getVersion() echo.HandlerFunc {

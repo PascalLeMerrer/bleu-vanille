@@ -2,11 +2,46 @@
 Feature:
     As a visitor of the website I want to see the Landing Page and be able to register my email
 
+    Scenario: Get the current number of unique visitors on landing page
+      Given I log as admin user
+      When I GET /admin/statistics/landing_page_visitor_count
+      Then response code should be 200
+      And response body should be valid json
+      And response body path $.counter should be landing_page_visitor_count
+      And response body path $.count should be \d
+      And I store the value of body path $.count as visitorCount in global scope
+
     Scenario: Displaying landing page
-  		When I GET /
-  		Then response code should be 200
+      When I GET /
+      Then response code should be 200
       Then response header Content-Type should be text/html
       Then response body should contain input id="emailInput" type="email"
+
+    Scenario: The number of unique visitors on landing page should have been incremented after a contact visited the landing page
+      Given I log as admin user
+      When I GET /admin/statistics/landing_page_visitor_count
+      Then response code should be 200
+      And response body should be valid json
+      And response body path $.counter should be landing_page_visitor_count
+      And response body path $.count should be \d
+      And the value of body path $.count should be visitorCount + 1
+
+    Scenario: Refreshing landing page
+      Given I send cookie visitorId
+      When I GET /
+      Then response code should be 200
+      Then response header Content-Type should be text/html
+      Then response body should contain input id="emailInput" type="email"
+
+    Scenario: The number of unique visitors on landing page should not have been incremented after a contact visited again the landing page
+      Given I set bearer token
+      When I GET /admin/statistics/landing_page_visitor_count
+      Then response code should be 200
+      And response body should be valid json
+      And response body path $.counter should be landing_page_visitor_count
+      And response body path $.count should be \d
+      # TODO define a better step?
+      And the value of body path $.count should be visitorCount + 1
 
     Scenario: Registering a contact
       Given I set body to email=testemail@gmail.com
@@ -65,7 +100,6 @@ Feature:
       And response body should be valid json
       And response header Authorization should exist
       And I store the value of header Authorization as access token
-      And I set bearer token
 
     Scenario: As an admin, Verify contact is registered
       When I set bearer token

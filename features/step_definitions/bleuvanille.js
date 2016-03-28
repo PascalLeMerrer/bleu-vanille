@@ -39,15 +39,46 @@ module.exports = function() {
 			if (error) {
 				callback.fail(error);
 			}
-
-			self.bitterapple.storeValueOfHeaderInGlobalScope("Set-Cookie", "cookie");
-
+			self.bitterapple.setAccessTokenFromHeader('Authorization')
 			callback();
 		});
 	});
 
 
+	this.Given(/^the value of body path (\S+) should be (\S+) \+ (\d)$/, function(path, data1, data2, callback) {
+		data1 = parseInt(dereferenceData(this.bitterapple, data1));
+		data2 = parseInt(dereferenceData(this.bitterapple, data2));
+		this.bitterapple.realValue = this.bitterapple.getResponseObject().body;
+		var valueAtPath = this.bitterapple.evaluatePath(path, this.bitterapple.realValue)
+		if(data1 + data2 !== parseInt(valueAtPath)) {
+			callback(new Error('Body is ' + this.bitterapple.realValue + '\nExpected count to be ' + (data1+data2))) ;
+		} else {
+			callback();
+		}
+	});
 
+	// if the given data is a variable name, returns its value; otherwise returns the data itself
+	function dereferenceData(bitterapple, data) {
+		var value
+		if (typeof(data) === 'string') {
+			value = bitterapple.getGlobalVariable(data)
+			if (value === undefined) {
+				value = bitterapple.scenarioVariables[data]
+			}
+		}
+		if (value === undefined) {
+			return data
+		}
+		return value
+	}
+
+	function is_int(value){
+	  if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+	      return true;
+	  } else {
+	      return false;
+	  }
+	}
 	this.Given(/^I truncate the database collection (.*)$/, function(name, callback) {
 		var postData = JSON.stringify({
 			"collection": name,

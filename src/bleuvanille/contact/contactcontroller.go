@@ -2,6 +2,7 @@ package contact
 
 import (
 	"bleuvanille/config"
+	"bleuvanille/statistics"
 	"errors"
 	"fmt"
 	"github.com/goodsign/monday"
@@ -43,7 +44,8 @@ func LandingPage() echo.HandlerFunc {
 			}
 			context.Response().Header().Set("Set-Cookie", cookie.String())
 
-			// TODO: increment unique visitor counter in database
+			// increment unique visitor counter in database
+			statistics.IncrementCounter("landing_page_visitor_count")
 		}
 		return context.Render(http.StatusOK, "index", nil)
 	}
@@ -166,7 +168,6 @@ func Create() echo.HandlerFunc {
 			log.Printf("Error: cannot save contact with email: %v\n", err)
 			return context.JSON(http.StatusInternalServerError, errors.New("Contact creation error"))
 		}
-
 		return context.JSON(http.StatusCreated, contact)
 	}
 }
