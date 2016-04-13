@@ -131,7 +131,7 @@ func Create() echo.HandlerFunc {
 	return func(context echo.Context) error {
 		email := context.Form("email")
 		if email == "" {
-			log.Println("Contact create email is null")
+			log.Println("Contact creation email is null")
 			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in POST body"))
 		}
 
