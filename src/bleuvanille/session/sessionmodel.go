@@ -10,7 +10,7 @@ import (
 // Session stores values for an active user. The user maybe authenticated or not
 // How to handle secure sessions: https://www.owasp.org/index.php/Session_Management_Cheat_Sheet
 type Session struct {
-	ID        string `json:"id"`
+	ID        string `json:"id,omitempty"`
 	Key       string `json:"_key,omitempty"`
 	SessionID string
 	UserID    string
