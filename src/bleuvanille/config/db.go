@@ -1,8 +1,8 @@
 package config
 
 import (
+	"bleuvanille/log"
 	"fmt"
-
 	"github.com/solher/arangolite"
 )
 
@@ -31,4 +31,33 @@ func DB() *arangolite.DB {
 
 	dbSession.SwitchDatabase(DatabaseName).SwitchUser(DatabaseUser, DatabasePassword)
 	return dbSession
+}
+
+// CreateHashIndexedCollection creates a collection
+// name is the collection name
+// indexes is array of hash indexes
+func CreateHashIndexedCollection(name string, indexes []string) {
+	rawResult, err := DB().Run(&arangolite.CreateCollection{Name: name})
+	if err != nil {
+		fmt.Printf("ERROR: cannot create %s collection: %s \n", name, err)
+		return
+	}
+	log.Printf("%s collection created: %s \n", name, rawResult)
+	if len(indexes) == 0 {
+		return
+	}
+	unique := true
+	sparse := false
+	hashIndex := arangolite.CreateHashIndex{
+		CollectionName: name,
+		Unique:         &unique,
+		Sparse:         &sparse,
+		Fields:         indexes,
+	}
+	rawResult, err = DB().Run(&hashIndex)
+	if err != nil {
+		fmt.Printf("ERROR: cannot add index to %s collection %s \n", name, err)
+		return
+	}
+	log.Printf("Index added to %s collection: %s \n", name, rawResult)
 }

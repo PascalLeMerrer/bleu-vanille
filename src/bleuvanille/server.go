@@ -5,6 +5,7 @@ import (
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
+	"bleuvanille/ingredient"
 	"bleuvanille/log"
 	"bleuvanille/session"
 	"bleuvanille/user"
@@ -78,6 +79,7 @@ func main() {
 	declareStaticRoutes(echoServer)
 	declarePublicRoutes(echoServer)
 	declarePrivateRoutes(echoServer)
+	declareIngredientRoutes(echoServer)
 	declareAdminRoutes(echoServer)
 	declareSpecialRoutes(echoServer)
 	addErrorHandler(echoServer)
@@ -124,6 +126,18 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes.Patch("/:userID", user.Patch())
 }
 
+// ingredients Routes require a valid user auth token and a sessionID
+func declareIngredientRoutes(echoServer *echo.Echo) {
+	ingredientRoutes := echoServer.Group("/ingredients")
+	ingredientRoutes.Use(auth.JWTAuth())
+	ingredientRoutes.Use(session.Middleware())
+	ingredientRoutes.Get("/:key", ingredient.Get())
+	ingredientRoutes.Get("", ingredient.GetAll())
+	ingredientRoutes.Post("", ingredient.Create())
+	ingredientRoutes.Patch("/:key", ingredient.Patch())
+	ingredientRoutes.Delete("/:key", ingredient.Delete())
+}
+
 // special Routes require a valid user auth token but no sessionID
 func declareSpecialRoutes(echoServer *echo.Echo) {
 	specialRoutes := echoServer.Group("/special")
@@ -145,7 +159,6 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/users/email", user.Get())
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin())
 	adminRoutes.Delete("/contacts", contact.Delete())
-
 }
 
 func getVersion() echo.HandlerFunc {
@@ -164,7 +177,7 @@ func getVersion() echo.HandlerFunc {
 func addErrorHandler(echoServer *echo.Echo) {
 
 	myHTTPErrorHandler := func(err error, context echo.Context) {
-		fmt.Println("Custom error handler invoked")
+		fmt.Printf("Custom error handler invoked: %s\n", err)
 		code := http.StatusInternalServerError
 		message := http.StatusText(code)
 		if httpError, ok := err.(*echo.HTTPError); ok {
