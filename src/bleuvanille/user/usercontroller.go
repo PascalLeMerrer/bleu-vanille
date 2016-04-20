@@ -172,7 +172,7 @@ func GetAll() echo.HandlerFunc {
 		if limitErr != nil {
 			limitParam = 0
 		}
-		var users Users
+		var users []User
 		var totalCount int
 		var err error
 		criteria, order := getSortingParams(context)
