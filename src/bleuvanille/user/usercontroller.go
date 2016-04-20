@@ -386,7 +386,7 @@ func Login() echo.HandlerFunc {
 			}
 			context.Response().Header().Set(echo.Authorization, authToken)
 			addCookie(context, authToken)
-			return context.JSON(http.StatusOK, user)
+			return context.JSON(http.StatusOK, formatUser(user))
 		})
 }
 
