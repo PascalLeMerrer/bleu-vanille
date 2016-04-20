@@ -12,17 +12,8 @@ const CollectionName = "sessions"
 
 // init creates the contacts collections if it do not already exist
 func init() {
-	config.DB().Run(&arangolite.CreateCollection{Name: CollectionName})
-	unique := true
-	sparse := false
-	indexFields := []string{"id"}
-	hashIndex := arangolite.CreateHashIndex{
-		CollectionName: CollectionName,
-		Unique:         &unique,
-		Sparse:         &sparse,
-		Fields:         indexFields,
-	}
-	config.DB().Run(&hashIndex)
+	indexFields := []string{"SessionID"}
+	config.CreateHashIndexedCollection(CollectionName, indexFields)
 }
 
 // Save inserts a session into the database
