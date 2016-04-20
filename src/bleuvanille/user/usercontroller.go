@@ -379,8 +379,11 @@ func Login() echo.HandlerFunc {
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, err)
 			}
-			session.Save(&userSession)
-
+			err = session.Save(&userSession)
+			if err != nil {
+				log.Printf("Cannot save session %+v: %s\n", userSession, err)
+				context.JSON(http.StatusInternalServerError, err)
+			}
 			context.Response().Header().Set(echo.Authorization, authToken)
 			addCookie(context, authToken)
 			return context.JSON(http.StatusOK, user)
