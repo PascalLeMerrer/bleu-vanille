@@ -1,3 +1,7 @@
+run:
+	source /Users/pascallemerrer/Documents/Dev/projects/bleuvanille/server/env.sh && /Users/pascallemerrer/Documents/Dev/projects/bleuvanille/server/watch.sh
+
+
 # start docker machine
 docker:
 	bash --login '/Applications/Docker/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh'
