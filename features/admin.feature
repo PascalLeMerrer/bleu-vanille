@@ -48,8 +48,7 @@ Feature:
 
 
   Scenario: Authenticate as an admin
-    Given I set Content-Type header to application/x-www-form-urlencoded;charset=UTF-8
-    When I POST to /users/login
+    Given I log as admin user
     Then response code should be 200
     And response body should be valid json
     And response header Authorization should exist

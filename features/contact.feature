@@ -27,7 +27,7 @@ Feature:
       And the value of body path $.count should be visitorCount + 1
 
     Scenario: Refreshing landing page
-      Given I send cookie visitorId
+      Given I send the cookie visitorId
       When I GET /
       Then response code should be 200
       Then response header Content-Type should be text/html
@@ -142,5 +142,3 @@ Feature:
       Given I set bearer token
       And I DELETE /admin/contacts?email=name%2Btag@gmail.com
       Then response code should be 204
-
-
