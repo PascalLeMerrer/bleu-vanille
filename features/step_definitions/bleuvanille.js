@@ -16,34 +16,26 @@ module.exports = function() {
 	});
 
 	this.Given(/^I log as test user$/, function(callback) {
-		this.bitterapple.setRequestBody("email=testuser@bleuvanille.com;password=xaFqJDeJldIEcdfZS");
-		this.bitterapple.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		var self = this;
-		this.bitterapple.post("/users/login", function(error, response) {
-			if (error) {
-				callback.fail(error);
-			}
-
-			self.bitterapple.storeValueOfHeaderInGlobalScope("Set-Cookie", "cookie");
-
-			callback();
-		});
+		authenticate("testuser@bleuvanille.com", "xaFqJDeJldIEcdfZS", this, callback)
 	});
 
 	this.Given(/^I log as admin user$/, function(callback) {
-		var adminPassword = process.env.AdminPassword
-		this.bitterapple.setRequestBody("email=admin@bleuvanille.com;password=" + adminPassword);
-		this.bitterapple.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		var self = this;
-		this.bitterapple.post("/users/login", function(error, response) {
+		authenticate("admin@bleuvanille.com", process.env.AdminPassword, this, callback)
+	});
+
+	function authenticate(login, password, self, callback) {
+		self.bitterapple.setRequestBody("email=" + login + ";password=" + password);
+		self.bitterapple.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+		self.bitterapple.post("/users/login", function(error, response) {
 			if (error) {
 				callback.fail(error);
 			}
-			self.bitterapple.setAccessTokenFromHeader('Authorization')
-			callback();
+			else {
+				self.bitterapple.sendCookie("token")
+				callback();
+			}
 		});
-	});
-
+	}
 
 	this.Given(/^the value of body path (\S+) should be (\S+) \+ (\d)$/, function(path, data1, data2, callback) {
 		data1 = parseInt(dereferenceData(this.bitterapple, data1));

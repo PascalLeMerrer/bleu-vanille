@@ -5,10 +5,11 @@ import (
 	"bleuvanille/auth"
 	"bleuvanille/config"
 	"bleuvanille/contact"
+	"bleuvanille/ingredient"
 	"bleuvanille/log"
 	"bleuvanille/session"
-	"bleuvanille/statistics"
 	"bleuvanille/user"
+	"bleuvanille/statistics"
 	"fmt"
 	gommonlog "github.com/labstack/gommon/log"
 	"html/template"
@@ -79,6 +80,7 @@ func main() {
 	declareStaticRoutes(echoServer)
 	declarePublicRoutes(echoServer)
 	declarePrivateRoutes(echoServer)
+	declareIngredientRoutes(echoServer)
 	declareAdminRoutes(echoServer)
 	declareSpecialRoutes(echoServer)
 	addErrorHandler(echoServer)
@@ -125,6 +127,18 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes.Patch("/:userID", user.Patch())
 }
 
+// ingredients Routes require a valid user auth token and a sessionID
+func declareIngredientRoutes(echoServer *echo.Echo) {
+	ingredientRoutes := echoServer.Group("/ingredients")
+	ingredientRoutes.Use(auth.JWTAuth())
+	ingredientRoutes.Use(session.Middleware())
+	ingredientRoutes.Get("/:key", ingredient.Get())
+	ingredientRoutes.Get("", ingredient.GetAll())
+	ingredientRoutes.Post("", ingredient.Create())
+	ingredientRoutes.Patch("/:key", ingredient.Patch())
+	ingredientRoutes.Delete("/:key", ingredient.Delete())
+}
+
 // special Routes require a valid user auth token but no sessionID
 func declareSpecialRoutes(echoServer *echo.Echo) {
 	specialRoutes := echoServer.Group("/special")
@@ -166,7 +180,7 @@ func getVersion() echo.HandlerFunc {
 func addErrorHandler(echoServer *echo.Echo) {
 
 	myHTTPErrorHandler := func(err error, context echo.Context) {
-		fmt.Println("Custom error handler invoked")
+		fmt.Printf("Custom error handler invoked: %s\n", err)
 		code := http.StatusInternalServerError
 		message := http.StatusText(code)
 		if httpError, ok := err.(*echo.HTTPError); ok {
