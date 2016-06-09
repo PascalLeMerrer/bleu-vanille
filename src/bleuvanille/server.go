@@ -1,4 +1,4 @@
-package main
+package bleuvanille
 
 import (
 	"bleuvanille/admin"
@@ -8,8 +8,8 @@ import (
 	"bleuvanille/ingredient"
 	"bleuvanille/log"
 	"bleuvanille/session"
-	"bleuvanille/user"
 	"bleuvanille/statistics"
+	"bleuvanille/user"
 	"fmt"
 	gommonlog "github.com/labstack/gommon/log"
 	"html/template"
@@ -160,7 +160,6 @@ func declareAdminRoutes(echoServer *echo.Echo) {
 	adminRoutes.Get("/users/email", user.Get())
 	adminRoutes.Delete("/users/:userID", user.RemoveByAdmin())
 	adminRoutes.Delete("/contacts", contact.Delete())
-
 	adminRoutes.Get("/statistics/:counter", statistics.Get())
 }
 
