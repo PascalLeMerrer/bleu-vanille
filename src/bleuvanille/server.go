@@ -1,4 +1,4 @@
-package bleuvanille
+package main
 
 import (
 	"bleuvanille/admin"
