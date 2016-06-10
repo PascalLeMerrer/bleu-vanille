@@ -18,4 +18,10 @@ createdb:
 	docker run -e ARANGO_NO_AUTH=1 -d -p 8529:8529 -v /Users/pascallemerrer/Documents/Dev/servers/arangodb/data:/var/lib/arangodb --name=arangodb arangodb/arangodb:2.8.7
 	docker ps
 
- .PHONY: docker db createdb
+# update dependencies
+dep:
+	rm src/bleuvanille/glide.lock
+	cd src/bleuvanille && glide install --update-vendored
+
+
+ .PHONY: docker db createdb dep

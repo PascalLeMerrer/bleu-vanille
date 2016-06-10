@@ -1,18 +1,24 @@
 #!/bin/bash
-$SECONDS=0
+SECONDS=0
 
 if [ "$#" -ne 0 ]; then
-	echo "deploying Bleu Vanille branch/tag/commit $1" 
+	echo "deploying Bleu Vanille branch/tag/commit $1"
 	ref=$1
 else
-	echo "deploying Bleu Vanille branch master" 
+	echo "deploying Bleu Vanille branch master"
 	ref="master"
 fi
 ansible-playbook -i hosts -e reference=$ref --tags "checkout" playbook.yml
 
-cd "./deploy/"
+cd ./deploy/
 
-./server &
+source env.sh && ./server &
+
+if [ "$?" -ne 0 ]; then
+    echo "FATAL. Build failed. Deployment canceled."
+    exit $?
+fi
+
 processId=$!
 
 ../node_modules/.bin/cucumber.js
