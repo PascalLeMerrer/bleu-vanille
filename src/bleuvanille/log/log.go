@@ -40,14 +40,13 @@ func Printf(format string, v ...interface{}) {
 
 // Middleware retrieves the session for an authenticated user
 // It also deletes session for expired token
-func Middleware() echo.MiddlewareFunc {
-	return func(next echo.Handler) echo.Handler {
-		return echo.HandlerFunc(func(context echo.Context) error {
-			correlationID := uuid.NewV4().String()
+func Middleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(context echo.Context) error {
+		correlationID := uuid.NewV4().String()
 
-			context.Set("correlationID", correlationID)
-			return next.Handle(context)
-		})
+		context.Set("correlationID", correlationID)
+		return next(context)
+
 	}
 }
 

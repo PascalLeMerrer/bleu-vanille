@@ -54,12 +54,12 @@ func LandingPage() echo.HandlerFunc {
 // GetAll writes the list of all contacts
 func GetAll() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		sortParam := context.Query("sort")
-		offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+		sortParam := context.QueryParam("sort")
+		offsetParam, offsetErr := strconv.Atoi(context.QueryParam("offset"))
 		if offsetErr != nil {
 			offsetParam = 0
 		}
-		limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+		limitParam, limitErr := strconv.Atoi(context.QueryParam("limit"))
 		if limitErr != nil {
 			limitParam = 0
 		}
@@ -89,7 +89,7 @@ func GetAll() echo.HandlerFunc {
 			i++
 		}
 		contentType := context.Request().Header().Get("Accept")
-		if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		if contentType != "" && len(contentType) >= len(echo.MIMEApplicationJSON) && contentType[:len(echo.MIMEApplicationJSON)] == echo.MIMEApplicationJSON {
 			context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
 			return context.JSON(http.StatusOK, formattedContacts)
 		}
@@ -131,7 +131,7 @@ func createCsvFile(formattedContacts []formattedContact) (string, error) {
 // Create creates a new contact
 func Create() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		email := context.Form("email")
+		email := context.FormValue("email")
 		if email == "" {
 			log.Println("Contact creation email is null")
 			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in POST body"))
@@ -175,7 +175,7 @@ func Create() echo.HandlerFunc {
 // Delete deletes the contact for a given email
 func Delete() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		email := context.Query("email")
+		email := context.QueryParam("email")
 		if email == "" {
 			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in GET request"))
 		}

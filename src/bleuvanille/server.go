@@ -54,7 +54,7 @@ func main() {
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Gzip())
-	echoServer.Use(log.Middleware())
+	echoServer.Use(log.Middleware)
 
 	// precompile templates
 
@@ -116,8 +116,8 @@ func declarePublicRoutes(echoServer *echo.Echo) {
 // privates Routes require a valid user auth token and a sessionID
 func declarePrivateRoutes(echoServer *echo.Echo) {
 	userRoutes := echoServer.Group("/users")
-	userRoutes.Use(auth.JWTAuth())
-	userRoutes.Use(session.Middleware())
+	userRoutes.Use(auth.JWTAuth)
+	userRoutes.Use(session.Middleware)
 
 	userRoutes.Post("/logout", session.Logout())
 	// echo does not accept Delete request with body so we use a Post instead
@@ -130,8 +130,8 @@ func declarePrivateRoutes(echoServer *echo.Echo) {
 // ingredients Routes require a valid user auth token and a sessionID
 func declareIngredientRoutes(echoServer *echo.Echo) {
 	ingredientRoutes := echoServer.Group("/ingredients")
-	ingredientRoutes.Use(auth.JWTAuth())
-	ingredientRoutes.Use(session.Middleware())
+	ingredientRoutes.Use(auth.JWTAuth)
+	ingredientRoutes.Use(session.Middleware)
 	ingredientRoutes.Get("/:key", ingredient.Get())
 	ingredientRoutes.Get("", ingredient.GetAll())
 	ingredientRoutes.Post("", ingredient.Create())
@@ -142,7 +142,7 @@ func declareIngredientRoutes(echoServer *echo.Echo) {
 // special Routes require a valid user auth token but no sessionID
 func declareSpecialRoutes(echoServer *echo.Echo) {
 	specialRoutes := echoServer.Group("/special")
-	specialRoutes.Use(auth.JWTAuth())
+	specialRoutes.Use(auth.JWTAuth)
 	specialRoutes.Post("/resetPassword", user.ResetPassword())
 }
 
@@ -150,9 +150,9 @@ func declareSpecialRoutes(echoServer *echo.Echo) {
 func declareAdminRoutes(echoServer *echo.Echo) {
 
 	adminRoutes := echoServer.Group("/admin")
-	adminRoutes.Use(auth.JWTAuth())
-	adminRoutes.Use(session.Middleware())
-	adminRoutes.Use(session.AdminMiddleware())
+	adminRoutes.Use(auth.JWTAuth)
+	adminRoutes.Use(session.Middleware)
+	adminRoutes.Use(session.AdminMiddleware)
 
 	adminRoutes.Get("/dashboard", admin.Dashboard())
 	adminRoutes.Get("/contacts", contact.GetAll())

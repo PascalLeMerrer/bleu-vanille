@@ -43,11 +43,11 @@ func Get() echo.HandlerFunc {
 // GetAll writes the list of all ingredients
 func GetAll() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+		offsetParam, offsetErr := strconv.Atoi(context.QueryParam("offset"))
 		if offsetErr != nil {
 			offsetParam = 0
 		}
-		limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+		limitParam, limitErr := strconv.Atoi(context.QueryParam("limit"))
 		if limitErr != nil {
 			limitParam = 0
 		}
@@ -79,7 +79,7 @@ func formatIngredient(ingredient *Ingredient) formattedIngredient {
 // @returns the nma of the property on which user list must be sorted, and the sort order (ASC or DESC)
 func getSortingParams(context echo.Context) (string, string) {
 
-	sortParam := context.Query("sort")
+	sortParam := context.QueryParam("sort")
 
 	var criteria string
 	var order string

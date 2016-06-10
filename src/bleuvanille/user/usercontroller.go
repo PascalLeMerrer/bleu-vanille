@@ -104,10 +104,10 @@ func Create() echo.HandlerFunc {
 	return emailAndPasswordRequired(
 		func(context echo.Context) error {
 
-			email := context.Form("email")
-			password := context.Form("password")
-			firstname := context.Form("firstname")
-			lastname := context.Form("lastname")
+			email := context.FormValue("email")
+			password := context.FormValue("password")
+			firstname := context.FormValue("firstname")
+			lastname := context.FormValue("lastname")
 
 			err := emailx.Validate(email)
 			if err != nil {
@@ -151,7 +151,7 @@ func Get() echo.HandlerFunc {
 	return emailRequired(
 		func(context echo.Context) error {
 
-			email := context.Query("email")
+			email := context.QueryParam("email")
 			var user, err = FindByEmail(email)
 			if err != nil || user == nil {
 				log.Println(err)
@@ -164,11 +164,11 @@ func Get() echo.HandlerFunc {
 // GetAll returns the list of all users
 func GetAll() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		offsetParam, offsetErr := strconv.Atoi(context.Query("offset"))
+		offsetParam, offsetErr := strconv.Atoi(context.QueryParam("offset"))
 		if offsetErr != nil {
 			offsetParam = 0
 		}
-		limitParam, limitErr := strconv.Atoi(context.Query("limit"))
+		limitParam, limitErr := strconv.Atoi(context.QueryParam("limit"))
 		if limitErr != nil {
 			limitParam = 0
 		}
@@ -189,7 +189,7 @@ func GetAll() echo.HandlerFunc {
 			i++
 		}
 		contentType := context.Request().Header().Get("Accept")
-		if contentType != "" && len(contentType) >= len(echo.ApplicationJSON) && contentType[:len(echo.ApplicationJSON)] == echo.ApplicationJSON {
+		if contentType != "" && len(contentType) >= len(echo.MIMEApplicationJSON) && contentType[:len(echo.MIMEApplicationJSON)] == echo.MIMEApplicationJSON {
 			context.Response().Header().Set("X-TOTAL-COUNT", strconv.Itoa(totalCount))
 			return context.JSON(http.StatusOK, formattedUsers)
 		}
@@ -206,7 +206,7 @@ func GetAll() echo.HandlerFunc {
 // @returns the nma of the property on which user list must be sorted, and the sort order (ASC or DESC)
 func getSortingParams(context echo.Context) (string, string) {
 
-	sortParam := context.Query("sort")
+	sortParam := context.QueryParam("sort")
 
 	var criteria string
 	var order string
@@ -328,7 +328,7 @@ func Delete() echo.HandlerFunc {
 			log.Println("Missing userID in session")
 			return context.JSON(http.StatusUnauthorized, errors.New("Maybe your session expired. Try to disconnect then reconnect."))
 		}
-		password := context.Form("password")
+		password := context.FormValue("password")
 		if password == "" {
 			log.Println("Missing password parameter in DELETE request")
 			return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in DELETE request"))
@@ -360,8 +360,8 @@ func _delete(context echo.Context, user *User) error {
 func Login() echo.HandlerFunc {
 	return emailAndPasswordRequired(
 		func(context echo.Context) error {
-			password := context.Form("password")
-			email := context.Form("email")
+			password := context.FormValue("password")
+			email := context.FormValue("email")
 			user, err := FindByEmail(email)
 			if err != nil || user == nil {
 				log.Println(err)
@@ -384,7 +384,7 @@ func Login() echo.HandlerFunc {
 				log.Printf("Cannot save session %+v: %s\n", userSession, err)
 				context.JSON(http.StatusInternalServerError, err)
 			}
-			context.Response().Header().Set(echo.Authorization, authToken)
+			context.Response().Header().Set(echo.HeaderAuthorization, authToken)
 			addCookie(context, authToken)
 			return context.JSON(http.StatusOK, formatUser(user))
 		})
@@ -407,7 +407,7 @@ func addCookie(context echo.Context, authToken string) {
 // ResetPassword updates the password of the authenticated user without providing the old one
 func ResetPassword() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		newPassword := context.Form("password")
+		newPassword := context.FormValue("password")
 		var email string
 		var ok bool
 		if email, ok = context.Get("email").(string); !ok {
@@ -441,7 +441,7 @@ func ResetPassword() echo.HandlerFunc {
 func SendResetLink() echo.HandlerFunc {
 	return emailRequired(
 		func(context echo.Context) error {
-			email := context.Form("email")
+			email := context.FormValue("email")
 			user, err := FindByEmail(email)
 			if err != nil || user == nil {
 				log.Println(err)
@@ -477,8 +477,8 @@ func SendResetLink() echo.HandlerFunc {
 // DisplayResetForm displays the reset password form
 func DisplayResetForm() echo.HandlerFunc {
 	return func(context echo.Context) error {
-		token := context.Query("token")
-		email := context.Query("email")
+		token := context.QueryParam("token")
+		email := context.QueryParam("email")
 		if token == "" || email == "" {
 			return context.JSON(http.StatusUnauthorized, "Invalid URL for password reset")
 		}
@@ -524,7 +524,7 @@ func Profile() echo.HandlerFunc {
 // (http://talks.golang.org/2013/go4python.slide#37)
 func emailRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 	return func(context echo.Context) error {
-		email := context.Form("email")
+		email := context.FormValue("email")
 		if email == "" {
 			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in POST body"))
 		}
@@ -538,11 +538,11 @@ func emailRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 // (http://talks.golang.org/2013/go4python.slide#37)
 func emailAndPasswordRequired(handler echo.HandlerFunc) echo.HandlerFunc {
 	return func(context echo.Context) error {
-		email := context.Form("email")
+		email := context.FormValue("email")
 		if email == "" {
 			return context.JSON(http.StatusBadRequest, errors.New("Missing email parameter in POST body"))
 		}
-		password := context.Form("password")
+		password := context.FormValue("password")
 		if password == "" {
 			return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in POST body"))
 		}
@@ -559,7 +559,7 @@ func ChangePassword() echo.HandlerFunc {
 			return context.JSON(http.StatusUnauthorized, "")
 		}
 
-		oldPassword, newPassword := context.Form("password"), context.Form("newPassword")
+		oldPassword, newPassword := context.FormValue("password"), context.FormValue("newPassword")
 		if oldPassword == "" {
 			return context.JSON(http.StatusBadRequest, errors.New("Missing password parameter in POST body"))
 		}
