@@ -1,6 +1,6 @@
 - hosts: dev
   connection: local
-  
+
   vars:
      tmp_directory: "{{ playbook_dir }}/deploy"
 
@@ -9,12 +9,26 @@
     - { role: package, tags: ['package'] }
 
 - hosts: production
-  
-  remote_user: root
-  
+
+  remote_user: pascal
+
   vars:
      tmp_directory: "{{ playbook_dir }}/deploy"
-  
+
+  environment:
+    BleuVanilleName: localhost
+    BleuVanillePort: 4000
+    DatabaseHost: 192.168.99.100
+    DatabaseName: bleuvanille
+    DatabasePort: 8529
+    DatabaseUser: devblvanille
+    SMTPPort: 587
+    Debug: server
+    DatabaseRootPassword: tt%<Lc$%}_ip
+    DatabasePassword: (Raz,lI]ZUSz
+    TemplatePath: /home/pascal/bleuvanille/public
+
   roles:
     - { role: supervisor, tags: ['supervisor'] }
+    - { role: deploy-arangodb, tags: ['arangodb'] }
     - { role: deploy, tags: ['deploy'] }

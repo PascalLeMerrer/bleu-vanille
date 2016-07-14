@@ -4,18 +4,46 @@
   apt: >
     name=supervisor
     state=latest
+  tags: ['setup']
 
-- name: Create logs directory
+- name: Create logs directory for supervisor
   file: >
     state=directory
-    path="{{ logs_dir }}"
+    path={{ logs_dir }}/supervisor
+  tags: ['setup']
+
+- name: Create logs directory for bleu vanille
+  file: >
+    state=directory
+    path={{ logs_dir }}/bleuvanille
+  tags: ['setup']
+
+- name: Create the supervisord config directory
+  file: >
+    state=directory
+    path={{ supervisor_config_dir }}
+  become: yes
+  tags: ['setup']
 
 - name: Copy the supervisord config
-  copy: >
-    src=supervisord.conf
-    dest="{{ supervisor_config_dir }}"
-  tags: ['deploy']
+  template: >
+    src=supervisord.conf.j2
+    dest={{ supervisor_config_dir }}/supervisord.conf
+    owner=pascal
+    group=pascal
+  become: yes
+  tags: ['deploy, setup']
+
+- name: Start supervisor daemon
+  service: name=supervisor state=started
+  become: yes
+
+- name: get info about current version dir
+  stat: path=current_version_dir
+  register: bleuvanille_executable
 
 - name: Reload supervisor configuration
-  command: supervisorctl reload
+  supervisorctl: name=bleuvanille state=restarted config={{ supervisor_config_dir }}/supervisord.conf
+  when: bleuvanille_executable.stat.exists == True
   tags: ['deploy']
+  become: yes

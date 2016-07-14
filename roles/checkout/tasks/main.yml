@@ -2,7 +2,7 @@
 
 # - name: Delete the previous build
 #   file: >
-#     path="{{ tmp_directory }}" 
+#     path="{{ tmp_directory }}"
 #     state=absent
 
 - name: Get Git executable path
@@ -11,8 +11,8 @@
 
 - name: Get stuff from git
   local_action: >
-    git repo=git@bitbucket.org:plemerrer/bleuvanille.git 
-    dest="{{ tmp_directory }}" 
+    git repo=git@bitbucket.org:plemerrer/bleuvanille.git
+    dest="{{ tmp_directory }}"
     update=yes
     version={{ reference }}
     force=yes
@@ -23,8 +23,8 @@
     chdir="{{ tmp_directory }}"
     gulp dist
 
-- name: Download dependancies
-  environment: { 'GO15VENDOREXPERIMENT':'1', 'GOPATH':'{{ tmp_directory }}' }
+- name: Download dependencies
+  environment: { 'GOPATH':'{{ tmp_directory }}' }
   command: >
     chdir="{{ tmp_directory }}/src/bleuvanille"
     glide install --update-vendored
@@ -36,8 +36,7 @@
     state=link
 
 - name: Build the Go application for tests
-  environment: { 'GO15VENDOREXPERIMENT':1, 'GOPATH':'{{ tmp_directory }}' }
+  environment: { 'GOPATH':'{{ tmp_directory }}' }
   command: >
     chdir="{{ tmp_directory }}"
     go build src/bleuvanille/server.go
-

@@ -1,0 +1,6 @@
+# automatically call upgrade after the installed package has changed
+arangodb_autoupgrade: false
+
+# sleep time for restarts, sometimes the database directory is still locked
+# but the restart is already trying to start arangodb again
+arangodb_restart_sleep: 10

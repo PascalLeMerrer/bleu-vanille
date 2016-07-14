@@ -12,7 +12,7 @@ ansible-playbook -i hosts -e reference=$ref --tags "checkout" playbook.yml
 
 cd ./deploy/
 
-source env.sh && ./server &
+source ../env.sh && ./server &
 
 if [ "$?" -ne 0 ]; then
     echo "FATAL. Build failed. Deployment canceled."
@@ -21,7 +21,7 @@ fi
 
 processId=$!
 
-../node_modules/.bin/cucumber.js
+../node_modules/.bin/cucumber.js --fail-fast
 
 if [ "$?" -ne 0 ]; then
 	echo "FATAL. Test execution failed. Deployment canceled."
@@ -34,6 +34,6 @@ kill -9 $processId
 
 
 cd ..
-ansible-playbook -i hosts --tags "package,supervisor,deploy" playbook.yml
+ansible-playbook -i hosts --ask-become-pass -vvvv --tags "package,supervisor,deploy" playbook.yml
 
 echo "Release deployed in $SECONDS seconds"

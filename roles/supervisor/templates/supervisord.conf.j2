@@ -12,7 +12,10 @@
 file=/tmp/supervisor.sock   ; (the path to the socket file)
 
 [supervisord]
-logfile=/root/logs/supervisord.log  ; (main log file;default $CWD/supervisord.log)
+chown=pascal:pascal       ; socket file uid:gid owner
+username=pascal             ; (default is no username (open server))
+
+logfile={{ logs_dir }}/supervisor/supervisord.log  ; (main log file;default $CWD/supervisord.log)
 logfile_maxbytes=50MB        		; (max main logfile bytes b4 rotation;default 50MB)
 logfile_backups=10           		; (num of main logfile rotation backups;default 10)
 loglevel=info                		; (log level;default info; others: debug,warn,trace)
@@ -46,18 +49,13 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
 
 [program:bleuvanille]
-command=/root/bleuvanille/bleuvanille
-directory=/root/bleuvanille
+command={{ current_version_dir }}/bleuvanille
+directory={{ current_version_dir }}
 environment=BleuVanilleName="localhost",BleuVanillePort="4000",DatabaseName="bleuvanille",DatabasePassword="dm34zq7JHz21",DatabaseRootPassword="",DatabasePort="8529",DatabaseUser="devblvanille",SMTPPort="587",SMTPPassword="",SMTPServer="",SMTPUser="",Production="true",Debug="false"
 autostart=true
-stdout_logfile=/root/logs/bleuvanille_logs     		; stdout log path, NONE for none; default AUTO
+stdout_logfile={{ logs_dir }}/bleuvanille/bleuvanille_logs     		; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=1MB   						; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     						; # of stdout logfile backups (default 10)
 stdout_capture_maxbytes=1MB   						; number of bytes in 'capturemode' (default 0)
 stdout_events_enabled=false   						; emit events on stdout writes (default false)
-stderr_logfile=/root/logs/bleuvanille_error_logs    ; stderr log path, NONE for none; default AUTO
-stderr_logfile_maxbytes=1MB   						; max # logfile bytes b4 rotation (default 50MB)
-stderr_logfile_backups=10     						; # of stderr logfile backups (default 10)
-stderr_capture_maxbytes=1MB   						; number of bytes in 'capturemode' (default 0)
-stderr_events_enabled=false   						; emit events on stderr writes (default false)
 
