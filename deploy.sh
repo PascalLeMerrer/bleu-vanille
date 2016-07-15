@@ -8,7 +8,7 @@ else
 	echo "deploying Bleu Vanille branch master"
 	ref="master"
 fi
-ansible-playbook -i hosts -e reference=$ref --tags "checkout" playbook.yml
+ansible-playbook -i hosts -e reference=$ref --ask-become-pass --tags "checkout" playbook.yml
 
 cd ./deploy/
 
