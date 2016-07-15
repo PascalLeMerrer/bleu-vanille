@@ -26,3 +26,13 @@ codegen
 env.sh
 src/bleuvanille/glide.lock
 tmp/
+
+src/bleuvanille/debug
+src/github.com/
+src/golang.org/
+src/gopkg.in/
+src/honnef.co/
+
+.idea/
+playbook.retry
+*.iml
