@@ -4,17 +4,6 @@
   vars:
      tmp_directory: "{{ playbook_dir }}/deploy"
 
-  roles:
-    - { role: checkout, tags: ['checkout'] }
-    - { role: package, tags: ['package'] }
-
-- hosts: production
-
-  remote_user: pascal
-
-  vars:
-     tmp_directory: "{{ playbook_dir }}/deploy"
-
   environment:
     BleuVanilleName: localhost
     BleuVanillePort: 4000
@@ -27,8 +16,36 @@
     DatabaseRootPassword: tt%<Lc$%}_ip
     DatabasePassword: (Raz,lI]ZUSz
     TemplatePath: /home/pascal/bleuvanille/public
+    AdminPassword: Azd\$)lkds
+    DatabasePassword: dm34zq7JHz21
+    SMTPPassword: hpkczikanmezdfjj
+
+  roles:
+    - { role: checkout, tags: ['checkout'] }
+    - { role: package, tags: ['package'] }
+
+- hosts: production
+
+  remote_user: pascal
+
+  vars:
+      tmp_directory: "{{ playbook_dir }}/deploy"
+      BleuVanilleName: 192.168.1.100
+      BleuVanillePort: 4000
+      DatabaseHost: 127.0.0.1
+      DatabaseName: bleuvanille
+      DatabasePort: 8529
+      DatabaseUser: devblvanille
+      SMTPPort: 587
+      Debug: server
+      DatabaseRootPassword: tt%<Lc$%#_ip
+      DatabasePassword: (Raz,lI]ZUSz
+      TemplatePath: /home/pascal/bleuvanille/public
+      AdminPassword: Azd\$)lkds
+      DatabasePassword: dm34zq7JHz21
+      SMTPPassword: hpkczikanmezdfjj
 
   roles:
     - { role: supervisor, tags: ['supervisor'] }
-    - { role: deploy-arangodb, tags: ['arangodb'] }
+    - { role: arangodb, tags: ['arangodb'] }
     - { role: deploy, tags: ['deploy'] }

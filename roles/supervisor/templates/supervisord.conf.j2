@@ -51,7 +51,8 @@ serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
 [program:bleuvanille]
 command={{ current_version_dir }}/bleuvanille
 directory={{ current_version_dir }}
-environment=BleuVanilleName="localhost",BleuVanillePort="4000",DatabaseName="bleuvanille",DatabasePassword="dm34zq7JHz21",DatabaseRootPassword="",DatabasePort="8529",DatabaseUser="devblvanille",SMTPPort="587",SMTPPassword="",SMTPServer="",SMTPUser="",Production="true",Debug="false"
+environment=BleuVanilleName="{{ BleuVanilleName }}",BleuVanillePort="{{ BleuVanillePort }}",DatabaseHost="{{ DatabaseHost }}",DatabaseName="{{ DatabaseName }}",DatabasePort="{{ DatabasePort }}",DatabaseUser="{{ DatabaseUser }}",SMTPPort="{{ SMTPPort }}",Debug="{{ Debug }}",DatabaseRootPassword="{{ DatabaseRootPassword }}",DatabasePassword="{{ DatabasePassword }}",TemplatePath="{{ TemplatePath }}",AdminPassword="{{ AdminPassword }}", DatabasePassword="{{ DatabasePassword }}", SMTPPassword="{{ SMTPPassword }}"
+
 autostart=true
 stdout_logfile={{ logs_dir }}/bleuvanille/bleuvanille_logs     		; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=1MB   						; max # logfile bytes b4 rotation (default 50MB)

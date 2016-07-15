@@ -1,2 +1,0 @@
-- name: restart arangodb
-  service: name='arangodb' state=restarted sleep={{ arangodb_restart_sleep }}
