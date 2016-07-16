@@ -87,7 +87,7 @@ func main() {
 
 	fmt.Printf("Server listening to HTTP requests on port %d\n", config.HostPort)
 
-	echoServer.Run(standard.New("127.0.0.1:" + strconv.Itoa(config.HostPort)))
+	echoServer.Run(standard.New("0.0.0.0:" + strconv.Itoa(config.HostPort)))
 }
 
 // static pages
